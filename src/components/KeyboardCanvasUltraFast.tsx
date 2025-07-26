@@ -373,22 +373,43 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         const frontY = renderY + keyHeight - 3;
         const padding = 5;
         
-        // Left front legend
-        if (key.frontLegends[0]) {
-          ctx.textAlign = 'left';
-          ctx.fillText(key.frontLegends[0], renderX + padding, frontY);
-        }
+        // Check if side-printed text should be centered (bit 2 of align)
+        const centerSidePrinted = key.align !== undefined && (key.align & 0x04) !== 0;
         
-        // Center front legend
-        if (key.frontLegends[1]) {
+        if (centerSidePrinted) {
+          // If bit 2 is set, center all front legends
           ctx.textAlign = 'center';
-          ctx.fillText(key.frontLegends[1], renderX + keyWidth / 2, frontY);
-        }
-        
-        // Right front legend
-        if (key.frontLegends[2]) {
-          ctx.textAlign = 'right';
-          ctx.fillText(key.frontLegends[2], renderX + keyWidth - padding, frontY);
+          const centerX = renderX + keyWidth / 2;
+          
+          // Render all front legends centered
+          if (key.frontLegends[0]) {
+            ctx.fillText(key.frontLegends[0], centerX, frontY);
+          }
+          if (key.frontLegends[1]) {
+            ctx.fillText(key.frontLegends[1], centerX, frontY);
+          }
+          if (key.frontLegends[2]) {
+            ctx.fillText(key.frontLegends[2], centerX, frontY);
+          }
+        } else {
+          // Default positioning for front legends
+          // Left front legend
+          if (key.frontLegends[0]) {
+            ctx.textAlign = 'left';
+            ctx.fillText(key.frontLegends[0], renderX + padding, frontY);
+          }
+          
+          // Center front legend
+          if (key.frontLegends[1]) {
+            ctx.textAlign = 'center';
+            ctx.fillText(key.frontLegends[1], renderX + keyWidth / 2, frontY);
+          }
+          
+          // Right front legend
+          if (key.frontLegends[2]) {
+            ctx.textAlign = 'right';
+            ctx.fillText(key.frontLegends[2], renderX + keyWidth - padding, frontY);
+          }
         }
         
         ctx.restore();
@@ -421,6 +442,34 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         }
         
         const position = getLegendPosition(index);
+        
+        // Override position if key has align property
+        let finalPosition = { ...position };
+        if (key.align !== undefined && index < 4) {
+          // KLE align is a bit field:
+          // 0x01 (bit 0) - Center labels horizontally
+          // 0x02 (bit 1) - Center labels vertically  
+          // 0x04 (bit 2) - Center side-printed text (for indices 4-11)
+          // Note: align only affects main labels (indices 0-3), not front/side legends
+          
+          const centerHorizontally = (key.align & 0x01) !== 0;
+          const centerVertically = (key.align & 0x02) !== 0;
+          
+          // Start with the default position for this index
+          finalPosition = { ...position };
+          
+          // Apply horizontal centering if bit 0 is set
+          if (centerHorizontally) {
+            finalPosition.x = 0.5;
+            finalPosition.align = 'center';
+          }
+          
+          // Apply vertical centering if bit 1 is set
+          if (centerVertically) {
+            finalPosition.y = 0.5;
+            finalPosition.baseline = 'middle';
+          }
+        }
         // Check for text size in order: specific index, default size, or fallback to 3
         let textSizeValue = 3;
         if (Array.isArray(key.textSize) && key.textSize[index] !== undefined) {
@@ -508,25 +557,25 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         let currentY: number;
         
         // Calculate X position
-        if (position.align === 'start') {
+        if (finalPosition.align === 'start') {
           currentX = innerX + legendPadding;
-        } else if (position.align === 'end') {
+        } else if (finalPosition.align === 'end') {
           currentX = innerX + innerWidth - legendPadding;
         } else { // center
           currentX = innerX + innerWidth / 2;
         }
         
         // Calculate Y position
-        if (position.baseline === 'hanging') {
+        if (finalPosition.baseline === 'hanging') {
           currentY = innerY + legendPadding;
-        } else if (position.baseline === 'alphabetic') {
+        } else if (finalPosition.baseline === 'alphabetic') {
           currentY = innerY + innerHeight - legendPadding;
         } else { // middle
           currentY = innerY + innerHeight / 2;
         }
         
         // Measure total width if needed for center/right alignment
-        if (position.align !== 'start') {
+        if (finalPosition.align !== 'start') {
           let totalWidth = 0;
           parsedLabel.forEach(part => {
             if (part.type === 'icon') {
@@ -539,9 +588,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             }
           });
           
-          if (position.align === 'center') {
+          if (finalPosition.align === 'center') {
             currentX -= totalWidth / 2;
-          } else if (position.align === 'end') {
+          } else if (finalPosition.align === 'end') {
             currentX -= totalWidth;
           }
         }
@@ -566,7 +615,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             ctx.font = `${fontSize}px trashcons`;
             ctx.fillStyle = textColor;
             ctx.textAlign = 'left';
-            ctx.textBaseline = position.baseline as CanvasTextBaseline;
+            ctx.textBaseline = finalPosition.baseline as CanvasTextBaseline;
             
             // Debug: Log icon render attempts
             if (!(window as any).iconDebugCount) {
@@ -617,7 +666,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             ctx.font = `${fontSize}px Arial`;
             ctx.fillStyle = textColor;
             ctx.textAlign = 'left';
-            ctx.textBaseline = position.baseline as CanvasTextBaseline;
+            ctx.textBaseline = finalPosition.baseline as CanvasTextBaseline;
             ctx.fillText(part.content, currentX, currentY);
             currentX += ctx.measureText(part.content).width;
           }

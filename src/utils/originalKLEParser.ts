@@ -437,7 +437,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         current.decal = false;
         current.textColor = [];
         current.textSize = [];
-        current.align = undefined;
+        // Don't reset align - it persists across keys until changed
       }
     }
   }
