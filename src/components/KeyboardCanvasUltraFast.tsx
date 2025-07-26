@@ -662,13 +662,77 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
               console.error('Attempted to render icon without content:', part);
             }
           } else {
-            // Draw regular text
+            // Draw regular text - handle newlines for dual legend keys
             ctx.font = `${fontSize}px Arial`;
             ctx.fillStyle = textColor;
             ctx.textAlign = 'left';
             ctx.textBaseline = finalPosition.baseline as CanvasTextBaseline;
-            ctx.fillText(part.content, currentX, currentY);
-            currentX += ctx.measureText(part.content).width;
+            
+            // Check if this text contains newlines (for dual legend keys like ":\n;")
+            const lines = part.content.split('\n');
+            if (lines.length > 1 && index === 0) {
+              // This is a dual legend key in the main position
+              // Check if alignment is set to center labels
+              if (key.align !== undefined && (key.align & 0x01) !== 0) {
+                // Horizontal centering is enabled - render as top/bottom centered
+                ctx.textAlign = 'center';
+                const centerX = renderX + keyWidth / 2;
+                
+                // First line at top center
+                if (lines[0]) {
+                  ctx.textBaseline = 'hanging';
+                  ctx.fillText(lines[0], centerX, renderY + keyHeight * 0.2);
+                }
+                
+                // Second line at bottom center
+                if (lines[1]) {
+                  ctx.textBaseline = 'alphabetic';
+                  ctx.fillText(lines[1], centerX, renderY + keyHeight * 0.8);
+                }
+              } else {
+                // Default behavior - vertically stacked at the current position
+                ctx.textAlign = finalPosition.align as CanvasTextAlign;
+                
+                // Calculate line height
+                const lineHeight = fontSize * 1.2;
+                
+                // For dual legends, adjust the starting Y position to center both lines
+                const totalHeight = lineHeight * (lines.length - 1);
+                let lineY = currentY - totalHeight / 2;
+                
+                lines.forEach((line) => {
+                  if (line) {
+                    ctx.fillText(line, currentX, lineY);
+                  }
+                  lineY += lineHeight;
+                });
+                
+                // For horizontal positioning, use the widest line
+                const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+                currentX += maxWidth;
+              }
+            } else if (lines.length > 1) {
+              // Multi-line text in other positions - render with line breaks
+              ctx.textAlign = finalPosition.align as CanvasTextAlign;
+              const lineHeight = fontSize * 1.2;
+              let lineY = currentY;
+              
+              lines.forEach((line, idx) => {
+                if (line) {
+                  ctx.fillText(line, currentX, lineY);
+                }
+                if (idx < lines.length - 1) {
+                  lineY += lineHeight;
+                }
+              });
+              
+              const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+              currentX += maxWidth;
+            } else {
+              // Single line text
+              ctx.fillText(part.content, currentX, currentY);
+              currentX += ctx.measureText(part.content).width;
+            }
           }
         });
       });

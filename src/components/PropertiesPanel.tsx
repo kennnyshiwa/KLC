@@ -8,6 +8,21 @@ import IconDropdown from './IconDropdown';
 
 const PROFILES: KeyProfile[] = ['DCS', 'DSA', 'SA', 'OEM', 'CHICKLET', 'FLAT', 'XDA', 'MA'];
 
+// Helper to determine if a key has dual legends that should be shown as top/bottom
+const hasDualLegendAlignment = (key: Key): boolean => {
+  // Check if the key has horizontal centering enabled and a dual legend in position 0
+  return key.align !== undefined && 
+         (key.align & 0x01) !== 0 && 
+         key.labels[0] && 
+         key.labels[0].includes('\n');
+};
+
+// Helper to get the dual legend parts
+const getDualLegendParts = (label: string): [string, string] => {
+  const parts = label.split('\n');
+  return [parts[0] || '', parts[1] || ''];
+};
+
 const PropertiesPanel: React.FC = () => {
   const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
   const keyboard = useKeyboardStore((state) => state.keyboard);
@@ -333,7 +348,83 @@ const PropertiesPanel: React.FC = () => {
                     { index: 1, label: 'BL' },  // Bottom Left
                     { index: 11, label: 'BC' }, // Bottom Center
                     { index: 3, label: 'BR' },  // Bottom Right
-                  ].map(({ index, label }) => (
+                  ].map(({ index, label }) => {
+                    // Special handling for dual legend keys with alignment
+                    if (hasDualLegendAlignment(firstKey)) {
+                      // For top center (index 10) show the first part of the dual legend
+                      if (index === 10) {
+                        const [topPart] = getDualLegendParts(firstKey.labels[0]);
+                        return (
+                          <div key={index} className="legend-field">
+                            <input
+                              type="text"
+                              value={topPart}
+                              onChange={(e) => {
+                                const [, bottomPart] = getDualLegendParts(firstKey.labels[0]);
+                                handleLegendUpdate(0, `${e.target.value}\n${bottomPart}`);
+                              }}
+                              onFocus={() => setCharPickerTarget(index)}
+                              placeholder={label}
+                            />
+                            {charPickerTarget === index && (
+                              <IconDropdown 
+                                currentValue={topPart}
+                                onChange={(value) => {
+                                  const [, bottomPart] = getDualLegendParts(firstKey.labels[0]);
+                                  handleLegendUpdate(0, `${value}\n${bottomPart}`);
+                                }}
+                                onIconAdded={() => handleIconAdded(0)}
+                              />
+                            )}
+                          </div>
+                        );
+                      }
+                      // For bottom center (index 11) show the second part of the dual legend
+                      else if (index === 11) {
+                        const [, bottomPart] = getDualLegendParts(firstKey.labels[0]);
+                        return (
+                          <div key={index} className="legend-field">
+                            <input
+                              type="text"
+                              value={bottomPart}
+                              onChange={(e) => {
+                                const [topPart] = getDualLegendParts(firstKey.labels[0]);
+                                handleLegendUpdate(0, `${topPart}\n${e.target.value}`);
+                              }}
+                              onFocus={() => setCharPickerTarget(index)}
+                              placeholder={label}
+                            />
+                            {charPickerTarget === index && (
+                              <IconDropdown 
+                                currentValue={bottomPart}
+                                onChange={(value) => {
+                                  const [topPart] = getDualLegendParts(firstKey.labels[0]);
+                                  handleLegendUpdate(0, `${topPart}\n${value}`);
+                                }}
+                                onIconAdded={() => handleIconAdded(0)}
+                              />
+                            )}
+                          </div>
+                        );
+                      }
+                      // Hide the original position 0 (top left) for dual legend aligned keys
+                      else if (index === 0) {
+                        return (
+                          <div key={index} className="legend-field">
+                            <input
+                              type="text"
+                              value=""
+                              disabled
+                              placeholder="-"
+                              style={{ opacity: 0.5 }}
+                            />
+                          </div>
+                        );
+                      }
+                    }
+                    
+                    // Normal rendering for all other cases
+                    return (
                     <div key={index} className="legend-field">
                       <input
                         type="text"
@@ -350,7 +441,8 @@ const PropertiesPanel: React.FC = () => {
                         />
                       )}
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
                 <div className="legend-help">
                   <p className="help-text">
