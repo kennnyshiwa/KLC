@@ -120,24 +120,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         ctx.lineWidth = 1;
         ctx.strokeRect(renderX, renderY, keyWidth, keyHeight);
         
-        // Ghost keys can have labels for grouping/documentation
-        ctx.globalAlpha = 0.7; // Make text more visible
-        ctx.fillStyle = '#000000';
-        key.labels.forEach((label, index) => {
-          if (!label) return;
-          
-          const position = getLegendPosition(index);
-          const fontSize = 12; // Default font size for ghost labels
-          
-          ctx.font = `${fontSize}px Arial`;
-          ctx.textAlign = position.align as CanvasTextAlign;
-          ctx.textBaseline = position.baseline as CanvasTextBaseline;
-          
-          const labelX = renderX + keyWidth * position.x;
-          const labelY = renderY + keyHeight * position.y;
-          
-          ctx.fillText(label, labelX, labelY);
-        });
+        // Ghost keys should not render any text
         
         ctx.restore();
         
