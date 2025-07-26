@@ -28,7 +28,6 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const keyRectsRef = useRef<KeyRect[]>([]);
   const animationFrameRef = useRef<number | null>(null);
-  const fontCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Interaction state
   const isDraggingRef = useRef(false);
@@ -481,8 +480,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         // Use fixed pixel offsets for consistent positioning across all key sizes
         const legendPadding = 8; // Fixed padding from edges
-        let currentX;
-        let currentY;
+        let currentX: number;
+        let currentY: number;
         
         // Calculate X position
         if (position.align === 'start') {
