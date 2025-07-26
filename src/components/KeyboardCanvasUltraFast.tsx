@@ -472,11 +472,35 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         }
         
         // Calculate starting position based on alignment
+        // For complex shaped keys (like little ass enter), only use the primary rectangle
+        let effectiveRenderX = renderX;
+        let effectiveRenderY = renderY;
+        let effectiveWidth = keyWidth;
+        let effectiveHeight = keyHeight;
+        
+        // Check if this is a "little ass enter" or similar complex key
+        // Little ass enter: narrow vertical main rect, wider horizontal secondary rect
+        const hasSecondaryRect = key.x2 !== undefined || key.y2 !== undefined || 
+                                key.width2 !== undefined || key.height2 !== undefined;
+        
+        if (hasSecondaryRect && key.x2 !== undefined && key.x2 < 0 && key.width2 && key.width2 > key.width) {
+          // This is likely a "little ass enter" - use the secondary (horizontal) rectangle for labels
+          const x2 = (key.x2 || 0) * unitSize;
+          const y2 = (key.y2 || 0) * unitSize;
+          const width2 = (key.width2 || key.width) * unitSize - keySpacing;
+          const height2 = (key.height2 || key.height) * unitSize - keySpacing;
+          
+          effectiveRenderX = renderX + x2;
+          effectiveRenderY = renderY + y2;
+          effectiveWidth = width2;
+          effectiveHeight = height2;
+        }
+        
         // Adjust for the keycap top surface
-        const innerX = renderX + edgeHeight;
-        const innerY = renderY + edgeHeight;
-        const innerWidth = keyWidth - edgeHeight * 2;
-        const innerHeight = keyHeight - edgeHeight * 2 - topOffset;
+        const innerX = effectiveRenderX + edgeHeight;
+        const innerY = effectiveRenderY + edgeHeight;
+        const innerWidth = effectiveWidth - edgeHeight * 2;
+        const innerHeight = effectiveHeight - edgeHeight * 2 - topOffset;
         
         // Use fixed pixel offsets for consistent positioning across all key sizes
         const legendPadding = 8; // Fixed padding from edges
