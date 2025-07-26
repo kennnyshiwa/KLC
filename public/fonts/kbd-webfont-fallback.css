@@ -1,0 +1,17 @@
+/* Fallback CSS for kbd-webfont when actual font files are not available */
+/* Uses Unicode symbols and emoji as fallbacks */
+
+@font-face {
+  font-family: 'kbd-webfont';
+  /* Fallback to system fonts that have good Unicode support */
+  src: local('Segoe UI Symbol'), local('Apple Symbols'), local('Noto Color Emoji'), 
+       local('Symbola'), local('DejaVu Sans'), local('Arial Unicode MS');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Additional fallback using pseudo-elements for better compatibility */
+.kb::before,
+.trashcons::before {
+  font-family: 'Segoe UI Symbol', 'Apple Symbols', 'Noto Color Emoji', 'Symbola', 'kbd-webfont', sans-serif;
+}

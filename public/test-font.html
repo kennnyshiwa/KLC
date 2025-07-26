@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @font-face {
+            font-family: 'trashcons';
+            src: url('/fonts/trashcons.woff') format('woff');
+        }
+        
+        .test {
+            font-family: 'trashcons';
+            font-size: 48px;
+            line-height: 1.5;
+        }
+        
+        .row {
+            margin: 20px;
+        }
+        
+        body {
+            font-family: Arial;
+        }
+    </style>
+</head>
+<body>
+    <h1>Trashcons Font Test</h1>
+    
+    <div class="row">
+        <h3>Direct Unicode Characters:</h3>
+        <div class="test">
+            &#xe900; - Left arrow<br>
+            &#xe901; - Right arrow<br>
+            &#xe902; - Down arrow<br>
+            &#xe903; - Up arrow<br>
+            &#xe90e; - Enter<br>
+            &#xe90f; - Esc<br>
+            &#xe914; - Ctrl<br>
+        </div>
+    </div>
+    
+    <div class="row">
+        <h3>CSS Content:</h3>
+        <style>
+            .icon-left:before { content: "\e900"; font-family: 'trashcons'; }
+            .icon-enter:before { content: "\e90e"; font-family: 'trashcons'; }
+        </style>
+        <div style="font-size: 48px">
+            <span class="icon-left"></span> - Left (CSS)<br>
+            <span class="icon-enter"></span> - Enter (CSS)
+        </div>
+    </div>
+    
+    <div class="row">
+        <h3>Font Load Status:</h3>
+        <div id="status"></div>
+    </div>
+    
+    <script>
+        document.fonts.ready.then(() => {
+            const loaded = document.fonts.check('12px trashcons');
+            document.getElementById('status').innerHTML = 'Trashcons font loaded: ' + loaded;
+            
+            // Try to load manually
+            const font = new FontFace('trashcons', 'url(/fonts/trashcons.woff)');
+            font.load().then((loadedFont) => {
+                document.fonts.add(loadedFont);
+                console.log('Font loaded successfully');
+            }).catch(err => {
+                console.error('Font load error:', err);
+            });
+        });
+    </script>
+</body>
+</html>

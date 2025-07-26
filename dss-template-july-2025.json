@@ -1,0 +1,927 @@
+[
+  {
+    "name": "DSS template july 2025",
+    "author": "swear wolf",
+    "css": "/* latin-ext */\n@font-face {\n  font-family: 'Comfortaa';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(https://fonts.gstatic.com/s/comfortaa/v23/1Pt_g8LJRfWJmhDAuUsSQamb1W0lwk4S4VrMDr0fIA9c.woff2) format('woff2');\n  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Comfortaa';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(https://fonts.gstatic.com/s/comfortaa/v23/1Pt_g8LJRfWJmhDAuUsSQamb1W0lwk4S4VrMDrMfIA.woff2) format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n\n/* [109] */\n@font-face {\n  font-family: 'Noto Sans JP';\n  font-style: normal;\n  font-weight: 300;\n  font-display: swap;\n  src: local('Noto Sans Japanese Light'), local('NotoSansJapanese-Light'), url(https://fonts.gstatic.com/s/notosansjp/v24/-F6pfjtqLzI2JPCgQBnw7HFQaioq1xVxjfp_dakBof6Bs-tb3ab2FNISVac.109.woff2) format('woff2');\n  unicode-range: U+266a, U+4f11, U+533a, U+5343, U+534a, U+53cd, U+5404, U+56f3, U+5b57-5b58, U+5bae, U+5c4a, U+5e0c, U+5e2f, U+5eab, U+5f35, U+5f79, U+614b, U+6226, U+629e, U+65c5, U+6625, U+6751, U+6821, U+6b69, U+6b8b, U+6bce, U+6c42, U+706b, U+7c21, U+7cfb, U+805e, U+80b2, U+82b8, U+843d, U+8853, U+88c5, U+8a3c, U+8a66, U+8d8a, U+8fba, U+9069, U+91cf, U+9752, U+975e, U+9999, U+ff0f-ff10, U+ff14-ff15;\n}\n\n/* [73] */\n@font-face {\n  font-family: 'Noto Sans JP';\n  font-style: normal;\n  font-weight: 300;\n  font-display: swap;\n  src: local('Noto Sans Japanese Light'), local('NotoSansJapanese-Light'), url(https://fonts.gstatic.com/s/notosansjp/v24/-F6pfjtqLzI2JPCgQBnw7HFQaioq1xVxjfp_dakBof6Bs-tb3ab2FNISVac.73.woff2) format('woff2');\n  unicode-range: U+221e, U+2514, U+51f9, U+5270, U+5449, U+5824, U+59a5, U+59ac, U+5a29, U+5d07, U+5e16, U+60e3, U+614c, U+6276, U+643e, U+64ab, U+6562, U+6681, U+670b, U+6734, U+67af, U+6a3d, U+6b05, U+6dc0, U+6e4a, U+7259, U+7409, U+78a7, U+7a6b, U+8015, U+809b, U+817a, U+830e, U+837b, U+85ab, U+8a23, U+8a93, U+8b00, U+8b19, U+8b21, U+8cbf, U+8fb0, U+901d, U+91b8, U+9320, U+932c, U+9688, U+96f6, U+9df2, U+ff6a;\n}\n\n@import url('https://fonts.googleapis.com/css?family=Comfortaa:500|Noto+Sans+JP:300&display=swap&subset=japanese,latin-ext');\n.keylabel { font-family: 'Comfortaa', 'Noto Sans JP', 'Arial' ; }\n\n@font-face {\nfont-family: 'trashcons';\nfont-style: normal;\nfont-weight: 4200;\nsrc: url('https://raw.githubusercontent.com/Alasofia/trashcons/main/trashconsx.woff') format('woff');\n}\n\n/* class to define general glyph-set properties */\n.trashcons {\nfont-family: 'trashcons';\n}\n\n.icon-left:before {\ncontent: \"\\e900\";\n}\n.icon-right:before {\ncontent: \"\\e901\";\n}\n.icon-down:before {\ncontent: \"\\e902\";\n}\n.icon-up:before {\ncontent: \"\\e903\";\n}\n.icon-mult:before {\ncontent: \"\\e904\";\n}\n.icon-minus:before {\ncontent: \"\\e905\";\n}\n.icon-plus:before {\ncontent: \"\\e906\";\n}\n.icon-div:before {\ncontent: \"\\e907\";\n}\n.icon-lower:before {\ncontent: \"\\e908\";\n}\n.icon-raise:before {\ncontent: \"\\e909\";\n}\n.icon-fn:before {\ncontent: \"\\e90a\";\n}\n.icon-shift:before {\ncontent: \"\\e90b\";\n}\n.icon-delete:before {\ncontent: \"\\e90c\";\n}\n.icon-backspace:before {\ncontent: \"\\e90d\";\n}\n.icon-enter:before {\ncontent: \"\\e90e\";\n}\n.icon-esc:before {\ncontent: \"\\e90f\";\n}\n.icon-tab:before {\ncontent: \"\\e910\";\n}\n.icon-menu:before {\ncontent: \"\\e911\";\n}\n.icon-sys:before {\ncontent: \"\\e912\";\n}\n.icon-alt:before {\ncontent: \"\\e913\";\n}\n.icon-ctrl:before {\ncontent: \"\\e914\";\n}\n.icon-home:before {\ncontent: \"\\e915\";\n}\n.icon-end:before {\ncontent: \"\\e916\";\n}\n.icon-pgup:before {\ncontent: \"\\e917\";\n}\n.icon-pgdn:before {\ncontent: \"\\e918\";\n}\n.icon-capslock:before {\ncontent: \"\\e919\";\n}\n.icon-numlock:before {\ncontent: \"\\e91a\";\n}\n.icon-scrllock:before {\ncontent: \"\\e91b\";\n}\n.icon-prntscrn:before {\ncontent: \"\\e91c\";\n}\n.icon-pause:before {\ncontent: \"\\e91d\";\n}\n.icon-insert:before {\ncontent: \"\\e91e\";\n}"
+  },
+  [
+    {
+      "x": 5.25,
+      "g": true,
+      "a": 5,
+      "f": 9,
+      "w": 10,
+      "h": 3
+    },
+    "DSS Expansion choices",
+    {
+      "x": -10,
+      "g": false,
+      "w": 10,
+      "h": 3,
+      "d": true
+    },
+    "DSS 40's Base Kit",
+    {
+      "x": 6.25,
+      "c": "#080000",
+      "g": true,
+      "p": "DSA",
+      "a": 7,
+      "f": 3,
+      "w": 0.5,
+      "h": 20.75
+    },
+    "",
+    {
+      "x": 0.75,
+      "c": "#cccccc",
+      "a": 5,
+      "f": 9,
+      "w": 10,
+      "h": 3
+    },
+    "DSS Expansion choices",
+    {
+      "x": -10,
+      "g": false,
+      "w": 10,
+      "h": 3,
+      "d": true
+    },
+    "DSS Expansion Options"
+  ],
+  [
+    {
+      "y": 0.5,
+      "x": 22.75,
+      "w": 10,
+      "h": 3,
+      "d": true
+    },
+    "Add to base kit or"
+  ],
+  [
+    {
+      "y": 1.25,
+      "c": "#e5e4df",
+      "t": "#212224",
+      "a": 7,
+      "f": 5,
+      "d": true
+    },
+    "R1",
+    {
+      "x": 0.5,
+      "f": 6
+    },
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6"
+  ],
+  [
+    {
+      "y": -0.25,
+      "x": 15,
+      "g": true,
+      "f": 5,
+      "w": 6,
+      "h": 3.5
+    },
+    "",
+    {
+      "x": 1.5,
+      "w": 10,
+      "h": 3.5
+    },
+    "",
+    {
+      "x": -10,
+      "g": false,
+      "d": true
+    },
+    "R2"
+  ],
+  [
+    {
+      "y": -0.75,
+      "d": true
+    },
+    "R2",
+    {
+      "x": 0.5,
+      "f": 6
+    },
+    "Q",
+    "W",
+    "E",
+    "R",
+    "T",
+    "Y",
+    "U",
+    "I",
+    "O",
+    "P",
+    {
+      "x": 3.5,
+      "f": 5,
+      "d": true
+    },
+    "R2",
+    {
+      "f": 6,
+      "w": 1.25
+    },
+    "P\n\n\n\n125",
+    {
+      "x": -0.25,
+      "f": 5,
+      "w": 3,
+      "d": true
+    },
+    "QAZ Support\n\n\n\nMod Color",
+    {
+      "x": -0.25,
+      "f": 6
+    },
+    "Q",
+    {
+      "x": 2.75,
+      "w": 1.5
+    },
+    "Q\n\n\n\n150",
+    {
+      "x": 0.25,
+      "w": 1.5
+    },
+    "P\n\n\n\n150",
+    {
+      "f": 5,
+      "w": 3.25,
+      "d": true
+    },
+    "30's support",
+    {
+      "x": 0.25,
+      "f": 9,
+      "w": 1.25,
+      "h": 2,
+      "w2": 1.5,
+      "h2": 1,
+      "x2": -0.25
+    },
+    "P"
+  ],
+  [
+    {
+      "y": -0.25,
+      "x": 22.5,
+      "f": 5,
+      "d": true
+    },
+    "R3"
+  ],
+  [
+    {
+      "y": -0.75,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.5,
+      "f": 6
+    },
+    "A",
+    "S",
+    "D",
+    {
+      "n": true
+    },
+    "F\n\n\n\nSCOOP",
+    "G",
+    "H",
+    {
+      "n": true
+    },
+    "J\n\n\n\nSCOOP",
+    "K",
+    "L",
+    {
+      "a": 5
+    },
+    ":\n;",
+    "\"\n'",
+    {
+      "x": 0.25,
+      "a": 7,
+      "n": true
+    },
+    "F\n\n\n\nBAR",
+    {
+      "n": true
+    },
+    "J\n\n\n\nBAR",
+    {
+      "x": 0.25,
+      "f": 5,
+      "d": true
+    },
+    "R3",
+    {
+      "f": 6,
+      "w": 1.25
+    },
+    "A\n\n\n\n125",
+    {
+      "x": 6.25,
+      "w": 1.75
+    },
+    "L\n\n\n\n1.75",
+    {
+      "x": 0.25,
+      "a": 5,
+      "w": 1.25
+    },
+    "\"\n'\n\n\n125",
+    {
+      "x": 0.25,
+      "w": 1.5
+    },
+    "\"\n'\n\n\n150"
+  ],
+  [
+    {
+      "y": -0.25,
+      "x": 22.5,
+      "a": 7,
+      "f": 5,
+      "d": true
+    },
+    "R4"
+  ],
+  [
+    {
+      "y": -0.75,
+      "d": true
+    },
+    "R4",
+    {
+      "x": 0.5,
+      "f": 6
+    },
+    "Z",
+    "X",
+    "C",
+    "V",
+    "B",
+    "N",
+    "M",
+    {
+      "a": 5
+    },
+    "<\n,",
+    ">\n.",
+    "?\n/",
+    {
+      "x": 0.25,
+      "a": 7
+    },
+    "B",
+    {
+      "x": 2.25,
+      "f": 5,
+      "d": true
+    },
+    "R4",
+    {
+      "f": 6,
+      "w": 1.75
+    },
+    "Z\n\n\n\n175",
+    {
+      "a": 5,
+      "f": 3,
+      "w": 1.5
+    },
+    ">\n.\n\n\n150",
+    {
+      "x": 4.25,
+      "a": 7,
+      "f": 6,
+      "w": 1.5
+    },
+    "Z\n\n\n\n150",
+    {
+      "x": 0.25,
+      "a": 5,
+      "w": 1.25
+    },
+    ">\n.\n\n\n125",
+    {
+      "x": 0.25,
+      "w": 1.5
+    },
+    ">\n.\n\n\n150"
+  ],
+  [
+    {
+      "y": 0.25,
+      "a": 7,
+      "f": 5,
+      "d": true
+    },
+    "R2",
+    {
+      "x": 0.5,
+      "f": 9
+    },
+    "<span class='trashcons icon-esc'>",
+    "<span class='trashcons icon-delete'>",
+    "<span class='trashcons icon-backspace'>",
+    {
+      "a": 3,
+      "w": 1.25
+    },
+    "<span class='trashcons icon-backspace'>\n\n\n\n125",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-backspace'>\n\n\n\n150",
+    {
+      "w": 1.75
+    },
+    "<span class='trashcons icon-backspace'>\n\n\n\n175",
+    {
+      "x": 1,
+      "g": true,
+      "a": 7,
+      "f": 3,
+      "w": 4.25,
+      "h": 2
+    },
+    "",
+    {
+      "x": -4.25,
+      "g": false,
+      "f": 5,
+      "d": true
+    },
+    "R2",
+    {
+      "f": 3
+    },
+    "Nov",
+    "4D's",
+    {
+      "t": "#000000"
+    },
+    "logo"
+  ],
+  [
+    {
+      "y": -0.75,
+      "x": 22.5,
+      "t": "#212224",
+      "g": true,
+      "f": 5,
+      "w": 6.75,
+      "h": 2.5
+    },
+    ""
+  ],
+  [
+    {
+      "y": -0.75,
+      "x": 16.75,
+      "f": 3,
+      "w": 3.75,
+      "h": 3.25
+    },
+    "",
+    {
+      "x": -3.5,
+      "g": false,
+      "f": 5,
+      "w": 3.25,
+      "d": true
+    },
+    "SIlly shapes",
+    {
+      "x": 4.25,
+      "w": 3.25,
+      "d": true
+    },
+    "Accent enters"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 10.25,
+      "w": 3.75,
+      "d": true
+    },
+    "Nov / 4D's / 40's Logo"
+  ],
+  [
+    {
+      "y": -0.75,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.5,
+      "f": 9
+    },
+    "<span class='trashcons icon-tab'>",
+    {
+      "a": 3,
+      "w": 1.25
+    },
+    "<span class='trashcons icon-tab'>\n\n\n\n125",
+    {
+      "a": 7
+    },
+    "<span class='trashcons icon-enter'>",
+    {
+      "a": 3,
+      "w": 1.25
+    },
+    "<span class='trashcons icon-enter'>\n\n\n\n125",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-enter'>\n\n\n\n150",
+    {
+      "w": 1.75
+    },
+    "<span class='trashcons icon-enter'>\n\n\n\n175"
+  ],
+  [
+    {
+      "y": -0.75,
+      "x": 17.75,
+      "a": 4,
+      "w": 0.75,
+      "h": 2,
+      "w2": 1.5,
+      "h2": 1,
+      "x2": -0.75,
+      "y2": 1
+    },
+    "\n<span class='trashcons icon-enter'>",
+    {
+      "x": 0.5,
+      "a": 7,
+      "w": 1.25,
+      "h": 2,
+      "w2": 1.5,
+      "h2": 1,
+      "x2": -0.25
+    },
+    "<span class='trashcons icon-enter'>",
+    {
+      "x": 2.25,
+      "f": 5,
+      "d": true
+    },
+    "R3",
+    {
+      "f": 9
+    },
+    "<span class='trashcons icon-enter'>",
+    {
+      "a": 3,
+      "w": 1.25
+    },
+    "<span class='trashcons icon-enter'>\n\n\n\n125",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-enter'>\n\n\n\n150",
+    {
+      "w": 1.75
+    },
+    "<span class='trashcons icon-enter'>\n\n\n\n175"
+  ],
+  [
+    {
+      "y": -0.25,
+      "x": 9.75,
+      "g": true,
+      "a": 7,
+      "f": 3,
+      "w": 6.5,
+      "h": 2.75
+    },
+    ""
+  ],
+  [
+    {
+      "y": -0.75,
+      "g": false,
+      "f": 5,
+      "d": true
+    },
+    "R4",
+    {
+      "x": 0.5,
+      "f": 9
+    },
+    "<span class='trashcons icon-shift'>",
+    {
+      "a": 3,
+      "w": 1.25
+    },
+    "<span class='trashcons icon-shift'>\n\n\n\n125",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-shift'>\n\n\n\n150",
+    {
+      "w": 1.75
+    },
+    "<span class='trashcons icon-shift'>\n\n\n\n175",
+    {
+      "a": 7
+    },
+    "<span class='trashcons icon-fn'>",
+    "<span class='trashcons icon-enter'>",
+    {
+      "x": 0.75,
+      "f": 5,
+      "d": true
+    },
+    "R4",
+    {
+      "x": 1.25,
+      "f": 9
+    },
+    "<span class='trashcons icon-up'>",
+    {
+      "a": 5,
+      "f": 5,
+      "w": 3.25,
+      "d": true
+    },
+    "Arrow keys\nMod or accent?"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 22.5,
+      "g": true,
+      "a": 7,
+      "w": 7.5,
+      "h": 4.25
+    },
+    "",
+    {
+      "x": -5.25,
+      "g": false,
+      "w": 3.25,
+      "d": true
+    },
+    "Accent mods"
+  ],
+  [
+    {
+      "y": -0.25,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.5,
+      "f": 9
+    },
+    "<span class='trashcons icon-ctrl'>",
+    "<span class='trashcons icon-sys'>",
+    "<span class='trashcons icon-alt'>",
+    "<span class='trashcons icon-menu'>",
+    "<span class='trashcons icon-lower'>",
+    "<span class='trashcons icon-raise'>",
+    {
+      "x": 2.25,
+      "f": 5,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.25,
+      "f": 9
+    },
+    "<span class='trashcons icon-left'>",
+    "<span class='trashcons icon-down'>",
+    "<span class='trashcons icon-right'>",
+    "<span class='trashcons icon-up'>"
+  ],
+  [
+    {
+      "y": -0.75,
+      "x": 22.5,
+      "f": 5,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.25,
+      "f": 9
+    },
+    "<span class='trashcons icon-ctrl'>",
+    "<span class='trashcons icon-sys'>",
+    "<span class='trashcons icon-alt'>",
+    "<span class='trashcons icon-menu'>"
+  ],
+  [
+    {
+      "f": 5,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.5,
+      "a": 3,
+      "f": 9,
+      "w": 1.25
+    },
+    "<span class='trashcons icon-ctrl'>\n\n\n\n125",
+    {
+      "w": 1.25
+    },
+    "<span class='trashcons icon-sys'>\n\n\n\n125",
+    {
+      "w": 1.25
+    },
+    "<span class='trashcons icon-alt'>\n\n\n\n125",
+    {
+      "w": 1.25
+    },
+    "<span class='trashcons icon-menu'>\n\n\n\n125",
+    {
+      "w": 1.25
+    },
+    "<span class='trashcons icon-fn'>\n\n\n\n125",
+    {
+      "w": 1.25
+    },
+    "<span class='trashcons icon-fn'>\n\n\n\n125",
+    {
+      "x": 13.5,
+      "a": 7,
+      "f": 5,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.25,
+      "a": 3,
+      "f": 9,
+      "w": 1.25
+    },
+    "<span class='trashcons icon-ctrl'>\n\n\n\n125",
+    {
+      "w": 1.25
+    },
+    "<span class='trashcons icon-sys'>\n\n\n\n125",
+    {
+      "w": 1.25
+    },
+    "<span class='trashcons icon-alt'>\n\n\n\n125",
+    {
+      "w": 1.25
+    },
+    "<span class='trashcons icon-menu'>\n\n\n\n125"
+  ],
+  [
+    {
+      "x": 22.5,
+      "a": 7,
+      "f": 5,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.25,
+      "a": 3,
+      "f": 9,
+      "w": 1.5
+    },
+    "<span class='trashcons icon-ctrl'>\n\n\n\n150",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-sys'>\n\n\n\n150",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-alt'>\n\n\n\n150",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-menu'>\n\n\n\n150"
+  ],
+  [
+    {
+      "y": -0.75,
+      "a": 7,
+      "f": 5,
+      "d": true
+    },
+    "R3",
+    {
+      "x": 0.5,
+      "a": 3,
+      "f": 9,
+      "w": 1.5
+    },
+    "<span class='trashcons icon-ctrl'>\n\n\n\n150",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-sys'>\n\n\n\n150",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-alt'>\n\n\n\n150",
+    {
+      "w": 1.5
+    },
+    "<span class='trashcons icon-menu'>\n\n\n\n150",
+    {
+      "w": 1.75
+    },
+    "<span class='trashcons icon-numlock'>\n\n\n\n175"
+  ],
+  [
+    {
+      "y": 0.25,
+      "a": 2,
+      "f": 5,
+      "w": 1.5,
+      "d": true
+    },
+    "SB\n\n\n\nDSS Convex",
+    {
+      "a": 3,
+      "f": 3,
+      "w": 7
+    },
+    "\n\n\n\n7u\n\n\n\n\n\n\nDSS",
+    {
+      "x": 0.25,
+      "w": 8
+    },
+    "\n\n\n\n8u\n\n\n\n\n\n\nDSS",
+    {
+      "x": 5.75,
+      "g": true,
+      "a": 7,
+      "f": 5,
+      "w": 3.75,
+      "h": 2.25
+    },
+    "",
+    {
+      "x": -3.5,
+      "g": false,
+      "w": 3.25,
+      "d": true
+    },
+    "Minivan Mod color question mark"
+  ],
+  [
+    {
+      "x": 23.25,
+      "d": true
+    },
+    "R4",
+    {
+      "x": 0.25,
+      "a": 5,
+      "f": 6
+    },
+    "?\n/"
+  ],
+  [
+    {
+      "y": -0.75,
+      "a": 2,
+      "f": 5,
+      "w": 1.5,
+      "d": true
+    },
+    "SB\n\n\n\nDSS Convex",
+    {
+      "a": 3,
+      "f": 3,
+      "w": 6
+    },
+    "\n\n\n\n6u\n\n\n\n\n\n\nDSS",
+    {
+      "x": 0.25,
+      "w": 6.25
+    },
+    "\n\n\n\n6.25u\n\n\n\n\n\n\nDSS"
+  ],
+  [
+    {
+      "y": 0.25,
+      "a": 2,
+      "f": 5,
+      "w": 1.5,
+      "d": true
+    },
+    "SB\n\n\n\nDSA Convex",
+    {
+      "a": 3,
+      "f": 3,
+      "w": 3
+    },
+    "\n\n\n\n3u\n\n\n\n\n\n\nDSA",
+    {
+      "w": 3
+    },
+    "\n\n\n\n3u\n\n\n\n\n\n\nDSA",
+    {
+      "x": 0.25,
+      "w": 2.25
+    },
+    "\n\n\n\n2.25U\n\n\n\n\n\n\nDSA",
+    {
+      "x": 0.25,
+      "w": 2.75
+    },
+    "\n\n\n\n2.75u\n\n\n\n\n\n\nDSA",
+    {
+      "x": 0.25,
+      "w": 2
+    },
+    "\n\n\n\n2u\n\n\n\n\n\n\nDSA",
+    {
+      "w": 2
+    },
+    "\n\n\n\n2u\n\n\n\n\n\n\nDSA"
+  ],
+  [
+    {
+      "y": 0.25,
+      "a": 2,
+      "f": 5,
+      "w": 1.5,
+      "d": true
+    },
+    "SB\n\n\n\nDSA Convex",
+    {
+      "a": 3,
+      "f": 3
+    },
+    "\n\n\n\n1u\nDSA",
+    "\n\n\n\n1u\nDSA",
+    {
+      "x": 0.25,
+      "w": 1.25
+    },
+    "\n\n\n\n1.25u\nDSA",
+    {
+      "w": 1.25
+    },
+    "\n\n\n\n1.25u\nDSA",
+    {
+      "x": 0.25,
+      "w": 1.5
+    },
+    "\n\n\n\n1.5u\n\n\n\n\n\n\nDSA",
+    {
+      "w": 1.5
+    },
+    "\n\n\n\n1.5u\n\n\n\n\n\n\nDSA",
+    {
+      "x": 0.25,
+      "w": 1.75
+    },
+    "\n\n\n\n1.75u\n\n\n\n\n\n\nDSA",
+    {
+      "w": 1.75
+    },
+    "\n\n\n\n1.75u\n\n\n\n\n\n\nDSA"
+  ],
+  [
+    {
+      "y": 0.5,
+      "c": "#190303",
+      "t": "#000000",
+      "g": true,
+      "a": 7,
+      "w": 17,
+      "h": 0.5
+    },
+    "",
+    {
+      "w": 17,
+      "h": 0.5
+    },
+    ""
+  ]
+]

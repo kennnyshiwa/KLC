@@ -1,0 +1,114 @@
+/* Trashcons Icon Font */
+@font-face {
+  font-family: 'trashcons';
+  font-style: normal;
+  font-weight: normal;
+  src: url('/fonts/trashcons.woff') format('woff');
+}
+
+/* class to define general glyph-set properties */
+.trashcons {
+  font-family: 'trashcons';
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Icon mappings from the original */
+.icon-left:before {
+  content: "\e900";
+}
+.icon-right:before {
+  content: "\e901";
+}
+.icon-down:before {
+  content: "\e902";
+}
+.icon-up:before {
+  content: "\e903";
+}
+.icon-mult:before {
+  content: "\e904";
+}
+.icon-minus:before {
+  content: "\e905";
+}
+.icon-plus:before {
+  content: "\e906";
+}
+.icon-div:before {
+  content: "\e907";
+}
+.icon-lower:before {
+  content: "\e908";
+}
+.icon-raise:before {
+  content: "\e909";
+}
+.icon-fn:before {
+  content: "\e90a";
+}
+.icon-shift:before {
+  content: "\e90b";
+}
+.icon-delete:before {
+  content: "\e90c";
+}
+.icon-backspace:before {
+  content: "\e90d";
+}
+.icon-enter:before {
+  content: "\e90e";
+}
+.icon-esc:before {
+  content: "\e90f";
+}
+.icon-tab:before {
+  content: "\e910";
+}
+.icon-menu:before {
+  content: "\e911";
+}
+.icon-sys:before {
+  content: "\e912";
+}
+.icon-alt:before {
+  content: "\e913";
+}
+.icon-ctrl:before {
+  content: "\e914";
+}
+.icon-home:before {
+  content: "\e915";
+}
+.icon-end:before {
+  content: "\e916";
+}
+.icon-pgup:before {
+  content: "\e917";
+}
+.icon-pgdn:before {
+  content: "\e918";
+}
+.icon-capslock:before {
+  content: "\e919";
+}
+.icon-numlock:before {
+  content: "\e91a";
+}
+.icon-scrllock:before {
+  content: "\e91b";
+}
+.icon-prntscrn:before {
+  content: "\e91c";
+}
+.icon-pause:before {
+  content: "\e91d";
+}
+.icon-insert:before {
+  content: "\e91e";
+}

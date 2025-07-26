@@ -1,0 +1,29 @@
+{
+  "name": "kle2-backend",
+  "version": "1.0.0",
+  "description": "Backend API for KLE 2.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.12.0",
+    "axios": "^1.6.2",
+    "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "pg": "^8.16.3",
+    "prisma": "^6.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

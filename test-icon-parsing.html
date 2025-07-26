@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Parsing Test</title>
+    <script type="module">
+        import { parseIconLegend, iconPartsToHtml, processLabelsForIcons } from './src/utils/iconParser.js';
+        
+        // Test cases for icon parsing
+        const testCases = [
+            'Enter <span class="trashcons icon-enter"></span>',
+            'Shift <span class="trashcons icon-shift"/>',
+            '<span class="trashcons icon-esc">',
+            'Tab<span class="trashcons icon-tab"></span>Key',
+            '<span class="trashcons icon-ctrl"></span> Control',
+            'Multi <span class="trashcons icon-up"></span> <span class="trashcons icon-down"></span> Icons'
+        ];
+        
+        const resultsDiv = document.getElementById('results');
+        
+        testCases.forEach((testCase, index) => {
+            const parsed = parseIconLegend(testCase);
+            const html = iconPartsToHtml(parsed);
+            
+            const result = document.createElement('div');
+            result.innerHTML = `
+                <h3>Test ${index + 1}</h3>
+                <p><strong>Input:</strong> <code>${testCase.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></p>
+                <p><strong>Parsed:</strong> ${JSON.stringify(parsed, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+                <p><strong>Output HTML:</strong> <code>${html.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></p>
+                <hr>
+            `;
+            resultsDiv.appendChild(result);
+        });
+        
+        // Test processLabelsForIcons
+        const testKey = {
+            textSize: []
+        };
+        const labels = [
+            'Normal Text',
+            'Icon <span class="trashcons icon-enter"></span>',
+            '',
+            'Another <span class="trashcons icon-shift"></span> Icon'
+        ];
+        
+        processLabelsForIcons(labels, testKey);
+        
+        const processResult = document.createElement('div');
+        processResult.innerHTML = `
+            <h2>processLabelsForIcons Test</h2>
+            <p><strong>Labels:</strong> ${JSON.stringify(labels)}</p>
+            <p><strong>Resulting textSize:</strong> ${JSON.stringify(testKey.textSize)}</p>
+            <p>Expected: [undefined, 9, undefined, 9] (size 9 for indices with icons)</p>
+        `;
+        resultsDiv.appendChild(processResult);
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Icon Parsing Test Results</h1>
+    <div id="results"></div>
+</body>
+</html>
