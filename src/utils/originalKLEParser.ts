@@ -1,6 +1,6 @@
 import { Key, Keyboard, KLEKeyData, KeyProfile } from '../types';
 import { generateKeyId } from './keyUtils';
-import { processLabelsForIcons, parseIconLegend, hasIcons } from './iconParser';
+import { processLabelsForIcons, hasIcons } from './iconParser';
 
 interface OriginalKLEParseState {
   // Current position - absolute coordinates
@@ -155,7 +155,6 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
   
   // Initialize parse state
   let current = { ...defaultState };
-  const homingNubType = options?.homingNubType || 'scoop';
   
   // Track the Y position for rows
   let currentRowY = 0;
@@ -252,64 +251,44 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         const frontLegends: string[] = [];
         const processedLabels = [...labels];
         
-        // Special handling: if the original string (item) contains both an icon and text
-        // separated by newlines where text appears in position 4+, extract the front legend
-        if (hasIcons(item)) {
-          // Split the original string by \n to get actual positions
-          const originalParts = item.split('\n');
-          if (originalParts.length > 4) {
-            // Check for text in positions 4+ (indices 4, 5, 6)
-            let foundFrontLegend = false;
-            for (let i = 4; i < originalParts.length && i <= 6; i++) {
-              if (originalParts[i] && originalParts[i].trim()) {
-                // This is a front legend
-                if (!frontLegends[0]) {
-                  frontLegends[0] = originalParts[i].trim();
-                } else {
-                  frontLegends[0] += ' ' + originalParts[i].trim();
-                }
-                foundFrontLegend = true;
-                // Clear this part from the original
-                originalParts[i] = '';
-              }
-            }
-            
-            // If we found a front legend, we need to reconstruct the labels
-            // without the front legend text
-            if (foundFrontLegend) {
-              // Reconstruct each label position
-              for (let i = 0; i < processedLabels.length; i++) {
-                if (i < originalParts.length) {
-                  processedLabels[i] = originalParts[i];
-                }
-              }
-            }
-          }
-        }
-        
-        // Also check standard case: if any of the first 4 positions (0-3) have icons
-        let hasIconInTop = false;
-        for (let i = 0; i <= 3 && i < labels.length; i++) {
-          if (labels[i] && hasIcons(labels[i])) {
-            hasIconInTop = true;
-            break;
-          }
-        }
-        
-        // If we have icons in top positions and text in positions 4-6,
-        // that text is a front legend - always put it in the left position
-        if (hasIconInTop) {
-          for (let i = 4; i <= 6 && i < labels.length; i++) {
-            if (labels[i] && labels[i].trim()) {
-              // Always put front legend text in position 0 (left)
-              if (!frontLegends[0]) {
-                frontLegends[0] = labels[i];
+        // Universal front legend detection: if ANY label string has content in positions 4+,
+        // that content is a front legend. This handles icons, decals, and any other case.
+        // Split the original string by \n to get actual positions
+        const originalParts = item.split('\n');
+        if (originalParts.length > 4) {
+          // Check for text in positions 4+ (indices 4, 5, 6)
+          let foundFrontLegend = false;
+          for (let i = 4; i < originalParts.length && i <= 6; i++) {
+            if (originalParts[i] && originalParts[i].trim()) {
+              // This is a front legend
+              const legendText = originalParts[i].trim();
+              
+              // Determine position based on index
+              // Position 4 (index 4) -> left (index 0)
+              // Position 5 (index 5) -> center (index 1)  
+              // Position 6 (index 6) -> right (index 2)
+              const frontLegendIndex = i - 4; // Maps 4->0, 5->1, 6->2
+              
+              if (!frontLegends[frontLegendIndex]) {
+                frontLegends[frontLegendIndex] = legendText;
               } else {
-                // If left is already taken, concatenate
-                frontLegends[0] += ' ' + labels[i];
+                // If position already taken, append
+                frontLegends[frontLegendIndex] += ' ' + legendText;
               }
-              // Clear this position from the main labels
-              processedLabels[i] = '';
+              
+              foundFrontLegend = true;
+              // Clear this part from the original
+              originalParts[i] = '';
+            }
+          }
+          
+          // If we found a front legend, reconstruct the labels without the front legend text
+          if (foundFrontLegend) {
+            // Reconstruct each label position
+            for (let i = 0; i < processedLabels.length; i++) {
+              if (i < originalParts.length) {
+                processedLabels[i] = originalParts[i];
+              }
             }
           }
         }
