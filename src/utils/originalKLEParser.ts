@@ -252,7 +252,42 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         const frontLegends: string[] = [];
         const processedLabels = [...labels];
         
-        // Check if any of the first 4 positions (0-3) have icons
+        // Special handling: if the original string (item) contains both an icon and text
+        // separated by newlines where text appears in position 4+, extract the front legend
+        if (hasIcons(item)) {
+          // Split the original string by \n to get actual positions
+          const originalParts = item.split('\n');
+          if (originalParts.length > 4) {
+            // Check for text in positions 4+ (indices 4, 5, 6)
+            let foundFrontLegend = false;
+            for (let i = 4; i < originalParts.length && i <= 6; i++) {
+              if (originalParts[i] && originalParts[i].trim()) {
+                // This is a front legend
+                if (!frontLegends[0]) {
+                  frontLegends[0] = originalParts[i].trim();
+                } else {
+                  frontLegends[0] += ' ' + originalParts[i].trim();
+                }
+                foundFrontLegend = true;
+                // Clear this part from the original
+                originalParts[i] = '';
+              }
+            }
+            
+            // If we found a front legend, we need to reconstruct the labels
+            // without the front legend text
+            if (foundFrontLegend) {
+              // Reconstruct each label position
+              for (let i = 0; i < processedLabels.length; i++) {
+                if (i < originalParts.length) {
+                  processedLabels[i] = originalParts[i];
+                }
+              }
+            }
+          }
+        }
+        
+        // Also check standard case: if any of the first 4 positions (0-3) have icons
         let hasIconInTop = false;
         for (let i = 0; i <= 3 && i < labels.length; i++) {
           if (labels[i] && hasIcons(labels[i])) {
@@ -276,6 +311,30 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
               // Clear this position from the main labels
               processedLabels[i] = '';
             }
+          }
+        }
+        
+        // Handle homing nubs BEFORE creating the key
+        let isHomingKey = false;
+        if (current.nub) {
+          for (let i = 0; i < processedLabels.length; i++) {
+            const label = processedLabels[i];
+            if (label && label.match(/\b(SCOOP|BAR)\b/i)) {
+              isHomingKey = true;
+              if (label.match(/\bSCOOP\b/i)) {
+                frontLegends[1] = 'Scoop'; // Center position
+              } else if (label.match(/\bBAR\b/i)) {
+                frontLegends[1] = 'Bar'; // Center position
+              }
+              // Clean the label - remove SCOOP/BAR text (case insensitive, word boundary)
+              processedLabels[i] = label.replace(/\b(SCOOP|BAR)\b/gi, '').replace(/\s+/g, ' ').trim();
+              break;
+            }
+          }
+          
+          // If no explicit SCOOP/BAR label, use default
+          if (!isHomingKey && options?.homingNubType !== 'none') {
+            frontLegends[1] = options?.homingNubType === 'scoop' ? 'Scoop' : 'Bar';
           }
         }
         
@@ -314,32 +373,9 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         if (current.decal) key.decal = current.decal;
         if (current.align !== undefined) key.align = current.align;
         
-        // Handle homing nubs
+        // Set nub property if it exists
         if (current.nub) {
           key.nub = current.nub;
-          let hasHomingLabel = false;
-          
-          for (const label of labels) {
-            if (label && (label.includes('SCOOP') || label.includes('BAR'))) {
-              hasHomingLabel = true;
-              if (label.includes('SCOOP')) {
-                key.frontLegends = ['', 'Scoop', ''];
-              } else if (label.includes('BAR')) {
-                key.frontLegends = ['', 'Bar', ''];
-              }
-              // Clean the label
-              const cleanedLabel = label.replace(/\n*(SCOOP|BAR)\s*$/, '').trim();
-              const labelIndex = labels.indexOf(label);
-              if (labelIndex >= 0) {
-                labels[labelIndex] = cleanedLabel;
-              }
-              break;
-            }
-          }
-          
-          if (!hasHomingLabel && homingNubType !== 'none') {
-            key.frontLegends = ['', homingNubType === 'scoop' ? 'Scoop' : 'Bar', ''];
-          }
         }
         
         if (current.default.textColor || current.default.textSize) {
