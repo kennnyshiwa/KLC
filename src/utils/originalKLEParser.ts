@@ -255,25 +255,60 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         // that content is a front legend. This handles icons, decals, and any other case.
         // Split the original string by \n to get actual positions
         const originalParts = item.split('\n');
+        // Keep a copy for checking size indicators
+        const originalPartsCopy = [...originalParts];
+        
         if (originalParts.length > 4) {
-          // Check for text in positions 4+ (indices 4, 5, 6)
           let foundFrontLegend = false;
+          
+          // Standard front legend positions (4, 5, 6)
           for (let i = 4; i < originalParts.length && i <= 6; i++) {
             if (originalParts[i] && originalParts[i].trim()) {
               // This is a front legend
               const legendText = originalParts[i].trim();
               
-              // Determine position based on index
-              // Position 4 (index 4) -> left (index 0)
-              // Position 5 (index 5) -> center (index 1)  
-              // Position 6 (index 6) -> right (index 2)
-              const frontLegendIndex = i - 4; // Maps 4->0, 5->1, 6->2
+              // Special handling for smaller spacebars
+              // If position 4 has a size indicator (like "1.25u") and position 5 has text,
+              // put position 5 text in the right front legend to avoid overlap
+              let frontLegendIndex;
+              
+              if (i === 5 && originalPartsCopy[4] && originalPartsCopy[4].trim().match(/^\d+(\.\d+)?u$/i)) {
+                // This is position 5 with a size indicator in position 4
+                // Put it in the right front legend (index 2) instead of center
+                frontLegendIndex = 2;
+              } else {
+                // Standard mapping
+                frontLegendIndex = i - 4; // Maps 4->0, 5->1, 6->2
+              }
               
               if (!frontLegends[frontLegendIndex]) {
                 frontLegends[frontLegendIndex] = legendText;
               } else {
                 // If position already taken, append
                 frontLegends[frontLegendIndex] += ' ' + legendText;
+              }
+              
+              foundFrontLegend = true;
+              // Clear this part from the original
+              originalParts[i] = '';
+            }
+          }
+          
+          // Extended positions for spacebars (positions 9, 10, 11)
+          // These also map to front legends (left, center, right)
+          for (let i = 9; i < originalParts.length && i <= 11; i++) {
+            if (originalParts[i] && originalParts[i].trim()) {
+              // This is a front legend for spacebars
+              const legendText = originalParts[i].trim();
+              
+              // Position 9 (index 9) -> left (index 0)
+              // Position 10 (index 10) -> center (index 1)  
+              // Position 11 (index 11) -> right (index 2)
+              const frontLegendIndex = i - 9; // Maps 9->0, 10->1, 11->2
+              
+              // Only set if not already set by positions 4-6
+              if (!frontLegends[frontLegendIndex]) {
+                frontLegends[frontLegendIndex] = legendText;
               }
               
               foundFrontLegend = true;
