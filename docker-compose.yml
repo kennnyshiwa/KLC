@@ -51,7 +51,7 @@ services:
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
       - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI}
-      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-kle2}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-kle2}}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       - FRONTEND_URL=${FRONTEND_URL}
     depends_on:
       postgres:

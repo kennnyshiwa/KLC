@@ -11,6 +11,10 @@ done
 
 echo "PostgreSQL is ready!"
 
+# Debug: Print DATABASE_URL (masked)
+echo "DATABASE_URL is set to: ${DATABASE_URL:0:20}...${DATABASE_URL: -10}"
+echo "DATABASE_URL length: ${#DATABASE_URL}"
+
 # Run database migrations
 echo "Running database migrations..."
 npx prisma migrate deploy

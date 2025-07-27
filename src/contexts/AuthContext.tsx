@@ -33,10 +33,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchConfig = async () => {
     try {
+      console.log('Fetching config from:', `${API_URL}/config`);
       const response = await fetch(`${API_URL}/config`);
       if (response.ok) {
         const config = await response.json();
+        console.log('Config received:', config);
         setDiscordClientId(config.discordClientId || '');
+      } else {
+        console.error('Config fetch failed with status:', response.status);
       }
     } catch (error) {
       console.error('Failed to fetch config:', error);
@@ -67,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = () => {
+    console.log('Login called, Discord Client ID:', discordClientId);
     if (!discordClientId) {
       console.error('Discord Client ID not configured');
       return;
@@ -76,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const scope = encodeURIComponent('identify email');
     const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${discordClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
     
+    console.log('Redirecting to Discord OAuth:', discordAuthUrl);
     window.location.href = discordAuthUrl;
   };
 
