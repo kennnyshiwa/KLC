@@ -51,7 +51,7 @@ const MyLayouts: React.FC = () => {
         const data = await response.json();
         console.log('Layouts data:', data);
         setLayouts(data);
-        setError(null); // Clear any previous errors
+        setError('');
       } else {
         const errorText = await response.text();
         console.error('Failed to fetch layouts:', response.status, errorText);
