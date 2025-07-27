@@ -19,16 +19,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Replace with your actual backend URL
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID || '';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [discordClientId, setDiscordClientId] = useState<string>('');
 
-  // Check if user is already logged in
+  // Check if user is already logged in and fetch config
   useEffect(() => {
-    checkAuth();
+    Promise.all([checkAuth(), fetchConfig()]);
   }, []);
+
+  const fetchConfig = async () => {
+    try {
+      const response = await fetch(`${API_URL}/config`);
+      if (response.ok) {
+        const config = await response.json();
+        setDiscordClientId(config.discordClientId || '');
+      }
+    } catch (error) {
+      console.error('Failed to fetch config:', error);
+    }
+  };
 
   const checkAuth = async () => {
     try {
@@ -54,9 +66,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = () => {
+    if (!discordClientId) {
+      console.error('Discord Client ID not configured');
+      return;
+    }
+    
     const redirectUri = encodeURIComponent(window.location.origin + '/auth/callback');
     const scope = encodeURIComponent('identify email');
-    const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+    const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${discordClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
     
     window.location.href = discordAuthUrl;
   };
