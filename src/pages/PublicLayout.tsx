@@ -13,7 +13,8 @@ import Toolbar from '../components/Toolbar';
 import MenuBar from '../components/MenuBar';
 import UserMenu from '../components/UserMenu';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.DEV ? 'http://localhost:3001' : '/api');
 
 const PublicLayout: React.FC = () => {
   const { id } = useParams<{ id: string }>();

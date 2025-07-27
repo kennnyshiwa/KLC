@@ -16,7 +16,8 @@ interface Layout {
   updatedAt: string;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.DEV ? 'http://localhost:3001' : '/api');
 
 const MyLayouts: React.FC = () => {
   const navigate = useNavigate();
