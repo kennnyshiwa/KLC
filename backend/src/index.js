@@ -60,7 +60,7 @@ app.use(session({
 }));
 
 // Config endpoint
-app.get('/config', (req, res) => {
+app.get('/api/config', (req, res) => {
   res.json({
     discordClientId: process.env.DISCORD_CLIENT_ID,
     // Add other public config values here
@@ -68,7 +68,7 @@ app.get('/config', (req, res) => {
 });
 
 // Routes
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/layouts', layoutRoutes);
 
 // Health check
