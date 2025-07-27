@@ -42,6 +42,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     selectedKeys: useKeyboardStore.getState().selectedKeys,
     hoveredKey: useKeyboardStore.getState().hoveredKey,
     editorSettings: useKeyboardStore.getState().editorSettings,
+    isSettingRotationPoint: useKeyboardStore.getState().isSettingRotationPoint,
+    isRotationSectionExpanded: useKeyboardStore.getState().isRotationSectionExpanded,
   });
 
   useImperativeHandle(ref, () => ({
@@ -94,6 +96,31 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       if (isDraggingRef.current && selectedKeys.has(key.id)) {
         renderX += dragOffsetRef.current.x;
         renderY += dragOffsetRef.current.y;
+      }
+      
+      // Apply rotation if needed
+      const hasRotation = key.rotation_angle !== undefined && key.rotation_angle !== 0;
+      if (hasRotation) {
+        ctx.save();
+        
+        // Determine rotation center
+        let rotationCenterX: number;
+        let rotationCenterY: number;
+        
+        if (key.rotation_x !== undefined && key.rotation_y !== undefined) {
+          // Use custom rotation center
+          rotationCenterX = key.rotation_x * unitSize;
+          rotationCenterY = key.rotation_y * unitSize;
+        } else {
+          // Default to key center
+          rotationCenterX = renderX + keyWidth / 2;
+          rotationCenterY = renderY + keyHeight / 2;
+        }
+        
+        // Apply rotation transform
+        ctx.translate(rotationCenterX, rotationCenterY);
+        ctx.rotate(key.rotation_angle! * Math.PI / 180);
+        ctx.translate(-rotationCenterX, -rotationCenterY);
       }
       
       // Store rect for hit testing
@@ -736,6 +763,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           }
         });
       });
+      
+      // Restore canvas state if we applied rotation
+      if (hasRotation) {
+        ctx.restore();
+      }
     });
     
     // Draw selection rectangle
@@ -746,6 +778,63 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       const rect = selectionRectRef.current;
       ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
       ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+    }
+    
+    // Draw rotation points for selected keys (only when rotation section is expanded)
+    if (stateRef.current.selectedKeys.size > 0 && stateRef.current.isRotationSectionExpanded) {
+      ctx.save();
+      stateRef.current.selectedKeys.forEach(keyId => {
+        const key = keyboard.keys.find(k => k.id === keyId);
+        if (key) {
+          let rotX: number, rotY: number;
+          
+          // Determine rotation center position
+          if (key.rotation_x !== undefined && key.rotation_y !== undefined) {
+            // Use existing rotation center
+            rotX = key.rotation_x * unitSize;
+            rotY = key.rotation_y * unitSize;
+          } else {
+            // Default to key center
+            rotX = (key.x + key.width / 2) * unitSize;
+            rotY = (key.y + key.height / 2) * unitSize;
+          }
+          
+          // Apply drag offset if this key is being dragged
+          if (isDraggingRef.current && selectedKeys.has(key.id)) {
+            // For key-center rotation (undefined rotation_x/y), move with the key
+            if (key.rotation_x === undefined || key.rotation_y === undefined) {
+              rotX += dragOffsetRef.current.x;
+              rotY += dragOffsetRef.current.y;
+            }
+            // For custom rotation points, don't move them during drag
+          }
+          
+          // Draw crosshair at rotation point
+          ctx.strokeStyle = '#e74c3c';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(rotX - 10, rotY);
+          ctx.lineTo(rotX + 10, rotY);
+          ctx.moveTo(rotX, rotY - 10);
+          ctx.lineTo(rotX, rotY + 10);
+          ctx.stroke();
+          
+          // Draw circle at rotation point
+          ctx.beginPath();
+          ctx.arc(rotX, rotY, 5, 0, Math.PI * 2);
+          ctx.fillStyle = '#e74c3c';
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      });
+      ctx.restore();
+    }
+    
+    // Update cursor if in rotation point setting mode
+    if (stateRef.current.isSettingRotationPoint) {
+      canvas.style.cursor = 'crosshair';
     }
   };
 
@@ -784,6 +873,36 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    
+    const store = useKeyboardStore.getState();
+    
+    // Handle rotation point setting mode
+    if (store.isSettingRotationPoint) {
+      const selectedKeys = Array.from(store.selectedKeys);
+      if (selectedKeys.length > 0) {
+        // Convert canvas coordinates to keyboard units
+        const unitSize = store.editorSettings.unitSize;
+        const rotationX = x / unitSize;
+        const rotationY = y / unitSize;
+        
+        // Update all selected keys with the new rotation point
+        const updates = selectedKeys.map(keyId => ({
+          id: keyId,
+          changes: {
+            rotation_x: rotationX,
+            rotation_y: rotationY
+          }
+        }));
+        
+        store.updateKeys(updates);
+        store.saveToHistory();
+        store.setIsSettingRotationPoint(false);
+        
+        // Update canvas cursor
+        canvas.style.cursor = 'default';
+      }
+      return;
+    }
     
     const keyRect = getKeyAtPosition(x, y);
     
@@ -869,6 +988,17 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     }
   };
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    // Cancel rotation point setting mode with Escape
+    if (e.key === 'Escape' && stateRef.current.isSettingRotationPoint) {
+      useKeyboardStore.getState().setIsSettingRotationPoint(false);
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'default';
+      }
+      requestRender();
+    }
+  };
+
   const handleMouseUp = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -885,12 +1015,17 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           const key = stateRef.current.keyboard.keys.find(k => k.id === id);
           if (!key) return null;
           
+          const changes: Partial<Key> = {
+            x: key.x + deltaX,
+            y: key.y + deltaY
+          };
+          
+          // Don't update rotation centers - let them remain undefined for key-center
+          // or keep their custom values for custom rotation
+          
           return {
             id: id,
-            changes: {
-              x: key.x + deltaX,
-              y: key.y + deltaY
-            }
+            changes
           };
         }).filter(Boolean) as Array<{ id: string; changes: Partial<Key> }>;
         
@@ -944,6 +1079,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
     canvas.addEventListener('mouseleave', handleMouseUp);
+    document.addEventListener('keydown', handleKeyDown);
     
     // Initial render
     render();
@@ -960,6 +1096,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
       canvas.removeEventListener('mouseleave', handleMouseUp);
+      document.removeEventListener('keydown', handleKeyDown);
       
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -975,6 +1112,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         selectedKeys: state.selectedKeys,
         hoveredKey: state.hoveredKey,
         editorSettings: state.editorSettings,
+        isSettingRotationPoint: state.isSettingRotationPoint,
+        isRotationSectionExpanded: state.isRotationSectionExpanded,
       };
       requestRender();
     });

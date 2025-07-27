@@ -13,6 +13,8 @@ interface KeyboardState {
   hasUnsavedChanges: boolean;
   lastSavedKeyboard: Keyboard | null;
   currentLayoutId: string | null;
+  isSettingRotationPoint: boolean;
+  isRotationSectionExpanded: boolean;
   
   // Actions
   setKeyboard: (keyboard: Keyboard) => void;
@@ -44,6 +46,10 @@ interface KeyboardState {
   
   // Drag state
   setIsDragging: (isDragging: boolean) => void;
+  
+  // Rotation point setting
+  setIsSettingRotationPoint: (isSettingRotationPoint: boolean) => void;
+  setIsRotationSectionExpanded: (isRotationSectionExpanded: boolean) => void;
   
   // Unsaved changes
   markAsSaved: () => void;
@@ -77,6 +83,8 @@ export const useKeyboardStore = create<KeyboardState>()(
       hasUnsavedChanges: false,
       lastSavedKeyboard: null,
       currentLayoutId: null,
+      isSettingRotationPoint: false,
+      isRotationSectionExpanded: true,
 
       setKeyboard: (keyboard) => {
         set({
@@ -246,6 +254,14 @@ export const useKeyboardStore = create<KeyboardState>()(
 
       setIsDragging: (isDragging) => {
         set({ isDragging });
+      },
+      
+      setIsSettingRotationPoint: (isSettingRotationPoint) => {
+        set({ isSettingRotationPoint });
+      },
+      
+      setIsRotationSectionExpanded: (isRotationSectionExpanded) => {
+        set({ isRotationSectionExpanded });
       },
 
       markAsSaved: () => {

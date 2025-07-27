@@ -13,7 +13,7 @@ const hasDualLegendAlignment = (key: Key): boolean => {
   // Check if the key has horizontal centering enabled and a dual legend in position 0
   return key.align !== undefined && 
          (key.align & 0x01) !== 0 && 
-         key.labels[0] && 
+         !!key.labels[0] && 
          key.labels[0].includes('\n');
 };
 
@@ -33,6 +33,7 @@ const PropertiesPanel: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState({
     keyboard: true,
     position: true,
+    rotation: true,
     size: true,
     legends: true,
     appearance: true,
@@ -40,6 +41,9 @@ const PropertiesPanel: React.FC = () => {
   });
   const [showCharPicker, setShowCharPicker] = useState(false);
   const [charPickerTarget, setCharPickerTarget] = useState<number | null>(null);
+  const setIsSettingRotationPoint = useKeyboardStore((state) => state.setIsSettingRotationPoint);
+  const isRotationSectionExpanded = useKeyboardStore((state) => state.isRotationSectionExpanded);
+  const setIsRotationSectionExpanded = useKeyboardStore((state) => state.setIsRotationSectionExpanded);
 
   const selectedKeysList = Array.from(selectedKeys)
     .map(id => keyboard.keys.find(k => k.id === id))
@@ -113,6 +117,90 @@ const PropertiesPanel: React.FC = () => {
     });
     updateKeys(updates);
     saveToHistory();
+  };
+
+  const getRotationMode = () => {
+    if (!firstKey) return 'key-center';
+    
+    // If rotation center is not set, it's key-center mode
+    if (firstKey.rotation_x === undefined || firstKey.rotation_y === undefined) {
+      return 'key-center';
+    }
+    
+    // Check if it's at group center
+    if (selectedKeysList.length > 1) {
+      const bounds = getSelectionBounds(selectedKeysList);
+      const groupCenterX = bounds.x + bounds.width / 2;
+      const groupCenterY = bounds.y + bounds.height / 2;
+      
+      if (Math.abs(firstKey.rotation_x - groupCenterX) < 0.01 && 
+          Math.abs(firstKey.rotation_y - groupCenterY) < 0.01) {
+        return 'group-center';
+      }
+    }
+    
+    // Otherwise it's custom
+    return 'custom';
+  };
+
+  const getSelectionBounds = (keys: Key[]) => {
+    if (keys.length === 0) return { x: 0, y: 0, width: 0, height: 0 };
+    
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+    
+    keys.forEach(key => {
+      minX = Math.min(minX, key.x);
+      minY = Math.min(minY, key.y);
+      maxX = Math.max(maxX, key.x + key.width);
+      maxY = Math.max(maxY, key.y + key.height);
+    });
+    
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY
+    };
+  };
+
+  const handleRotationModeChange = (mode: string) => {
+    let updates: { id: string; changes: Partial<Key> }[] = [];
+    
+    if (mode === 'key-center') {
+      // Clear rotation center to use key center by default
+      updates = selectedKeysList.map(key => ({
+        id: key.id,
+        changes: {
+          rotation_x: undefined,
+          rotation_y: undefined
+        }
+      }));
+    } else if (mode === 'group-center') {
+      // Set rotation center to group center
+      const bounds = getSelectionBounds(selectedKeysList);
+      const centerX = bounds.x + bounds.width / 2;
+      const centerY = bounds.y + bounds.height / 2;
+      
+      updates = selectedKeysList.map(key => ({
+        id: key.id,
+        changes: {
+          rotation_x: centerX,
+          rotation_y: centerY
+        }
+      }));
+    }
+    // For 'custom', don't change the values
+    
+    if (updates.length > 0) {
+      updateKeys(updates);
+      saveToHistory();
+    }
+  };
+
+  const handleSetRotationPoint = () => {
+    // This triggers a visual mode where user can click to set rotation point
+    setIsSettingRotationPoint(true);
   };
 
   return (
@@ -197,38 +285,97 @@ const PropertiesPanel: React.FC = () => {
                     />
                   </div>
                 </div>
-                {firstKey.rotation_angle && (
-                  <>
-                    <div className="property-row">
-                      <label>Rotation</label>
+                {/* Rotation properties moved to dedicated section */}
+              </div>
+            )}
+          </div>
+
+          {/* Rotation Properties */}
+          <div className="property-section">
+            <div className="section-header" onClick={() => setIsRotationSectionExpanded(!isRotationSectionExpanded)}>
+              {isRotationSectionExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              <span>Rotation</span>
+            </div>
+            {isRotationSectionExpanded && firstKey && (
+              <div className="section-content">
+                <div className="property-row">
+                  <label>Angle (degrees)</label>
+                  <input
+                    type="number"
+                    value={firstKey.rotation_angle || 0}
+                    onChange={(e) => handleKeyUpdate('rotation_angle', parseFloat(e.target.value))}
+                    step="15"
+                    min="-180"
+                    max="180"
+                  />
+                </div>
+                
+                <div className="property-row">
+                  <label>Rotation Center</label>
+                  <select
+                    value={getRotationMode()}
+                    onChange={(e) => handleRotationModeChange(e.target.value)}
+                  >
+                    <option value="key-center">Key Center</option>
+                    {selectedKeysList.length > 1 && (
+                      <option value="group-center">Selection Center</option>
+                    )}
+                    <option value="custom">Custom Point</option>
+                  </select>
+                </div>
+                
+                {getRotationMode() === 'custom' && (
+                  <div className="property-row-dual">
+                    <div className="property-field">
+                      <label>Center X</label>
                       <input
                         type="number"
-                        value={firstKey.rotation_angle}
-                        onChange={(e) => handleKeyUpdate('rotation_angle', parseFloat(e.target.value))}
-                        step="1"
+                        value={firstKey.rotation_x || firstKey.x + firstKey.width / 2}
+                        onChange={(e) => handleKeyUpdate('rotation_x', parseFloat(e.target.value))}
+                        step="0.25"
                       />
                     </div>
-                    <div className="property-row-dual">
-                      <div className="property-field">
-                        <label>Rot X</label>
-                        <input
-                          type="number"
-                          value={firstKey.rotation_x || 0}
-                          onChange={(e) => handleKeyUpdate('rotation_x', parseFloat(e.target.value))}
-                          step="0.25"
-                        />
-                      </div>
-                      <div className="property-field">
-                        <label>Rot Y</label>
-                        <input
-                          type="number"
-                          value={firstKey.rotation_y || 0}
-                          onChange={(e) => handleKeyUpdate('rotation_y', parseFloat(e.target.value))}
-                          step="0.25"
-                        />
-                      </div>
+                    <div className="property-field">
+                      <label>Center Y</label>
+                      <input
+                        type="number"
+                        value={firstKey.rotation_y || firstKey.y + firstKey.height / 2}
+                        onChange={(e) => handleKeyUpdate('rotation_y', parseFloat(e.target.value))}
+                        step="0.25"
+                      />
                     </div>
-                  </>
+                  </div>
+                )}
+                
+                <div className="property-row">
+                  <button 
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => handleSetRotationPoint()}
+                  >
+                    Set Rotation Point Visually
+                  </button>
+                </div>
+                
+                {firstKey.rotation_angle !== undefined && firstKey.rotation_angle !== 0 && (
+                  <div className="property-row">
+                    <button 
+                      className="btn btn-sm btn-danger"
+                      onClick={() => {
+                        const updates = selectedKeysList.map(key => ({
+                          id: key.id,
+                          changes: { 
+                            rotation_angle: undefined,
+                            rotation_x: undefined,
+                            rotation_y: undefined
+                          }
+                        }));
+                        updateKeys(updates);
+                        saveToHistory();
+                      }}
+                    >
+                      Clear Rotation
+                    </button>
+                  </div>
                 )}
               </div>
             )}
