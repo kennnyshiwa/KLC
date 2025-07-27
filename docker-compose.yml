@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kle2-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-kle2}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-kle2}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - kle2-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kle2}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    image: ghcr.io/kennnyshiwa/kle2.0/frontend:latest
+    container_name: kle2-frontend
+    ports:
+      - "${PORT:-80}:80"
+    restart: always
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - kle2-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  backend:
+    image: ghcr.io/kennnyshiwa/kle2.0/backend:latest
+    container_name: kle2-backend
+    expose:
+      - "3001"
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - SESSION_SECRET=${SESSION_SECRET}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+      - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-kle2}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-kle2}}
+      - FRONTEND_URL=${FRONTEND_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kle2-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  kle2-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
