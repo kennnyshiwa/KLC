@@ -41,9 +41,9 @@ function App() {
       // Only load default layout if this is truly the first load (no persisted state)
       const state = useKeyboardStore.getState();
       if (keyboard.keys.length === 0 && !state.lastSavedKeyboard) {
-        // Use the Default 60% preset
-        const preset = parseKLE(presetLayouts['Default 60%']);
-        preset.meta.name = 'Default 60%';
+        // Use the Minivan Layout as the default
+        const preset = parseKLE(presetLayouts['Minivan']);
+        preset.meta.name = 'Minivan';
         setKeyboard(preset);
       }
     });
