@@ -54,14 +54,15 @@ const sessionConfig = {
   }),
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true, // Changed to true to ensure cookie is set
   name: 'kle.sid', // Custom session cookie name
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Temporarily disabled to test - nginx handles HTTPS
     httpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     sameSite: 'lax', // Changed from 'strict' to allow cookies after OAuth redirect
-    path: '/'
+    path: '/',
+    domain: undefined // Explicitly set to undefined
   }
 };
 
