@@ -221,10 +221,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         if (hasSecondaryRect) {
           // Draw complex shape (like ISO Enter or Big Ass Enter)
+          // Calculate secondary rectangle offsets
           const x2 = (key.x2 || 0) * unitSize;
           const y2 = (key.y2 || 0) * unitSize;
-          const width2 = (key.width2 || key.width) * unitSize;
-          const height2 = (key.height2 || key.height) * unitSize;
+          const width2 = (key.width2 || key.width) * unitSize - keyInset * 2;
+          const height2 = (key.height2 || key.height) * unitSize - keyInset * 2;
           
           // For Big Ass Enter and ISO Enter, we need to draw it as one unified shape
           // Draw the unified bottom layer first
@@ -571,10 +572,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         if (hasSecondaryRect && key.x2 !== undefined && key.x2 < 0 && key.width2 && key.width2 > key.width) {
           // This is likely a "little ass enter" - use the secondary (horizontal) rectangle for labels
+          // Calculate secondary rectangle offsets
           const x2 = (key.x2 || 0) * unitSize;
           const y2 = (key.y2 || 0) * unitSize;
-          const width2 = (key.width2 || key.width) * unitSize;
-          const height2 = (key.height2 || key.height) * unitSize;
+          const width2 = (key.width2 || key.width) * unitSize - keyInset * 2;
+          const height2 = (key.height2 || key.height) * unitSize - keyInset * 2;
           
           effectiveRenderX = renderX + x2;
           effectiveRenderY = renderY + y2;
