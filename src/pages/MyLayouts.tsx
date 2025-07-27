@@ -22,6 +22,7 @@ const MyLayouts: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const setKeyboard = useKeyboardStore((state) => state.setKeyboard);
+  const setCurrentLayoutId = useKeyboardStore((state) => state.setCurrentLayoutId);
   const [layouts, setLayouts] = useState<Layout[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,8 +58,12 @@ const MyLayouts: React.FC = () => {
   };
 
   const handleLoadLayout = (layout: Layout) => {
+    console.log('MyLayouts: Loading layout with ID:', layout.id);
     // Load the layout into the editor
     setKeyboard(layout.data);
+    // Set the current layout ID so saves update this layout
+    setCurrentLayoutId(layout.id);
+    console.log('MyLayouts: Set currentLayoutId to:', layout.id);
     // Navigate back to the editor
     navigate('/');
   };

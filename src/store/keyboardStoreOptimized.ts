@@ -12,6 +12,7 @@ interface KeyboardState {
   isDragging: boolean;
   hasUnsavedChanges: boolean;
   lastSavedKeyboard: Keyboard | null;
+  currentLayoutId: string | null;
   
   // Actions
   setKeyboard: (keyboard: Keyboard) => void;
@@ -47,6 +48,9 @@ interface KeyboardState {
   // Unsaved changes
   markAsSaved: () => void;
   checkUnsavedChanges: () => boolean;
+  
+  // Current layout tracking
+  setCurrentLayoutId: (id: string | null) => void;
 }
 
 export const useKeyboardStore = create<KeyboardState>()(
@@ -72,6 +76,7 @@ export const useKeyboardStore = create<KeyboardState>()(
       isDragging: false,
       hasUnsavedChanges: false,
       lastSavedKeyboard: null,
+      currentLayoutId: null,
 
       setKeyboard: (keyboard) => {
         set({
@@ -81,6 +86,7 @@ export const useKeyboardStore = create<KeyboardState>()(
           selectedKeys: new Set(),
           history: [keyboard],
           historyIndex: 0,
+          currentLayoutId: null, // Clear the current layout ID when loading a new keyboard
         });
       },
 
@@ -253,6 +259,10 @@ export const useKeyboardStore = create<KeyboardState>()(
       checkUnsavedChanges: () => {
         return get().hasUnsavedChanges;
       },
+
+      setCurrentLayoutId: (id) => {
+        set({ currentLayoutId: id });
+      },
     })),
     {
       name: 'kle2-storage',
@@ -261,6 +271,7 @@ export const useKeyboardStore = create<KeyboardState>()(
         editorSettings: state.editorSettings,
         lastSavedKeyboard: state.lastSavedKeyboard,
         hasUnsavedChanges: state.hasUnsavedChanges,
+        currentLayoutId: state.currentLayoutId,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

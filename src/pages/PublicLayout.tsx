@@ -20,6 +20,7 @@ const PublicLayout: React.FC = () => {
   const { user } = useAuth();
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const setKeyboard = useKeyboardStore((state) => state.setKeyboard);
+  const setCurrentLayoutId = useKeyboardStore((state) => state.setCurrentLayoutId);
   const canvasRef = useRef<KeyboardCanvasRef>(null);
   
   const [loading, setLoading] = useState(true);
@@ -76,6 +77,14 @@ const PublicLayout: React.FC = () => {
         };
         
         setKeyboard(keyboardData);
+        
+        // If the user owns this layout, set it as the current layout for saving
+        if (user && data.owner && user.id === data.owner.id) {
+          setCurrentLayoutId(id || null);
+        } else {
+          // Not the owner, clear any current layout ID
+          setCurrentLayoutId(null);
+        }
       } else {
         setError('Layout not found or not public');
       }

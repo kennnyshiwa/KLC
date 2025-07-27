@@ -99,9 +99,12 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
         const savedLayout = await response.json();
         
         // Update the keyboard name in the store and mark as saved
-        const { updateMetadata, markAsSaved } = useKeyboardStore.getState();
+        const { updateMetadata, markAsSaved, setCurrentLayoutId } = useKeyboardStore.getState();
         updateMetadata({ name: name.trim(), notes: description.trim() });
         markAsSaved();
+        
+        // Set the current layout ID so future saves update this layout
+        setCurrentLayoutId(savedLayout.id || layoutId || null);
         
         if (isPublic && savedLayout.id) {
           setSavedLayoutId(savedLayout.id);

@@ -8,6 +8,7 @@ import RawDataModal from './RawDataModal';
 import SaveLayoutModal from './SaveLayoutModal';
 import { exportToKLE2String, importFromKLE2String } from '../utils/kle2Serializer';
 import { importOriginalKLEFile } from '../utils/originalKLEParser';
+import { exportToKLEString } from '../utils/kleExporter';
 import { initializeFonts } from '../utils/fontManager';
 import { saveAs } from 'file-saver';
 
@@ -23,6 +24,8 @@ const MenuBar: React.FC = () => {
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
   const undo = useKeyboardStore((state) => state.undo);
   const redo = useKeyboardStore((state) => state.redo);
+  const currentLayoutId = useKeyboardStore((state) => state.currentLayoutId);
+  const setCurrentLayoutId = useKeyboardStore((state) => state.setCurrentLayoutId);
   const selectAll = useKeyboardStore((state) => state.selectAll);
   
   const { user } = useAuth();
@@ -43,6 +46,7 @@ const MenuBar: React.FC = () => {
     const preset = parseKLE(presetLayouts[presetName as keyof typeof presetLayouts]);
     preset.meta.name = presetName;
     setKeyboard(preset);
+    setCurrentLayoutId(null); // Clear current layout ID when loading preset
     clearSelection();
     saveToHistory();
     setActiveMenu(null);
@@ -61,6 +65,39 @@ const MenuBar: React.FC = () => {
     }
   };
 
+  const handleExportOriginalKLE = () => {
+    try {
+      const jsonString = exportToKLEString(keyboard);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const filename = `${keyboard.meta.name || 'keyboard'}.json`;
+      saveAs(blob, filename);
+      setActiveMenu(null);
+    } catch (error) {
+      console.error('Error exporting to original KLE:', error);
+      alert('Error exporting keyboard: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  const handleNew = () => {
+    if (useKeyboardStore.getState().checkUnsavedChanges()) {
+      if (!window.confirm('You have unsaved changes. Are you sure you want to create a new layout?')) {
+        return;
+      }
+    }
+    
+    // Create a new empty keyboard
+    const newKeyboard = {
+      meta: {
+        name: 'Untitled Layout'
+      },
+      keys: []
+    };
+    
+    setKeyboard(newKeyboard);
+    setCurrentLayoutId(null); // Clear the current layout ID
+    setActiveMenu(null);
+  };
+
   const handleImportJSON = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -75,6 +112,7 @@ const MenuBar: React.FC = () => {
         const imported = importFromKLE2String(text);
         
         setKeyboard(imported);
+        setCurrentLayoutId(null); // Clear current layout ID on import
         clearSelection();
         saveToHistory();
         setActiveMenu(null);
@@ -115,6 +153,7 @@ const MenuBar: React.FC = () => {
         }
         
         setKeyboard(imported);
+        setCurrentLayoutId(null); // Clear current layout ID on import
         clearSelection();
         saveToHistory();
         markAsSaved();
@@ -186,7 +225,7 @@ const MenuBar: React.FC = () => {
         <ChevronDown size={14} />
         {activeMenu === 'file' && (
           <div className="menu-dropdown">
-            <button className="menu-dropdown-item" onClick={() => {/* TODO: New */}}>
+            <button className="menu-dropdown-item" onClick={() => { handleNew(); }}>
               New
             </button>
             {user && (
@@ -199,13 +238,17 @@ const MenuBar: React.FC = () => {
             )}
             <div className="menu-dropdown-separator" />
             <button className="menu-dropdown-item" onClick={() => { handleImportOriginalKLE(); }}>
-              Import from KLE...
+              Import from KLE
             </button>
+            <button className="menu-dropdown-item" onClick={() => { handleExportOriginalKLE(); }}>
+              Export to KLE
+            </button>
+            <div className="menu-divider" />
             <button className="menu-dropdown-item" onClick={() => { handleImportJSON(); }}>
-              Import KLE2...
+              Import KLE2
             </button>
             <button className="menu-dropdown-item" onClick={() => { handleExportJSON(); }}>
-              Export KLE2...
+              Export KLE2
             </button>
           </div>
         )}
@@ -279,6 +322,10 @@ const MenuBar: React.FC = () => {
       {showSaveModal && (
         <SaveLayoutModal 
           onClose={() => setShowSaveModal(false)}
+          layoutId={(() => {
+            console.log('MenuBar: Passing currentLayoutId to SaveLayoutModal:', currentLayoutId);
+            return currentLayoutId || undefined;
+          })()}
         />
       )}
     </>
