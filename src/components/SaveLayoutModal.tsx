@@ -31,7 +31,7 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
 
   const fetchLayout = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/layouts/${layoutId}`, {
+      const response = await fetch(`${API_URL}/layouts/${layoutId}`, {
         credentials: 'include'
       });
       
@@ -81,8 +81,8 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
       };
 
       const url = layoutId 
-        ? `${API_URL}/api/layouts/${layoutId}`
-        : `${API_URL}/api/layouts`;
+        ? `${API_URL}/layouts/${layoutId}`
+        : `${API_URL}/layouts`;
       
       const method = layoutId ? 'PUT' : 'POST';
 

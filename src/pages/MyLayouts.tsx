@@ -40,14 +40,21 @@ const MyLayouts: React.FC = () => {
 
   const fetchLayouts = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/layouts`, {
+      console.log('Fetching layouts from:', `${API_URL}/layouts`);
+      const response = await fetch(`${API_URL}/layouts`, {
         credentials: 'include'
       });
       
+      console.log('Layouts response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Layouts data:', data);
         setLayouts(data);
+        setError(null); // Clear any previous errors
       } else {
+        const errorText = await response.text();
+        console.error('Failed to fetch layouts:', response.status, errorText);
         setError('Failed to fetch layouts');
       }
     } catch (error) {
@@ -76,7 +83,7 @@ const MyLayouts: React.FC = () => {
 
     setDeletingId(id);
     try {
-      const response = await fetch(`${API_URL}/api/layouts/${id}`, {
+      const response = await fetch(`${API_URL}/layouts/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
