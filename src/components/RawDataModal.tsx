@@ -17,7 +17,7 @@ const RawDataModal: React.FC<RawDataModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [homingNubType, setHomingNubType] = useState<'scoop' | 'bar' | 'none'>('scoop');
-  const [importedMetadata, setImportedMetadata] = useState<any>(null);
+  const [, setImportedMetadata] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen) {

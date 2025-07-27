@@ -87,12 +87,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
                   <div
                     key={name}
                     className="swatch-color"
-                    onClick={() => onChange(color)}
+                    onClick={() => onChange(color as string)}
                     title={`${name}: ${color}`}
                   >
                     <div 
                       className="swatch-color-box"
-                      style={{ backgroundColor: color }}
+                      style={{ backgroundColor: color as string }}
                     />
                     <span className="swatch-color-name">{name}</span>
                   </div>

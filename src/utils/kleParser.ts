@@ -466,7 +466,7 @@ export function serializeToKLEString(keyboard: Keyboard): string {
   const jsonString = JSON.stringify(kleData, null, 2);
   
   // Only remove quotes from property names, not from string values
-  return jsonString.replace(/"([^"]+)":\s*/g, (match, propName) => {
+  return jsonString.replace(/"([^"]+)":\s*/g, (_, propName) => {
     return `${propName}: `;
   });
 }

@@ -1,6 +1,6 @@
 import { Key, Keyboard, KLEKeyData, KeyProfile } from '../types';
 import { generateKeyId } from './keyUtils';
-import { processLabelsForIcons, hasIcons } from './iconParser';
+import { processLabelsForIcons } from './iconParser';
 
 interface OriginalKLEParseState {
   // Current position - absolute coordinates

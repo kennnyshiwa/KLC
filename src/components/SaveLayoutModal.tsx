@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader, Copy, ExternalLink } from 'lucide-react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
-import { useAuth } from '../contexts/AuthContext';
 
 interface SaveLayoutModalProps {
   onClose: () => void;
