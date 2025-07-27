@@ -45,7 +45,8 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use(session({
+// Session configuration
+const sessionConfig = {
   store: new pgSession({
     pool: pgPool,
     tableName: 'Session',
@@ -54,13 +55,32 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
+  name: 'kle.sid', // Custom session cookie name
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    sameSite: 'lax' // Changed from 'strict' to allow cookies after OAuth redirect
+    sameSite: 'lax', // Changed from 'strict' to allow cookies after OAuth redirect
+    path: '/'
   }
-}));
+};
+
+console.log('Session config:', {
+  ...sessionConfig,
+  secret: '[HIDDEN]',
+  cookie: sessionConfig.cookie
+});
+
+app.use(session(sessionConfig));
+
+// Debug middleware to log headers
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Cookie header:`, req.headers.cookie || 'No cookies');
+  res.on('finish', () => {
+    console.log(`Response ${res.statusCode} - Set-Cookie:`, res.getHeader('set-cookie') || 'No set-cookie');
+  });
+  next();
+});
 
 // Config endpoint
 app.get('/api/config', (req, res) => {
