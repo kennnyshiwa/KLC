@@ -224,7 +224,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           ctx.roundRect(renderX, renderY + topOffset, keyWidth, keyHeight - topOffset, 5);
           ctx.fill();
           ctx.beginPath();
-          ctx.roundRect(renderX + x2, renderY + y2 + topOffset, width2 - keyGap, height2 - keyGap - topOffset, 5);
+          ctx.roundRect(renderX + x2, renderY + y2 + topOffset, width2, height2 - topOffset, 5);
           ctx.fill();
           
           // Draw the unified middle layer
@@ -233,7 +233,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           ctx.roundRect(renderX, renderY, keyWidth, keyHeight - topOffset, 5);
           ctx.fill();
           ctx.beginPath();
-          ctx.roundRect(renderX + x2, renderY + y2, width2 - keyGap, height2 - keyGap - topOffset, 5);
+          ctx.roundRect(renderX + x2, renderY + y2, width2, height2 - topOffset, 5);
           ctx.fill();
           
           
