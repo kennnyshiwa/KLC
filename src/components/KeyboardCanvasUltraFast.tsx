@@ -77,7 +77,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     
     const { editorSettings, keyboard, selectedKeys, hoveredKey } = stateRef.current;
     const unitSize = editorSettings.unitSize;
-    const keyShrink = 1; // Shrink each key by 1 pixel on all sides
+    const keyInset = 1; // 1 pixel inset on all sides = 2 pixel gap between keys
 
 
     // Update key rectangles
@@ -85,11 +85,20 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
 
     // Draw keys
     keyboard.keys.forEach(key => {
-      // Calculate position and size
-      const keyX = key.x * unitSize + keyShrink;
-      const keyY = key.y * unitSize + keyShrink;
-      const keyWidth = key.width * unitSize - (keyShrink * 2);
-      const keyHeight = key.height * unitSize - (keyShrink * 2);
+      // Calculate exact position and size
+      const baseX = key.x * unitSize;
+      const baseY = key.y * unitSize;
+      const baseWidth = key.width * unitSize;
+      const baseHeight = key.height * unitSize;
+      
+      // Round AFTER applying inset to ensure consistent gaps
+      const keyX = Math.round(baseX + keyInset);
+      const keyY = Math.round(baseY + keyInset);
+      // Round the end position, then calculate width from that
+      const keyEndX = Math.round(baseX + baseWidth - keyInset);
+      const keyEndY = Math.round(baseY + baseHeight - keyInset);
+      const keyWidth = keyEndX - keyX;
+      const keyHeight = keyEndY - keyY;
       
       // Apply drag offset to selected keys
       let renderX = keyX;
@@ -214,8 +223,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           // Draw complex shape (like ISO Enter or Big Ass Enter)
           const x2 = (key.x2 || 0) * unitSize;
           const y2 = (key.y2 || 0) * unitSize;
-          const width2 = (key.width2 || key.width) * unitSize - (keyShrink * 2);
-          const height2 = (key.height2 || key.height) * unitSize - (keyShrink * 2);
+          const width2 = (key.width2 || key.width) * unitSize;
+          const height2 = (key.height2 || key.height) * unitSize;
           
           // For Big Ass Enter and ISO Enter, we need to draw it as one unified shape
           // Draw the unified bottom layer first
@@ -564,8 +573,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           // This is likely a "little ass enter" - use the secondary (horizontal) rectangle for labels
           const x2 = (key.x2 || 0) * unitSize;
           const y2 = (key.y2 || 0) * unitSize;
-          const width2 = (key.width2 || key.width) * unitSize - (keyShrink * 2);
-          const height2 = (key.height2 || key.height) * unitSize - (keyShrink * 2);
+          const width2 = (key.width2 || key.width) * unitSize;
+          const height2 = (key.height2 || key.height) * unitSize;
           
           effectiveRenderX = renderX + x2;
           effectiveRenderY = renderY + y2;

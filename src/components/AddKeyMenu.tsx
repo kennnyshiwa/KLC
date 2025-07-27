@@ -76,7 +76,7 @@ const AddKeyMenu: React.FC = () => {
       const rightmostKey = keyboard.keys.reduce((prev, current) => 
         (prev.x + prev.width > current.x + current.width) ? prev : current
       );
-      newX = rightmostKey.x + rightmostKey.width + 0.25;
+      newX = rightmostKey.x + rightmostKey.width;
       newY = rightmostKey.y;
       
       // If it would go off screen, start a new row
