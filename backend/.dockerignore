@@ -44,6 +44,3 @@ Dockerfile
 # Temporary files
 tmp/
 temp/
-
-# Prisma
-prisma/migrations/
