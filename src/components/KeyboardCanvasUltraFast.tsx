@@ -77,7 +77,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     
     const { editorSettings, keyboard, selectedKeys, hoveredKey } = stateRef.current;
     const unitSize = editorSettings.unitSize;
-    const keySpacing = editorSettings.keySpacing;
+    const keyShrink = 1; // Shrink each key by 1 pixel on all sides
 
 
     // Update key rectangles
@@ -85,10 +85,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
 
     // Draw keys
     keyboard.keys.forEach(key => {
-      const keyX = key.x * unitSize;
-      const keyY = key.y * unitSize;
-      const keyWidth = key.width * unitSize - keySpacing;
-      const keyHeight = key.height * unitSize - keySpacing;
+      // Calculate position and size
+      const keyX = key.x * unitSize + keyShrink;
+      const keyY = key.y * unitSize + keyShrink;
+      const keyWidth = key.width * unitSize - (keyShrink * 2);
+      const keyHeight = key.height * unitSize - (keyShrink * 2);
       
       // Apply drag offset to selected keys
       let renderX = keyX;
@@ -213,8 +214,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           // Draw complex shape (like ISO Enter or Big Ass Enter)
           const x2 = (key.x2 || 0) * unitSize;
           const y2 = (key.y2 || 0) * unitSize;
-          const width2 = (key.width2 || key.width) * unitSize - keySpacing;
-          const height2 = (key.height2 || key.height) * unitSize - keySpacing;
+          const width2 = (key.width2 || key.width) * unitSize - (keyShrink * 2);
+          const height2 = (key.height2 || key.height) * unitSize - (keyShrink * 2);
           
           // For Big Ass Enter and ISO Enter, we need to draw it as one unified shape
           // Draw the unified bottom layer first
@@ -223,7 +224,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           ctx.roundRect(renderX, renderY + topOffset, keyWidth, keyHeight - topOffset, 5);
           ctx.fill();
           ctx.beginPath();
-          ctx.roundRect(renderX + x2, renderY + y2 + topOffset, width2, height2 - topOffset, 5);
+          ctx.roundRect(renderX + x2, renderY + y2 + topOffset, width2 - keyGap, height2 - keyGap - topOffset, 5);
           ctx.fill();
           
           // Draw the unified middle layer
@@ -232,7 +233,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           ctx.roundRect(renderX, renderY, keyWidth, keyHeight - topOffset, 5);
           ctx.fill();
           ctx.beginPath();
-          ctx.roundRect(renderX + x2, renderY + y2, width2, height2 - topOffset, 5);
+          ctx.roundRect(renderX + x2, renderY + y2, width2 - keyGap, height2 - keyGap - topOffset, 5);
           ctx.fill();
           
           
@@ -563,8 +564,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           // This is likely a "little ass enter" - use the secondary (horizontal) rectangle for labels
           const x2 = (key.x2 || 0) * unitSize;
           const y2 = (key.y2 || 0) * unitSize;
-          const width2 = (key.width2 || key.width) * unitSize - keySpacing;
-          const height2 = (key.height2 || key.height) * unitSize - keySpacing;
+          const width2 = (key.width2 || key.width) * unitSize - (keyShrink * 2);
+          const height2 = (key.height2 || key.height) * unitSize - (keyShrink * 2);
           
           effectiveRenderX = renderX + x2;
           effectiveRenderY = renderY + y2;

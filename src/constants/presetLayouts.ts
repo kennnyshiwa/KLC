@@ -1,14 +1,14 @@
 export const presetLayouts = {
   'Icon Test': [
-    [{a:7},"<span class='trashcons icon-esc'></span>","F1","F2","F3","F4"],
+    ["<span class='trashcons icon-esc'></span>","F1","F2","F3","F4"],
     [{w:1.5},"<span class='trashcons icon-tab'></span>","Q","W","E","R"],
     [{w:1.75},"<span class='trashcons icon-ctrl'></span>","A","S","D","F"],
     [{w:2.25},"<span class='trashcons icon-shift'></span>","Z","X","C","V"],
     [{w:1.25},"<span class='trashcons icon-ctrl'></span>",{w:1.25},"<span class='trashcons icon-sys'></span>",{w:1.25},"<span class='trashcons icon-alt'></span>",{w:6.25}," ",{w:1.25},"<span class='trashcons icon-alt'></span>",{a:4},"<span class='trashcons icon-left'></span>","<span class='trashcons icon-down'></span>","<span class='trashcons icon-right'></span>"]
   ],
   'ANSI 104': [
-    [{a:7},"Esc",{x:1},"F1","F2","F3","F4",{x:0.5},"F5","F6","F7","F8",{x:0.5},"F9","F10","F11","F12",{x:0.25},"PrtSc","Scroll Lock","Pause\nBreak"],
-    [{y:0.5},"~\n`","!\n1","@\n2","#\n3","$\n4","%\n5","^\n6","&\n7","*\n8","(\n9",")\n0","_\n-","+\n=",{w:2},"Backspace",{x:0.25},"Insert","Home","PgUp",{x:0.25},"Num Lock","/","*","-"],
+    ["Esc",{x:1},"F1","F2","F3","F4",{x:0.5},"F5","F6","F7","F8",{x:0.5},"F9","F10","F11","F12",{x:0.25},"PrtSc","Scroll Lock","Pause\nBreak"],
+    ["~\n`","!\n1","@\n2","#\n3","$\n4","%\n5","^\n6","&\n7","*\n8","(\n9",")\n0","_\n-","+\n=",{w:2},"Backspace",{x:0.25},"Insert","Home","PgUp",{x:0.25},"Num Lock","/","*","-"],
     [{w:1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\n[","}\n]",{w:1.5},"|\n\\",{x:0.25},"Delete","End","PgDn",{x:0.25},"7\nHome","8\n↑","9\nPgUp",{h:2},"+"],
     [{w:1.75},"Caps Lock","A","S","D","F","G","H","J","K","L",":\n;","\"\n'",{w:2.25},"Enter",{x:3.5},"4\n←","5","6\n→"],
     [{w:2.25},"Shift","Z","X","C","V","B","N","M","<\n,",">\n.","?\n/",{w:2.75},"Shift",{x:1.25},"↑",{x:1.25},"1\nEnd","2\n↓","3\nPgDn",{h:2},"Enter"],
@@ -16,8 +16,8 @@ export const presetLayouts = {
   ],
   
   'ISO 105': [
-    [{a:7},"Esc",{x:1},"F1","F2","F3","F4",{x:0.5},"F5","F6","F7","F8",{x:0.5},"F9","F10","F11","F12",{x:0.25},"PrtSc","Scroll Lock","Pause\nBreak"],
-    [{y:0.5},"¬\n`","!\n1","\"\n2","£\n3","$\n4","%\n5","^\n6","&\n7","*\n8","(\n9",")\n0","_\n-","+\n=",{w:2},"Backspace",{x:0.25},"Insert","Home","PgUp",{x:0.25},"Num Lock","/","*","-"],
+    ["Esc",{x:1},"F1","F2","F3","F4",{x:0.5},"F5","F6","F7","F8",{x:0.5},"F9","F10","F11","F12",{x:0.25},"PrtSc","Scroll Lock","Pause\nBreak"],
+    ["¬\n`","!\n1","\"\n2","£\n3","$\n4","%\n5","^\n6","&\n7","*\n8","(\n9",")\n0","_\n-","+\n=",{w:2},"Backspace",{x:0.25},"Insert","Home","PgUp",{x:0.25},"Num Lock","/","*","-"],
     [{w:1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\n[","}\n]",{x:0.25,w:1.25,h:2,w2:1.5,h2:1,x2:-0.25},"Enter",{x:0.25},"Delete","End","PgDn",{x:0.25},"7\nHome","8\n↑","9\nPgUp",{h:2},"+"],
     [{w:1.75},"Caps Lock","A","S","D","F","G","H","J","K","L",":\n;","@\n'","~\n#",{x:4.75},"4\n←","5","6\n→"],
     [{w:1.25},"Shift","|\n\\","Z","X","C","V","B","N","M","<\n,",">\n.","?\n/",{w:2.75},"Shift",{x:1.25},"↑",{x:1.25},"1\nEnd","2\n↓","3\nPgDn",{h:2},"Enter"],
@@ -34,7 +34,7 @@ export const presetLayouts = {
   
   'TKL': [
     [{a:7},"Esc",{x:1},"F1","F2","F3","F4",{x:0.5},"F5","F6","F7","F8",{x:0.5},"F9","F10","F11","F12",{x:0.25},"PrtSc","Scroll Lock","Pause\nBreak"],
-    [{y:0.5},"~\n`","!\n1","@\n2","#\n3","$\n4","%\n5","^\n6","&\n7","*\n8","(\n9",")\n0","_\n-","+\n=",{w:2},"Backspace",{x:0.25},"Insert","Home","PgUp"],
+    ["~\n`","!\n1","@\n2","#\n3","$\n4","%\n5","^\n6","&\n7","*\n8","(\n9",")\n0","_\n-","+\n=",{w:2},"Backspace",{x:0.25},"Insert","Home","PgUp"],
     [{w:1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\n[","}\n]",{w:1.5},"|\n\\",{x:0.25},"Delete","End","PgDn"],
     [{w:1.75},"Caps Lock","A","S","D","F","G","H","J","K","L",":\n;","\"\n'",{w:2.25},"Enter"],
     [{w:2.25},"Shift","Z","X","C","V","B","N","M","<\n,",">\n.","?\n/",{w:2.75},"Shift",{x:1.25},"↑"],
@@ -78,7 +78,7 @@ export const presetLayouts = {
   ],
   
   'Minivan': [
-    ["Esc","Q","W","E","R","T","Y","U","I","O","P",{w:1.75},"Backspace"],
+    [{a:7},"Esc","Q","W","E","R","T","Y","U","I","O","P",{w:1.75},"Backspace"],
     [{w:1.25},"Tab","A","S","D",{n:true},"F","G","H",{n:true},"J","K","L",":",{w:1.5},"Enter"],
     [{w:1.75},"Shift","Z","X","C","V","B","N","M",",",".","?","Shift"],
     [{w:1.25},"Ctrl","Win",{w:1.25},"Alt",{c:"#dede6f",w:2.75}," ",{w:2.25}," ",{w:1.25},"Fn",{c:"#f9f9f9"},"Alt","Win","Ctrl"],
