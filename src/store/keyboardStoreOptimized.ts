@@ -293,6 +293,28 @@ export const useKeyboardStore = create<KeyboardState>()(
         if (state) {
           // Convert arrays back to Sets for selectedKeys
           state.selectedKeys = new Set();
+          
+          // If there were unsaved changes, restore to last saved state
+          if (state.hasUnsavedChanges && state.lastSavedKeyboard) {
+            state.keyboard = state.lastSavedKeyboard;
+            state.hasUnsavedChanges = false;
+            // Clear history as we're resetting to saved state
+            state.history = [];
+            state.historyIndex = -1;
+          } else if (state.hasUnsavedChanges && !state.lastSavedKeyboard) {
+            // If unsaved changes but no saved state, clear the keyboard
+            state.keyboard = {
+              meta: {
+                name: 'Untitled Layout'
+              },
+              keys: []
+            };
+            state.hasUnsavedChanges = false;
+            state.currentLayoutId = null;
+            // Clear history
+            state.history = [];
+            state.historyIndex = -1;
+          }
         }
       },
     }
