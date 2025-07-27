@@ -20,6 +20,9 @@ console.log('Discord Redirect URI:', process.env.DISCORD_REDIRECT_URI || 'NOT SE
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy when running behind nginx
+app.set('trust proxy', 1);
+
 // Initialize Prisma
 export const prisma = new PrismaClient();
 
