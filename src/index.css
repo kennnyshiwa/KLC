@@ -1425,3 +1425,220 @@ body {
   color: #666;
   margin-bottom: 2rem;
 }
+
+/* User Settings Modal */
+.user-settings {
+  width: 90%;
+  max-width: 600px;
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.settings-section h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-info label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.setting-description {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-button:hover {
+  border-color: #3498db;
+}
+
+.toggle-button.active {
+  background: #2c3e50;
+  color: white;
+  border-color: #2c3e50;
+}
+
+.danger-zone h3 {
+  color: #dc3545;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+  border-color: #bd2130;
+}
+
+.delete-confirm {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  color: #721c24;
+  margin-bottom: 1rem;
+}
+
+.alert-danger ul {
+  margin: 0.5rem 0 0.5rem 1.5rem;
+  padding: 0;
+}
+
+.alert-danger p {
+  margin: 0.5rem 0 0 0;
+}
+
+.delete-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Dark Mode Styles */
+.dark-mode {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.dark-mode body {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.dark-mode .app-header {
+  background-color: #0d0d0d;
+  border-bottom: 1px solid #333;
+}
+
+.dark-mode .menu-bar {
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #333;
+}
+
+.dark-mode .toolbar {
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #333;
+}
+
+.dark-mode .properties-panel {
+  background-color: #2a2a2a;
+  border-right: 1px solid #333;
+}
+
+.dark-mode .canvas-container {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .modal-content {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.dark-mode .form-input,
+.dark-mode .form-select,
+.dark-mode .form-textarea {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.dark-mode .btn {
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.dark-mode .btn:hover {
+  background-color: #4a4a4a;
+  border-color: #555;
+}
+
+.dark-mode .btn-primary {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.dark-mode .btn-primary:hover {
+  background-color: #3498db;
+  border-color: #3498db;
+}
+
+.dark-mode .settings-section {
+  border-bottom-color: #444;
+}
+
+.dark-mode .toggle-button {
+  background-color: #3a3a3a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .toggle-button:hover {
+  border-color: #3498db;
+}
+
+.dark-mode .delete-confirm {
+  background-color: #3a3a3a;
+}
+
+.dark-mode .user-dropdown {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+.dark-mode .user-dropdown-item:hover {
+  background-color: #3a3a3a;
+}
+
+.dark-mode .dropdown-separator {
+  background-color: #444;
+}

@@ -60,8 +60,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     
     // Debug: confirm render is running
 
-    // Clear canvas with off-white background
-    ctx.fillStyle = '#fafafa';
+    // Clear canvas with appropriate background for theme
+    const isDarkMode = document.documentElement.classList.contains('dark-mode');
+    ctx.fillStyle = isDarkMode ? '#1a1a1a' : '#fafafa';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     const { editorSettings, keyboard, selectedKeys, hoveredKey } = stateRef.current;
@@ -1050,8 +1051,15 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       }
     }
     
+    // Listen for dark mode toggle
+    const handleDarkModeToggle = () => {
+      requestRender();
+    };
+    
+    window.addEventListener('darkModeToggled', handleDarkModeToggle);
+    
     return () => {
-      // Cleanup if needed
+      window.removeEventListener('darkModeToggled', handleDarkModeToggle);
     };
   }, [keyboard]); // Remove requestRender from deps to avoid issues
 
@@ -1062,7 +1070,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         display: 'block',
         width: '100%',
         height: '100%',
-        backgroundColor: '#fafafa'
+        backgroundColor: 'transparent'
       }}
     />
   );

@@ -34,6 +34,14 @@ function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
+  // Check for dark mode preference on load
+  useEffect(() => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) {
+      document.documentElement.classList.add('dark-mode');
+    }
+  }, []);
+
   // Load fonts and default layout
   useEffect(() => {
     // Load fonts first

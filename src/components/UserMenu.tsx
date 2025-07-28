@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, LogOut, User, ChevronDown } from 'lucide-react';
+import { LogIn, LogOut, User, ChevronDown, Settings } from 'lucide-react';
+import UserSettings from './UserSettings';
 
 const UserMenu: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading, login, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,8 +67,12 @@ const UserMenu: React.FC = () => {
           }}>
             My Layouts
           </button>
-          <button className="user-dropdown-item" onClick={() => {/* TODO: Settings */}}>
-            Settings
+          <button className="user-dropdown-item" onClick={() => {
+            setShowDropdown(false);
+            setShowSettings(true);
+          }}>
+            <Settings size={16} />
+            <span>Settings</span>
           </button>
           <div className="dropdown-separator" />
           <button className="user-dropdown-item logout" onClick={logout}>
@@ -75,6 +81,11 @@ const UserMenu: React.FC = () => {
           </button>
         </div>
       )}
+      
+      <UserSettings 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
     </div>
   );
 };
