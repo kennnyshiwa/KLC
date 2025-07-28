@@ -42,10 +42,10 @@ export const presetLayouts = {
   ],
   
   'Planck': [
-    [{a:7},"Tab","Q","W","E","R","T","Y","U","I","O","P","Back Space"],
+    ["Tab","Q","W","E","R","T","Y","U","I","O","P","Back"],
     ["Esc","A","S","D","F","G","H","J","K","L",";","'"],
     ["Shift","Z","X","C","V","B","N","M",",",".","/","Return"],
-    ["","Ctrl","Alt","Super",{w:2},"&dArr;",{w:2},"&uArr;","&larr;","&darr;","&uarr;","&rarr;"]
+    ["","Ctrl","Alt","Super",{w:2},"",{w:2},"","Super","Alt","Ctrl",""]
   ],
   
   'ErgoDox': [
@@ -78,7 +78,7 @@ export const presetLayouts = {
   ],
   
   'Minivan': [
-    [{a:7},"Esc","Q","W","E","R","T","Y","U","I","O","P",{w:1.75},"Backspace"],
+    ["Esc","Q","W","E","R","T","Y","U","I","O","P",{w:1.75},"Backspace"],
     [{w:1.25},"Tab","A","S","D",{n:true},"F","G","H",{n:true},"J","K","L",":",{w:1.5},"Enter"],
     [{w:1.75},"Shift","Z","X","C","V","B","N","M",",",".","?","Shift"],
     [{w:1.25},"Ctrl","Win",{w:1.25},"Alt",{c:"#dede6f",w:2.75}," ",{w:2.25}," ",{w:1.25},"Fn",{c:"#f9f9f9"},"Alt","Win","Ctrl"],

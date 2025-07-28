@@ -541,28 +541,15 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         const innerWidth = effectiveWidth - edgeHeight * 2;
         const innerHeight = effectiveHeight - edgeHeight * 2 - topOffset;
         
-        // Use fixed pixel offsets for consistent positioning across all key sizes
-        const legendPadding = 8; // Fixed padding from edges
+        // Calculate position based on the position object from getLegendPosition
         let currentX: number;
         let currentY: number;
         
-        // Calculate X position
-        if (finalPosition.align === 'start') {
-          currentX = innerX + legendPadding;
-        } else if (finalPosition.align === 'end') {
-          currentX = innerX + innerWidth - legendPadding;
-        } else { // center
-          currentX = innerX + innerWidth / 2;
-        }
+        // Calculate X position using the relative position from getLegendPosition
+        currentX = innerX + (innerWidth * finalPosition.x);
         
-        // Calculate Y position
-        if (finalPosition.baseline === 'hanging') {
-          currentY = innerY + legendPadding;
-        } else if (finalPosition.baseline === 'alphabetic') {
-          currentY = innerY + innerHeight - legendPadding;
-        } else { // middle
-          currentY = innerY + innerHeight / 2;
-        }
+        // Calculate Y position using the relative position from getLegendPosition
+        currentY = innerY + (innerHeight * finalPosition.y);
         
         // Measure total width if needed for center/right alignment
         if (finalPosition.align !== 'start') {

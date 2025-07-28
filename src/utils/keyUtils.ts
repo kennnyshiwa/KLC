@@ -63,14 +63,14 @@ export function getLegendPosition(index: number): { x: number; y: number; align:
   // 10: top-center  11: bottom-center
   
   const positions = [
-    { x: 0.15, y: 0.2, align: 'start', baseline: 'hanging' },        // 0: top-left
+    { x: 0.08, y: 0.2, align: 'start', baseline: 'hanging' },        // 0: top-left
     { x: 0.15, y: 0.8, align: 'start', baseline: 'alphabetic' },     // 1: bottom-left
     { x: 0.85, y: 0.2, align: 'end', baseline: 'hanging' },          // 2: top-right
     { x: 0.85, y: 0.8, align: 'end', baseline: 'alphabetic' },       // 3: bottom-right
     { x: 0.15, y: 1.05, align: 'start', baseline: 'hanging' },       // 4: front-left
     { x: 0.5, y: 1.05, align: 'center', baseline: 'hanging' },      // 5: front-center
     { x: 0.85, y: 1.05, align: 'end', baseline: 'hanging' },         // 6: front-right
-    { x: 0.15, y: 0.5, align: 'start', baseline: 'middle' },         // 7: center-left (middle-left)
+    { x: 0.10, y: 0.5, align: 'start', baseline: 'middle' },         // 7: center-left (middle-left)
     { x: 0.5, y: 0.5, align: 'center', baseline: 'middle' },        // 8: center (middle-center)
     { x: 0.85, y: 0.5, align: 'end', baseline: 'middle' },           // 9: center-right (middle-right)
     { x: 0.5, y: 0.2, align: 'center', baseline: 'hanging' },       // 10: top-center
