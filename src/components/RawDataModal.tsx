@@ -30,15 +30,12 @@ const RawDataModal: React.FC<RawDataModalProps> = ({ isOpen, onClose }) => {
 
   const handleApply = () => {
     try {
-      console.log('Applying raw data...');
       const parsed = parseKLEString(rawData);
-      console.log('Parsed raw data:', parsed);
       
       const options: ParseKLEOptions = {
         homingNubType: homingNubType
       };
       const newKeyboard = parseKLE(parsed, options);
-      console.log('New keyboard:', newKeyboard);
       
       if (newKeyboard.keys.length === 0) {
         throw new Error('No keys were parsed from the input data');
@@ -52,12 +49,10 @@ const RawDataModal: React.FC<RawDataModalProps> = ({ isOpen, onClose }) => {
       // Show metadata if imported
       if (newKeyboard.meta && Object.keys(newKeyboard.meta).length > 0) {
         setImportedMetadata(newKeyboard.meta);
-        console.log('Imported keyboard metadata:', newKeyboard.meta);
       }
       
       onClose();
     } catch (err) {
-      console.error('Error applying raw data:', err);
       setError(err instanceof Error ? err.message : 'Invalid KLE format');
     }
   };

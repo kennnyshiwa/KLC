@@ -64,7 +64,6 @@ export function parseKLEString(kleString: string): any {
   } catch (e) {
     // If that fails, convert JavaScript object notation to JSON
     try {
-      console.log('Converting KLE string to JSON...');
       
       // Add safety check - only allow object/array literals
       const trimmed = kleString.trim();
@@ -108,7 +107,6 @@ export function parseKLEString(kleString: string): any {
       if (/^[\[\{][\s\S]*[\]\}]$/.test(wrappedString)) {
         // eslint-disable-next-line no-eval
         const result = eval('(' + wrappedString + ')');
-        console.log('Successfully parsed KLE data');
         
         // If we wrapped it, return the inner array
         if (wrappedString !== trimmed && Array.isArray(result) && result.length > 0) {
@@ -120,8 +118,6 @@ export function parseKLEString(kleString: string): any {
         throw new Error('Invalid KLE format: not a valid object/array literal');
       }
     } catch (convertError) {
-      console.error('Failed to parse KLE string:', convertError);
-      console.error('Input string:', kleString.substring(0, 200) + '...');
       throw new Error('Invalid KLE format: ' + (convertError instanceof Error ? convertError.message : 'unknown error'));
     }
   }
@@ -175,7 +171,6 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
     }
   }
 
-  console.log('Parsing KLE data with', keyboardData.length, 'rows');
 
   // Create a fresh state copy for safety - ensure arrays are deep copied
   let current = { 
@@ -375,7 +370,6 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
     }
   }
 
-  console.log('Parsed', keyboard.keys.length, 'keys from KLE data');
   return keyboard;
 }
 

@@ -446,20 +446,6 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Draw labels
       ctx.fillStyle = '#000000';
       
-      // Debug: Check if we're even rendering keys with icons
-      if (key.labels.some(l => l && l.includes('<span'))) {
-        if (!(window as any).iconKeyCount) {
-          (window as any).iconKeyCount = 0;
-        }
-        if ((window as any).iconKeyCount < 3) {
-          (window as any).iconKeyCount++;
-          console.log(`Rendering key ${(window as any).iconKeyCount} with icons:`, {
-            id: key.id,
-            labels: key.labels.filter(l => l && l.includes('<span')),
-            decal: key.decal
-          });
-        }
-      }
       
       key.labels.forEach((label, index) => {
         if (!label) return;
@@ -518,37 +504,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           textColor = key.default.color[0];
         }
         
-        // CRITICAL CHECK: If label contains HTML but parser returns empty, something is wrong
-        if (label.includes('<span') && !(window as any).parserCheckDone) {
-          (window as any).parserCheckDone = true;
-          console.log('=== PARSER CHECK ===');
-          console.log('Label contains HTML:', label);
-          console.log('Label char codes:', Array.from(label).map(c => c.charCodeAt(0)));
-          console.log('About to parse...');
-        }
         
         // Parse the label for icons
         const parsedLabel = parseIconLegend(label);
         
-        // Debug: Log parsing results for labels with HTML
-        if (label.includes('<span')) {
-          if (!(window as any).htmlLabelCount) {
-            (window as any).htmlLabelCount = 0;
-          }
-          if ((window as any).htmlLabelCount < 3) {
-            (window as any).htmlLabelCount++;
-            console.log(`\nDEBUG Label ${(window as any).htmlLabelCount}:`);
-            console.log('  Raw label:', label);
-            console.log('  Parsed parts:', parsedLabel.length);
-            parsedLabel.forEach((part, i) => {
-              console.log(`  Part ${i}:`, {
-                type: part.type,
-                content: part.type === 'icon' ? `unicode: \\u${part.content.charCodeAt(0).toString(16)}` : part.content,
-                className: part.className
-              });
-            });
-          }
-        }
         
         // Calculate starting position based on alignment
         // For complex shaped keys (like little ass enter), only use the primary rectangle
@@ -629,8 +588,6 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         // Draw each part
         if (parsedLabel.length === 0 && label) {
-          // This should never happen - parser should always return something
-          console.error('PARSER RETURNED EMPTY for label:', label);
           // Fallback - draw as plain text
           const keyFont = key.font || '';
           ctx.font = keyFont ? fontManager.getRenderFont(keyFont, fontSize) : `${fontSize}px Arial`;
@@ -650,49 +607,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             ctx.textAlign = 'left';
             ctx.textBaseline = finalPosition.baseline as CanvasTextBaseline;
             
-            // Debug: Log icon render attempts
-            if (!(window as any).iconDebugCount) {
-              (window as any).iconDebugCount = 0;
-            }
-            if ((window as any).iconDebugCount < 5 && part.iconName) {
-              const isLoaded = fontManager.isFontLoaded('trashcons');
-              const currentFont = ctx.font; // Get the current font setting
-              console.log(`Icon render #${(window as any).iconDebugCount++}:`);
-              console.log(`  Label: "${label}"`);
-              console.log(`  Icon: ${part.iconName}`);
-              console.log(`  Font loaded: ${isLoaded}`);
-              console.log(`  Font used: ${currentFont}`);
-              if (part.content && part.content.length > 0) {
-                console.log(`  Unicode: ${part.content.charCodeAt(0).toString(16)}`);
-                console.log(`  Content length: ${part.content.length}`);
-              } else {
-                console.log(`  ERROR: No content for icon!`);
-              }
-              
-              // Save and restore state for font test
-              ctx.save();
-              
-              // Test if font actually renders with different approaches
-              ctx.font = `${fontSize}px trashcons`;
-              const directWidth = ctx.measureText('\ue90e').width;
-              
-              ctx.font = `${fontSize}px monospace`;
-              const monoWidth = ctx.measureText('\ue90e').width;
-              
-              console.log(`  Direct font test - trashcons width: ${directWidth}, mono width: ${monoWidth}`);
-              console.log(`  Font working: ${Math.abs(directWidth - monoWidth) > 0.1}`);
-              
-              ctx.restore();
-              // Re-apply our font (trashcons)
-              ctx.font = `${fontSize}px trashcons`;
-            }
             
             // Render the icon character
             if (part.content && part.content.length > 0) {
               ctx.fillText(part.content, currentX, currentY);
               currentX += ctx.measureText(part.content).width;
-            } else {
-              console.error('Attempted to render icon without content:', part);
             }
           } else {
             // Draw regular text - handle newlines for dual legend keys
@@ -1133,16 +1052,12 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     );
     
     if (hasIcons) {
-      console.log('Layout has icons, checking font status...');
       if (!fontManager.isFontLoaded('trashcons')) {
-        console.log('Font not loaded, waiting...');
         // Add listener for when font loads
         fontManager.onFontLoaded('trashcons', () => {
-          console.log('Trashcons font now available, re-rendering canvas');
           requestRender();
         });
       } else {
-        console.log('Font already loaded, triggering render');
         // Font is already loaded, make sure we render
         requestRender();
       }

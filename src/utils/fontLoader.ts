@@ -15,7 +15,6 @@ export async function loadFonts(): Promise<void> {
 async function loadFontsInternal(): Promise<void> {
   // First check if font is already loaded via CSS @font-face
   if (document.fonts && document.fonts.check('12px trashcons')) {
-    console.log('Trashcons font already loaded via CSS');
     return;
   }
   
@@ -33,9 +32,7 @@ async function loadFontsInternal(): Promise<void> {
     
     // Double-check the font is actually usable
     if (document.fonts.check('12px trashcons')) {
-      console.log('Trashcons font loaded and verified');
     } else {
-      console.warn('Trashcons font added but not yet available');
       // Try to force font loading by creating a test element
       const testEl = document.createElement('span');
       testEl.style.fontFamily = 'trashcons';
@@ -48,7 +45,6 @@ async function loadFontsInternal(): Promise<void> {
       document.body.removeChild(testEl);
     }
   } catch (error) {
-    console.error('Failed to load trashcons font:', error);
     // Try with full URL as fallback
     try {
       const baseUrl = window.location.origin;
@@ -56,9 +52,7 @@ async function loadFontsInternal(): Promise<void> {
       const altLoadedFont = await altFont.load();
       document.fonts.add(altLoadedFont);
       await document.fonts.ready;
-      console.log('Trashcons font loaded from full URL');
     } catch (altError) {
-      console.error('Failed to load trashcons font from full URL:', altError);
     }
   }
 }

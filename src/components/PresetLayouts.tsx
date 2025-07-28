@@ -15,7 +15,6 @@ const PresetLayouts: React.FC = () => {
         keyboard.meta.name = layoutName;
         setKeyboard(keyboard);
       } catch (err) {
-        console.error('Failed to load preset layout:', err);
       }
     }
   };

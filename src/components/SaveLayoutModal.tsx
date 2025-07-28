@@ -43,7 +43,6 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
         setTags(layout.tags);
       }
     } catch (error) {
-      console.error('Error fetching layout:', error);
     }
   };
 
@@ -117,7 +116,6 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
         setError(data.error || 'Failed to save layout');
       }
     } catch (error) {
-      console.error('Error saving layout:', error);
       setError('Failed to save layout. Please try again.');
     } finally {
       setSaving(false);

@@ -60,7 +60,6 @@ const MenuBar: React.FC = () => {
       saveAs(blob, filename);
       setActiveMenu(null);
     } catch (error) {
-      console.error('Error exporting JSON:', error);
       alert('Error exporting keyboard: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
@@ -73,7 +72,6 @@ const MenuBar: React.FC = () => {
       saveAs(blob, filename);
       setActiveMenu(null);
     } catch (error) {
-      console.error('Error exporting to original KLE:', error);
       alert('Error exporting keyboard: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
@@ -117,9 +115,7 @@ const MenuBar: React.FC = () => {
         saveToHistory();
         setActiveMenu(null);
         
-        console.log('Successfully imported keyboard:', imported.meta.name || 'Untitled');
       } catch (error) {
-        console.error('Error importing JSON:', error);
         alert('Error importing file: ' + (error instanceof Error ? error.message : 'Unknown error'));
       }
     };
@@ -142,15 +138,6 @@ const MenuBar: React.FC = () => {
         // Mark as saved since this is a fresh import
         const { markAsSaved } = useKeyboardStore.getState();
         
-        // Debug: Check imported data
-        console.log('Imported keyboard:', imported);
-        const keysWithIcons = imported.keys.filter(k => 
-          k.labels.some(l => l && l.includes('span'))
-        );
-        console.log(`Found ${keysWithIcons.length} keys with potential icons`);
-        if (keysWithIcons.length > 0) {
-          console.log('Sample key with icon:', keysWithIcons[0]);
-        }
         
         setKeyboard(imported);
         setCurrentLayoutId(null); // Clear current layout ID on import
@@ -159,8 +146,6 @@ const MenuBar: React.FC = () => {
         markAsSaved();
         setActiveMenu(null);
         
-        // Force re-render after fonts are ready
-        console.log('=== FORCING FULL RE-RENDER ===');
         
         // Reset debug counters
         (window as any).renderCount = 0;
@@ -183,7 +168,6 @@ const MenuBar: React.FC = () => {
           const iconWidth = testCtx.measureText('\ue90e').width;
           testCtx.font = '20px monospace';
           const monoWidth = testCtx.measureText('\ue90e').width;
-          console.log(`Font test - icon: ${iconWidth}, mono: ${monoWidth}, working: ${Math.abs(iconWidth - monoWidth) > 0.1}`);
         }
         
         // Force a complete re-render by updating a key
@@ -196,19 +180,15 @@ const MenuBar: React.FC = () => {
           );
           
           if (keyWithIcon) {
-            console.log('Force updating key with icon:', keyWithIcon.id);
             // Update the key with its own data to trigger re-render
             store.updateKey(keyWithIcon.id, { 
               labels: [...keyWithIcon.labels] 
             });
           }
           
-          console.log('Forced key update to trigger re-render');
         }, 200);
         
-        console.log('Successfully imported original KLE layout:', imported.meta.name || 'Untitled');
       } catch (error) {
-        console.error('Error importing original KLE:', error);
         alert('Error importing original KLE file: ' + (error instanceof Error ? error.message : 'Unknown error'));
       }
     };
@@ -323,7 +303,6 @@ const MenuBar: React.FC = () => {
         <SaveLayoutModal 
           onClose={() => setShowSaveModal(false)}
           layoutId={(() => {
-            console.log('MenuBar: Passing currentLayoutId to SaveLayoutModal:', currentLayoutId);
             return currentLayoutId || undefined;
           })()}
         />

@@ -94,7 +94,6 @@ class FontManager {
         }
       }
     } catch (error) {
-      console.error(`Failed to load font ${name}:`, error);
       status.error = error as Error;
       status.loading = false;
       

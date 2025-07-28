@@ -444,7 +444,6 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
     }
   }
   
-  console.log(`Parsed ${keyboard.keys.length} keys from original KLE format`);
   return keyboard;
 }
 
