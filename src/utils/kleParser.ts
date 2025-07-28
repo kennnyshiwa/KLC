@@ -177,15 +177,22 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
 
   console.log('Parsing KLE data with', keyboardData.length, 'rows');
 
-  // Create a fresh state copy for safety
-  let current = { ...defaultState };
+  // Create a fresh state copy for safety - ensure arrays are deep copied
+  let current = { 
+    ...defaultState,
+    textColor: [...defaultState.textColor],
+    textSize: [...defaultState.textSize],
+    default: { ...defaultState.default }
+  };
   let cluster = { x: 0, y: 0 };
   let rowY = 0;
+  
   
   // Default to 'scoop' if not specified
   const homingNubType = options?.homingNubType || 'scoop';
 
-  for (const row of keyboardData) {
+  for (let rowIndex = 0; rowIndex < keyboardData.length; rowIndex++) {
+    const row = keyboardData[rowIndex];
     if (Array.isArray(row)) {
       // Track if this row has explicit y positioning
       let rowHasExplicitY = false;
@@ -199,6 +206,7 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
         if (typeof item === 'object') {
           // Process key properties
           const props = item as KLEKeyData;
+          
           
           if (props.x !== undefined) current.x += props.x;
           if (props.y !== undefined) {
@@ -253,6 +261,7 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
           // Create key with current state
           const labels = item.split('\\n');
           
+          
           const key: Key = {
             id: generateKeyId(),
             x: current.x,
@@ -266,6 +275,7 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
           
           // Auto-size icon legends before adding optional properties
           processLabelsForIcons(labels, current);
+          
 
           // Add optional properties
           if (current.x2) key.x2 = current.x2;

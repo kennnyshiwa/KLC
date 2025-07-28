@@ -56,7 +56,7 @@ const PublicLayout: React.FC = () => {
 
   const fetchPublicLayout = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/layouts/public/${id}`);
+      const response = await fetch(`${API_URL}/layouts/public/${id}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -90,7 +90,6 @@ const PublicLayout: React.FC = () => {
         setError('Layout not found or not public');
       }
     } catch (error) {
-      console.error('Error fetching layout:', error);
       setError('Failed to load layout');
     } finally {
       setLoading(false);

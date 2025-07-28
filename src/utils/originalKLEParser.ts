@@ -366,6 +366,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         // Process icons in labels - this may modify current.textSize
         processLabelsForIcons(labels, current);
         
+        
         // Apply default text size to all labels if set
         if (current.default.textSize !== undefined) {
           // If no specific text sizes are set, create an array with default size for all labels
@@ -380,6 +381,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
             }
           }
         }
+        
         
         // Add optional properties
         if (current.x2) key.x2 = current.x2;

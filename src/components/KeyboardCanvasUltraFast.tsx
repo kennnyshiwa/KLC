@@ -59,17 +59,6 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     if (!canvas || !ctx) return;
     
     // Debug: confirm render is running
-    if (!(window as any).renderCount) {
-      (window as any).renderCount = 0;
-    }
-    if ((window as any).renderCount < 3) {
-      console.log(`RENDER CALLED #${++(window as any).renderCount}, keys: ${stateRef.current.keyboard.keys.length}`);
-      
-      // Test icon parsing directly
-      const testLabel = '<span class="trashcons icon-enter"></span>';
-      const testParsed = parseIconLegend(testLabel);
-      console.log('Direct test - parseIconLegend:', testParsed);
-    }
 
     // Clear canvas with off-white background
     ctx.fillStyle = '#fafafa';
@@ -516,6 +505,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         } else if (key.default?.size && Array.isArray(key.default.size) && key.default.size[0] !== undefined) {
           textSizeValue = key.default.size[0];
         }
+        
+        
         // Convert KLE textSize (1-9) to actual font size using the formula: 6 + 2*textSize
         const fontSize = 6 + 2 * textSizeValue;
         
@@ -856,12 +847,6 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
 
   // Request animation frame render
   const requestRender = () => {
-    if (!(window as any).requestRenderCount) {
-      (window as any).requestRenderCount = 0;
-    }
-    if ((window as any).requestRenderCount < 5) {
-      console.log(`requestRender called #${++(window as any).requestRenderCount}`);
-    }
     
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);

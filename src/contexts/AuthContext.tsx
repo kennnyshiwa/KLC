@@ -33,17 +33,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchConfig = async () => {
     try {
-      console.log('Fetching config from:', `${API_URL}/config`);
       const response = await fetch(`${API_URL}/config`);
       if (response.ok) {
         const config = await response.json();
-        console.log('Config received:', config);
         setDiscordClientId(config.discordClientId || '');
       } else {
-        console.error('Config fetch failed with status:', response.status);
       }
     } catch (error) {
-      console.error('Failed to fetch config:', error);
     }
   };
 

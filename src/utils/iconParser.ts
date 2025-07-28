@@ -48,11 +48,6 @@ const ICON_MAP: Record<string, string> = {
  * Fixed version that properly handles span tags without leaving residual HTML
  */
 export function parseIconLegend(legend: string): ParsedIcon[] {
-  // Emergency debug
-  if (legend.includes('<span') && !(window as any).iconParserDebug) {
-    (window as any).iconParserDebug = true;
-    console.log('ICON PARSER CALLED with:', legend);
-  }
   
   const result: ParsedIcon[] = [];
   
@@ -67,16 +62,6 @@ export function parseIconLegend(legend: string): ParsedIcon[] {
   let match;
   
   while ((match = iconSpanRegex.exec(legend)) !== null) {
-    // Debug first match
-    if (!(window as any).iconMatchDebug) {
-      (window as any).iconMatchDebug = true;
-      console.log('Icon regex match:', {
-        fullMatch: match[0],
-        classes: match[1],
-        index: match.index,
-        input: legend
-      });
-    }
     
     // Add text before the icon
     if (match.index > lastIndex) {

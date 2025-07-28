@@ -141,7 +141,6 @@ class FontManager {
     
     status.loaded = true;
     status.loading = false;
-    console.log(`Font ${name} successfully loaded and verified`);
     
     // Notify all listeners
     status.listeners.forEach(listener => listener());
@@ -178,14 +177,6 @@ class FontManager {
     // Font string without quotes - Canvas API handles font-family correctly
     const fontString = `${size}px ${isLoaded ? name : 'monospace'}`;
     
-    // Debug log first few calls
-    if (!(window as any).fontDebugCount) {
-      (window as any).fontDebugCount = 0;
-    }
-    if ((window as any).fontDebugCount < 3 && name === 'trashcons') {
-      (window as any).fontDebugCount++;
-      console.log(`getRenderFont: ${name}, loaded: ${isLoaded}, returning: "${fontString}"`);
-    }
     
     return fontString;
   }
@@ -205,6 +196,5 @@ export async function initializeFonts(): Promise<void> {
   // Also wait for document fonts to be ready
   if (document.fonts) {
     await document.fonts.ready;
-    console.log('Document fonts ready');
   }
 }
