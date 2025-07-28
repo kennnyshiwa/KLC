@@ -405,7 +405,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       if (key.frontLegends && key.frontLegends.some(l => l)) {
         ctx.save();
         ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.font = '10px Arial';
+        const frontFont = key.font || '';
+        ctx.font = frontFont ? fontManager.getRenderFont(frontFont, 10) : '10px Arial';
         ctx.textBaseline = 'middle';
         
         const frontY = renderY + keyHeight - 3;
@@ -622,7 +623,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
               ctx.font = fontManager.getRenderFont('trashcons', fontSize);
               totalWidth += ctx.measureText(part.content).width;
             } else {
-              ctx.font = `${fontSize}px Arial`;
+              const keyFont = key.font || '';
+              ctx.font = keyFont ? fontManager.getRenderFont(keyFont, fontSize) : `${fontSize}px Arial`;
               totalWidth += ctx.measureText(part.content).width;
             }
           });
@@ -639,7 +641,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           // This should never happen - parser should always return something
           console.error('PARSER RETURNED EMPTY for label:', label);
           // Fallback - draw as plain text
-          ctx.font = `${fontSize}px Arial`;
+          const keyFont = key.font || '';
+          ctx.font = keyFont ? fontManager.getRenderFont(keyFont, fontSize) : `${fontSize}px Arial`;
           ctx.fillStyle = textColor;
           ctx.textAlign = 'left';
           ctx.textBaseline = position.baseline as CanvasTextBaseline;
@@ -702,7 +705,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             }
           } else {
             // Draw regular text - handle newlines for dual legend keys
-            ctx.font = `${fontSize}px Arial`;
+            const keyFont = key.font || '';
+            ctx.font = keyFont ? fontManager.getRenderFont(keyFont, fontSize) : `${fontSize}px Arial`;
             ctx.fillStyle = textColor;
             ctx.textAlign = 'left';
             ctx.textBaseline = finalPosition.baseline as CanvasTextBaseline;

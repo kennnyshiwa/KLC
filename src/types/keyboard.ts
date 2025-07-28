@@ -34,6 +34,7 @@ export interface Key {
   decal?: boolean;
   frontLegends?: string[];
   align?: number;
+  font?: string;
 }
 
 export interface KeyboardMetadata {

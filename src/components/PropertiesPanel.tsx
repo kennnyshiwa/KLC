@@ -8,6 +8,13 @@ import IconDropdown from './IconDropdown';
 
 const PROFILES: KeyProfile[] = ['DCS', 'DSA', 'SA', 'OEM', 'CHICKLET', 'FLAT', 'XDA', 'MA'];
 
+// Available fonts for legends
+const AVAILABLE_FONTS = [
+  { value: '', label: 'Default (Arial)' },
+  { value: 'trashcons', label: 'Icons (Trashcons)' },
+  { value: 'GortonPerfected', label: 'Gorton Perfected' }
+];
+
 // Helper to determine if a key has dual legends that should be shown as top/bottom
 const hasDualLegendAlignment = (key: Key): boolean => {
   // Check if the key has horizontal centering enabled and a dual legend in position 0
@@ -760,6 +767,21 @@ const PropertiesPanel: React.FC = () => {
                       </div>
                     );
                   })}
+                </div>
+                
+                {/* Font selection */}
+                <div className="property-row">
+                  <label>Legend Font</label>
+                  <select
+                    value={firstKey.font || ''}
+                    onChange={(e) => handleKeyUpdate('font', e.target.value)}
+                  >
+                    {AVAILABLE_FONTS.map(font => (
+                      <option key={font.value} value={font.value}>
+                        {font.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             )}

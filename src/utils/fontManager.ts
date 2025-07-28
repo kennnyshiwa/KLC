@@ -12,8 +12,15 @@ class FontManager {
   private renderCache: Map<string, CanvasRenderingContext2D> = new Map();
   
   constructor() {
-    // Initialize trashcons font status
+    // Initialize font statuses
     this.fonts.set('trashcons', {
+      loaded: false,
+      loading: false,
+      error: null,
+      listeners: new Set()
+    });
+    
+    this.fonts.set('GortonPerfected', {
       loaded: false,
       loading: false,
       error: null,
@@ -189,7 +196,11 @@ export const fontManager = new FontManager();
 
 // Load fonts on initialization
 export async function initializeFonts(): Promise<void> {
-  await fontManager.loadFont('trashcons', '/fonts/trashcons.woff');
+  // Load both fonts in parallel
+  await Promise.all([
+    fontManager.loadFont('trashcons', '/fonts/trashcons.woff'),
+    fontManager.loadFont('GortonPerfected', '/fonts/GortonPerfectedVF.woff')
+  ]);
   
   // Also wait for document fonts to be ready
   if (document.fonts) {
