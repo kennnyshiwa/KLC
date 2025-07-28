@@ -1,0 +1,20 @@
+/* Gorton Perfected Font */
+@font-face {
+  font-family: 'GortonPerfected';
+  font-style: normal;
+  font-weight: normal;
+  src: url('/fonts/GortonPerfectedVF.woff') format('woff');
+  font-display: swap;
+}
+
+/* Optional: Add font-specific adjustments if needed */
+.gorton-perfected {
+  font-family: 'GortonPerfected', sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
