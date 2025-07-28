@@ -160,15 +160,6 @@ const MenuBar: React.FC = () => {
         // First ensure fonts are loaded
         await initializeFonts();
         
-        // Test font rendering in a simple canvas
-        const testCanvas = document.createElement('canvas');
-        const testCtx = testCanvas.getContext('2d');
-        if (testCtx) {
-          testCtx.font = '20px trashcons';
-          const iconWidth = testCtx.measureText('\ue90e').width;
-          testCtx.font = '20px monospace';
-          const monoWidth = testCtx.measureText('\ue90e').width;
-        }
         
         // Force a complete re-render by updating a key
         setTimeout(() => {
