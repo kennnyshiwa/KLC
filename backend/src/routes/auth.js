@@ -87,7 +87,6 @@ router.post('/discord/callback', async (req, res) => {
         console.error('Session save error:', err);
         return res.status(500).json({ error: 'Failed to save session' });
       }
-      console.log('Session saved successfully for user:', user.username);
       res.json({ success: true });
     });
   } catch (error) {
@@ -98,8 +97,6 @@ router.post('/discord/callback', async (req, res) => {
 
 // Get current user
 router.get('/me', (req, res) => {
-  console.log('Auth check - Session ID:', req.sessionID);
-  console.log('Auth check - Session user:', req.session.user);
   
   if (req.session.user) {
     res.json(req.session.user);

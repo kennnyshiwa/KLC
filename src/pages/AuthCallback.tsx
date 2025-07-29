@@ -19,7 +19,6 @@ const AuthCallback: React.FC = () => {
       }
 
       try {
-        console.log('Exchanging code for token:', code);
         const response = await fetch(`${API_URL}/auth/discord/callback`, {
           method: 'POST',
           headers: {
@@ -29,9 +28,7 @@ const AuthCallback: React.FC = () => {
           body: JSON.stringify({ code }),
         });
 
-        console.log('Auth response status:', response.status);
         if (response.ok) {
-          console.log('Authentication successful, redirecting...');
           // Redirect to home page after successful login
           window.location.href = '/';
         } else {

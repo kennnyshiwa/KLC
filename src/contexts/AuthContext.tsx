@@ -67,7 +67,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = () => {
-    console.log('Login called, Discord Client ID:', discordClientId);
     if (!discordClientId) {
       console.error('Discord Client ID not configured');
       return;
@@ -77,7 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const scope = encodeURIComponent('identify email');
     const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${discordClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
     
-    console.log('Redirecting to Discord OAuth:', discordAuthUrl);
     window.location.href = discordAuthUrl;
   };
 

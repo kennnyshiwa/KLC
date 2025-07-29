@@ -20,7 +20,6 @@ export function useImportedCSS() {
       const sanitizedCSS = sanitizeImportedCSS(keyboard.meta.css);
       styleElement.textContent = sanitizedCSS;
       
-      console.log('Applied imported CSS:', sanitizedCSS);
     }
   }, [keyboard.meta.css]);
 }

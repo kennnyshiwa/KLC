@@ -13,10 +13,6 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
-// Debug: Log Discord client ID (first few chars only for security)
-console.log('Discord Client ID:', process.env.DISCORD_CLIENT_ID ? process.env.DISCORD_CLIENT_ID.substring(0, 6) + '...' : 'NOT SET');
-console.log('Discord Redirect URI:', process.env.DISCORD_REDIRECT_URI || 'NOT SET');
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 

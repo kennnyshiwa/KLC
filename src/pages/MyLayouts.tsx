@@ -40,16 +40,12 @@ const MyLayouts: React.FC = () => {
 
   const fetchLayouts = async () => {
     try {
-      console.log('Fetching layouts from:', `${API_URL}/layouts`);
       const response = await fetch(`${API_URL}/layouts`, {
         credentials: 'include'
       });
       
-      console.log('Layouts response status:', response.status);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('Layouts data:', data);
         setLayouts(data);
         setError('');
       } else {
@@ -66,12 +62,10 @@ const MyLayouts: React.FC = () => {
   };
 
   const handleLoadLayout = (layout: Layout) => {
-    console.log('MyLayouts: Loading layout with ID:', layout.id);
     // Load the layout into the editor
     setKeyboard(layout.data);
     // Set the current layout ID so saves update this layout
     setCurrentLayoutId(layout.id);
-    console.log('MyLayouts: Set currentLayoutId to:', layout.id);
     // Navigate back to the editor
     navigate('/');
   };

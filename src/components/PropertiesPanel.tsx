@@ -685,7 +685,6 @@ const PropertiesPanel: React.FC = () => {
                     value={(() => {
                       if (!firstKey.nub) return 'none';
                       const frontLegend = firstKey.frontLegends?.[1]?.toLowerCase();
-                      console.log('Homing nub dropdown - nub:', firstKey.nub, 'frontLegends[1]:', firstKey.frontLegends?.[1], 'frontLegend lower:', frontLegend);
                       if (frontLegend === 'bar') return 'bar';
                       if (frontLegend === 'scoop') return 'scoop';
                       return 'none';
