@@ -827,9 +827,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       const store = useKeyboardStore.getState();
       const isMultiSelect = e.ctrlKey || e.metaKey;
       
-      if (!store.selectedKeys.has(keyRect.id)) {
-        store.selectKey(keyRect.id, isMultiSelect);
-      }
+      // selectKey handles toggle logic when multiSelect is true
+      store.selectKey(keyRect.id, isMultiSelect);
       
       // Start dragging
       isDraggingRef.current = true;

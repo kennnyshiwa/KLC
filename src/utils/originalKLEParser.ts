@@ -455,13 +455,11 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         current.y2 = 0;
         current.width2 = 0;
         current.height2 = 0;
-        current.ghost = false;
         current.nub = false;
         current.stepped = false;
         current.decal = false;
         current.textColor = [];
         current.textSize = [];
-        // Don't reset align - it persists across keys until changed
       }
     }
   }
