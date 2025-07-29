@@ -406,19 +406,25 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         const centerSidePrinted = key.align !== undefined && (key.align & 0x04) !== 0;
         
         if (centerSidePrinted) {
-          // If bit 2 is set, center all front legends
-          ctx.textAlign = 'center';
-          const centerX = renderX + keyWidth / 2;
+          // If bit 2 is set, each front legend should still be in its own position
+          // but the text within that position should be centered
           
-          // Render all front legends centered
+          // Left front legend - centered within left third
           if (key.frontLegends[0]) {
-            ctx.fillText(key.frontLegends[0], centerX, frontY);
+            ctx.textAlign = 'center';
+            ctx.fillText(key.frontLegends[0], renderX + keyWidth / 6, frontY);
           }
+          
+          // Center front legend
           if (key.frontLegends[1]) {
-            ctx.fillText(key.frontLegends[1], centerX, frontY);
+            ctx.textAlign = 'center';
+            ctx.fillText(key.frontLegends[1], renderX + keyWidth / 2, frontY);
           }
+          
+          // Right front legend - centered within right third
           if (key.frontLegends[2]) {
-            ctx.fillText(key.frontLegends[2], centerX, frontY);
+            ctx.textAlign = 'center';
+            ctx.fillText(key.frontLegends[2], renderX + keyWidth * 5 / 6, frontY);
           }
         } else {
           // Default positioning for front legends
