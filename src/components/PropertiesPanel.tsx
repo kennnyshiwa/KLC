@@ -43,6 +43,7 @@ const PropertiesPanel: React.FC = () => {
     rotation: true,
     size: true,
     legends: true,
+    legendStyle: true,
     appearance: true,
     advanced: false,
   });
@@ -681,7 +682,14 @@ const PropertiesPanel: React.FC = () => {
                 <div className="property-row">
                   <label>Homing Nub</label>
                   <select 
-                    value={firstKey.nub ? (firstKey.frontLegends?.[1] === 'Bar' ? 'bar' : 'scoop') : 'none'}
+                    value={(() => {
+                      if (!firstKey.nub) return 'none';
+                      const frontLegend = firstKey.frontLegends?.[1]?.toLowerCase();
+                      console.log('Homing nub dropdown - nub:', firstKey.nub, 'frontLegends[1]:', firstKey.frontLegends?.[1], 'frontLegend lower:', frontLegend);
+                      if (frontLegend === 'bar') return 'bar';
+                      if (frontLegend === 'scoop') return 'scoop';
+                      return 'none';
+                    })()}
                     onChange={(e) => {
                       const value = e.target.value;
                       const updates = selectedKeysList.map(key => {
@@ -736,6 +744,79 @@ const PropertiesPanel: React.FC = () => {
             )}
           </div>
 
+          {/* Legend Style Properties */}
+          <div className="property-section">
+            <div className="section-header" onClick={() => toggleSection('legendStyle')}>
+              {expandedSections.legendStyle ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              <span>Legend Style</span>
+            </div>
+            {expandedSections.legendStyle && firstKey && (
+              <div className="section-content">
+                {/* Font selection */}
+                <div className="property-row">
+                  <label>Font</label>
+                  <select
+                    value={firstKey.font || ''}
+                    onChange={(e) => handleKeyUpdate('font', e.target.value)}
+                  >
+                    {AVAILABLE_FONTS.map(font => (
+                      <option key={font.value} value={font.value}>
+                        {font.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Default text size */}
+                <div className="property-row">
+                  <label>Default Size</label>
+                  <input
+                    type="number"
+                    value={firstKey.default?.size?.[0] || 3}
+                    onChange={(e) => {
+                      const size = parseInt(e.target.value);
+                      const updates = selectedKeysList.map(key => ({
+                        id: key.id,
+                        changes: { 
+                          default: {
+                            ...key.default,
+                            size: [size]
+                          }
+                        }
+                      }));
+                      updateKeys(updates);
+                      saveToHistory();
+                    }}
+                    min="1"
+                    max="9"
+                    title="Default text size (1-9)"
+                  />
+                </div>
+                
+                {/* Default text color with color picker */}
+                <div className="property-row">
+                  <label>Default Color</label>
+                  <ColorPicker
+                    value={firstKey.default?.color?.[0] || '#000000'}
+                    onChange={(color) => {
+                      const updates = selectedKeysList.map(key => ({
+                        id: key.id,
+                        changes: { 
+                          default: {
+                            ...key.default,
+                            color: [color]
+                          }
+                        }
+                      }));
+                      updateKeys(updates);
+                      saveToHistory();
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Advanced Properties */}
           <div className="property-section">
             <div className="section-header" onClick={() => toggleSection('advanced')}>
@@ -767,21 +848,6 @@ const PropertiesPanel: React.FC = () => {
                       </div>
                     );
                   })}
-                </div>
-                
-                {/* Font selection */}
-                <div className="property-row">
-                  <label>Legend Font</label>
-                  <select
-                    value={firstKey.font || ''}
-                    onChange={(e) => handleKeyUpdate('font', e.target.value)}
-                  >
-                    {AVAILABLE_FONTS.map(font => (
-                      <option key={font.value} value={font.value}>
-                        {font.label}
-                      </option>
-                    ))}
-                  </select>
                 </div>
               </div>
             )}

@@ -499,10 +499,18 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         // Check for text color similarly
         let textColor = '#000000';
+        
         if (Array.isArray(key.textColor) && key.textColor[index]) {
           textColor = key.textColor[index];
         } else if (key.default?.color && Array.isArray(key.default.color) && key.default.color[0]) {
           textColor = key.default.color[0];
+          // Override dark colors for decal keys in dark mode
+          if (key.decal && isDarkMode) {
+            textColor = '#ffffff';
+          }
+        } else if (key.decal && isDarkMode) {
+          // For decal keys in dark mode, use white text for visibility
+          textColor = '#ffffff';
         }
         
         

@@ -331,25 +331,57 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         // Handle homing nubs BEFORE creating the key
         let isHomingKey = false;
         if (current.nub) {
-          for (let i = 0; i < processedLabels.length; i++) {
-            const label = processedLabels[i];
-            if (label && label.match(/\b(SCOOP|BAR)\b/i)) {
+          console.log('Processing homing key, labels:', processedLabels, 'frontLegends:', frontLegends);
+          
+          // First check if SCOOP/BAR is already in the front legends (from position 4/5/6)
+          for (let i = 0; i < frontLegends.length; i++) {
+            const legend = frontLegends[i];
+            if (legend && legend.match(/\b(SCOOP|BAR)\b/i)) {
               isHomingKey = true;
-              if (label.match(/\bSCOOP\b/i)) {
-                frontLegends[1] = 'Scoop'; // Center position
-              } else if (label.match(/\bBAR\b/i)) {
-                frontLegends[1] = 'Bar'; // Center position
+              console.log('Found homing in frontLegends:', legend, 'at index:', i);
+              // Move it to center position if not already there
+              if (i !== 1) {
+                if (legend.match(/\bSCOOP\b/i)) {
+                  frontLegends[1] = 'Scoop';
+                  console.log('Moved SCOOP to frontLegends[1]');
+                } else if (legend.match(/\bBAR\b/i)) {
+                  frontLegends[1] = 'Bar';
+                  console.log('Moved BAR to frontLegends[1]');
+                }
+                // Clear the original position
+                frontLegends[i] = frontLegends[i].replace(/\b(SCOOP|BAR)\b/gi, '').replace(/\s+/g, ' ').trim();
               }
-              // Clean the label - remove SCOOP/BAR text (case insensitive, word boundary)
-              processedLabels[i] = label.replace(/\b(SCOOP|BAR)\b/gi, '').replace(/\s+/g, ' ').trim();
               break;
             }
           }
           
+          // If not found in front legends, check regular labels
+          if (!isHomingKey) {
+            for (let i = 0; i < processedLabels.length; i++) {
+              const label = processedLabels[i];
+              if (label && label.match(/\b(SCOOP|BAR)\b/i)) {
+                isHomingKey = true;
+                console.log('Found homing label:', label, 'at index:', i);
+                if (label.match(/\bSCOOP\b/i)) {
+                  frontLegends[1] = 'Scoop'; // Center position
+                  console.log('Set frontLegends[1] to Scoop');
+                } else if (label.match(/\bBAR\b/i)) {
+                  frontLegends[1] = 'Bar'; // Center position
+                  console.log('Set frontLegends[1] to Bar');
+                }
+                // Clean the label - remove SCOOP/BAR text (case insensitive, word boundary)
+                processedLabels[i] = label.replace(/\b(SCOOP|BAR)\b/gi, '').replace(/\s+/g, ' ').trim();
+                break;
+              }
+            }
+          }
+          
           // If no explicit SCOOP/BAR label, use default
-          if (!isHomingKey && options?.homingNubType !== 'none') {
+          if (current.nub && !isHomingKey && options?.homingNubType !== 'none') {
+            console.log('No explicit homing found, adding default:', options?.homingNubType);
             frontLegends[1] = options?.homingNubType === 'scoop' ? 'Scoop' : 'Bar';
           }
+          console.log('Final frontLegends[1]:', frontLegends[1]);
         }
         
         const key: Key = {

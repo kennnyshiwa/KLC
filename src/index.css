@@ -644,6 +644,7 @@ body {
 .color-picker-header label {
   font-size: 0.85rem;
   color: #666;
+  margin-right: 0.5rem;
 }
 
 .color-picker-current {
@@ -658,12 +659,49 @@ body {
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
+  padding: 0;
+  -webkit-appearance: none;
+}
+
+/* Override property-row styling for color inputs inside color picker */
+.property-row .color-picker-current input[type="color"] {
+  padding: 0;
+  border: none;
+  width: 40px;
+  height: 30px;
+}
+
+.color-picker-current input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-current input[type="color"]::-webkit-color-swatch {
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 .color-picker-current span {
   font-family: monospace;
   font-size: 0.85rem;
   color: #666;
+}
+
+.color-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.color-hex {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.color-name {
+  font-size: 0.75rem;
+  color: #999;
+  font-style: italic;
 }
 
 .color-picker-search {
@@ -681,15 +719,17 @@ body {
   left: 0.75rem;
   color: #999;
   pointer-events: none;
+  z-index: 1;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+  padding: 0.5rem 0.75rem 0.5rem 2.5rem !important;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.85rem;
   transition: border-color 0.2s;
+  text-indent: 0;
 }
 
 .search-input:focus {
@@ -1643,13 +1683,42 @@ body {
   background-color: #3a3a3a;
 }
 
+.dark-mode .user-menu-button {
+  color: #e0e0e0;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark-mode .user-menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
 .dark-mode .user-dropdown {
   background-color: #2a2a2a;
   border-color: #444;
 }
 
+.dark-mode .user-dropdown-info {
+  color: #e0e0e0;
+}
+
+.dark-mode .user-dropdown-item {
+  color: #e0e0e0;
+}
+
 .dark-mode .user-dropdown-item:hover {
   background-color: #3a3a3a;
+  color: #fff;
+}
+
+.dark-mode .user-dropdown-item.logout {
+  color: #ff6b6b;
+}
+
+.dark-mode .user-dropdown-item.logout:hover {
+  background-color: #dc3545;
+  color: white;
 }
 
 .dark-mode .dropdown-separator {
@@ -1811,6 +1880,14 @@ body {
 .dark-mode .color-picker-current input[type="color"] {
   background-color: #1a1a1a;
   border-color: #444;
+}
+
+.dark-mode .color-hex {
+  color: #b0b0b0;
+}
+
+.dark-mode .color-name {
+  color: #888;
 }
 
 /* Editor content textarea */

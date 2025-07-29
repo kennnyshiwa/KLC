@@ -15,6 +15,21 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
     setExpandedSwatch(expandedSwatch === swatchName ? null : swatchName);
   };
   
+  // Find the friendly name for the current color
+  const getColorName = (hexColor: string): { name: string; swatch: string } | null => {
+    const normalizedHex = hexColor.toUpperCase();
+    for (const swatch of colorSwatches) {
+      for (const [name, color] of Object.entries(swatch.colors)) {
+        if ((color as string).toUpperCase() === normalizedHex) {
+          return { name, swatch: swatch.name };
+        }
+      }
+    }
+    return null;
+  };
+  
+  const currentColorInfo = getColorName(value);
+  
   // Filter and sort colors based on search term
   const filteredSwatches = useMemo(() => {
     if (!searchTerm) {
@@ -50,7 +65,14 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
             value={value}
             onChange={(e) => onChange(e.target.value)}
           />
-          <span>{value}</span>
+          <div className="color-info">
+            <span className="color-hex">{value}</span>
+            {currentColorInfo && (
+              <span className="color-name">
+                {currentColorInfo.swatch} {currentColorInfo.name}
+              </span>
+            )}
+          </div>
         </div>
       </div>
       
