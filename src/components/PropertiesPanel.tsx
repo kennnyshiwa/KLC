@@ -101,31 +101,6 @@ const PropertiesPanel: React.FC = () => {
     updateKeys(updates);
   };
 
-  const handleTextColorUpdate = (index: number, value: string) => {
-    const updates = selectedKeysList.map(key => {
-      const newColors = [...(key.textColor || [])];
-      newColors[index] = value;
-      return {
-        id: key.id,
-        changes: { textColor: newColors }
-      };
-    });
-    updateKeys(updates);
-    saveToHistory();
-  };
-
-  const handleTextSizeUpdate = (index: number, value: number) => {
-    const updates = selectedKeysList.map(key => {
-      const newSizes = [...(key.textSize || [])];
-      newSizes[index] = value;
-      return {
-        id: key.id,
-        changes: { textSize: newSizes }
-      };
-    });
-    updateKeys(updates);
-    saveToHistory();
-  };
 
   const getRotationMode = () => {
     if (!firstKey) return 'key-center';
