@@ -60,7 +60,7 @@ export const colorSwatches: ColorSwatch[] = [
       'GC': '#515153',
       'WB': '#e1dad2',
       'WC': '#9fa9a6',
-      'NN': '#9d9b99',
+      'NN': '#242425',
       'GD': '#b1af9f',
       'GE': '#c0c2b9',
       'GEW': '#bbbaaa',
