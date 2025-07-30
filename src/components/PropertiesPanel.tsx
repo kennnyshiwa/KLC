@@ -815,42 +815,6 @@ const PropertiesPanel: React.FC = () => {
               </div>
             )}
           </div>
-
-          {/* Advanced Properties */}
-          <div className="property-section">
-            <div className="section-header" onClick={() => toggleSection('advanced')}>
-              {expandedSections.advanced ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              <span>Advanced</span>
-            </div>
-            {expandedSections.advanced && firstKey && (
-              <div className="section-content">
-                <p className="hint">Text colors and sizes per legend position</p>
-                <div className="advanced-legends">
-                  {firstKey.labels.map((label, index) => {
-                    if (!label) return null;
-                    return (
-                      <div key={index} className="advanced-legend-row">
-                        <span className="legend-index">{index}:</span>
-                        <input
-                          type="color"
-                          value={firstKey.textColor?.[index] || '#000000'}
-                          onChange={(e) => handleTextColorUpdate(index, e.target.value)}
-                        />
-                        <input
-                          type="number"
-                          value={firstKey.textSize?.[index] || 3}
-                          onChange={(e) => handleTextSizeUpdate(index, parseInt(e.target.value))}
-                          min="1"
-                          max="9"
-                          title="Text size (1-9)"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
         </>
       )}
       
