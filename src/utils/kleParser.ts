@@ -220,15 +220,23 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
           if (props.h2 !== undefined) current.height2 = props.h2;
           if (props.rx !== undefined) {
             current.rotation_x = props.rx;
+            current.rotation_center_set = true;
             cluster.x = props.rx;
-            current.x = props.rx; // Reset x to rotation origin
+            // Only reset x if it wasn't explicitly set in this object
+            if (props.x === undefined) {
+              current.x = props.rx;
+            }
             // Reset row offset when we enter a rotation cluster
             rowY = 0;
           }
           if (props.ry !== undefined) {
             current.rotation_y = props.ry;
+            current.rotation_center_set = true;
             cluster.y = props.ry;
-            current.y = props.ry; // Reset y to rotation origin
+            // Only reset y if it wasn't explicitly set in this object
+            if (props.y === undefined) {
+              current.y = props.ry;
+            }
             // Reset row offset when we enter a rotation cluster
             rowY = 0;
           }
