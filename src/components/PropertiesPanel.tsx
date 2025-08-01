@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { Key, KeyProfile } from '../types';
-import { ChevronDown, ChevronRight, ChevronLeft, Type, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronLeft, Type } from 'lucide-react';
 import ColorPicker from './ColorPicker';
 import CharacterPicker from './CharacterPicker';
 import IconDropdown from './IconDropdown';
@@ -215,7 +215,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
             onClick={onToggleCollapse}
             title="Collapse panel"
           >
-            <PanelLeftClose size={18} />
+            <ChevronLeft size={18} />
           </button>
         )}
       </div>
