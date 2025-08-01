@@ -832,16 +832,22 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Key clicked
       const store = useKeyboardStore.getState();
       const isMultiSelect = e.ctrlKey || e.metaKey;
+      const isKeyAlreadySelected = store.selectedKeys.has(keyRect.id);
       
-      // selectKey handles toggle logic when multiSelect is true
-      store.selectKey(keyRect.id, isMultiSelect);
+      // If clicking on an already selected key without Ctrl/Cmd, don't change selection
+      // This allows dragging the group
+      if (!isKeyAlreadySelected || isMultiSelect) {
+        // selectKey handles toggle logic when multiSelect is true
+        store.selectKey(keyRect.id, isMultiSelect);
+      }
       
-      // Start dragging
-      isDraggingRef.current = true;
-      dragStartRef.current = { x, y };
-      dragOffsetRef.current = { x: 0, y: 0 };
-      
-      canvas.style.cursor = 'move';
+      // Start dragging if key is selected (either was already selected or just got selected)
+      if (store.selectedKeys.has(keyRect.id)) {
+        isDraggingRef.current = true;
+        dragStartRef.current = { x, y };
+        dragOffsetRef.current = { x: 0, y: 0 };
+        canvas.style.cursor = 'move';
+      }
     } else {
       // Start selection rectangle
       if (!e.ctrlKey && !e.metaKey) {
