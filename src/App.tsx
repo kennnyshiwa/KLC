@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useKeyboardStore } from './store/keyboardStoreOptimized';
 import CanvasContainer from './components/CanvasContainer';
 import { KeyboardCanvasRef } from './components/KeyboardCanvasUltraFast';
@@ -16,6 +16,7 @@ function App() {
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const setKeyboard = useKeyboardStore((state) => state.setKeyboard);
   const canvasRef = useRef<KeyboardCanvasRef>(null);
+  const [isPropertiesPanelCollapsed, setIsPropertiesPanelCollapsed] = useState(false);
   
   useKeyboardShortcuts();
   useImportedCSS();
@@ -74,8 +75,11 @@ function App() {
         <Toolbar getStage={() => canvasRef.current?.getStage() || null} />
         
         <div className="editor-container">
-          <div className="sidebar sidebar-left">
-            <PropertiesPanel />
+          <div className={`sidebar sidebar-left ${isPropertiesPanelCollapsed ? 'collapsed' : ''}`}>
+            <PropertiesPanel 
+              isCollapsed={isPropertiesPanelCollapsed}
+              onToggleCollapse={() => setIsPropertiesPanelCollapsed(!isPropertiesPanelCollapsed)}
+            />
           </div>
           
           <div className="canvas-container">

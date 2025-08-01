@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { Key, KeyProfile } from '../types';
-import { ChevronDown, ChevronRight, Type } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronLeft, Type, PanelLeftClose, PanelLeft } from 'lucide-react';
 import ColorPicker from './ColorPicker';
 import CharacterPicker from './CharacterPicker';
 import IconDropdown from './IconDropdown';
@@ -30,7 +30,12 @@ const getDualLegendParts = (label: string): [string, string] => {
   return [parts[0] || '', parts[1] || ''];
 };
 
-const PropertiesPanel: React.FC = () => {
+interface PropertiesPanelProps {
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+}
+
+const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, onToggleCollapse }) => {
   const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const updateKeys = useKeyboardStore((state) => state.updateKeys);
@@ -186,9 +191,35 @@ const PropertiesPanel: React.FC = () => {
     setIsSettingRotationPoint(true);
   };
 
+  if (isCollapsed) {
+    return (
+      <div className="properties-panel collapsed">
+        <button 
+          className="expand-button"
+          onClick={onToggleCollapse}
+          title="Expand panel"
+        >
+          <ChevronRight size={20} />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="properties-panel">
-      <h3>Properties</h3>
+      <div className="properties-panel-header">
+        <h3>Properties</h3>
+        {onToggleCollapse && (
+          <button 
+            className="collapse-button"
+            onClick={onToggleCollapse}
+            title="Collapse panel"
+          >
+            <PanelLeftClose size={18} />
+          </button>
+        )}
+      </div>
+      
       
       {/* Keyboard Properties */}
       <div className="property-section">
