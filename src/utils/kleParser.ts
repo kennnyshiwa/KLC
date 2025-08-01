@@ -14,6 +14,7 @@ interface ParseState {
   rotation_x: number;
   rotation_y: number;
   rotation_angle: number;
+  rotation_center_set: boolean; // Track if rotation center was explicitly set
   color: string;
   textColor: string[];
   textSize: number[];
@@ -41,6 +42,7 @@ const defaultState: ParseState = {
   rotation_x: 0,
   rotation_y: 0,
   rotation_angle: 0,
+  rotation_center_set: false,
   color: '#f9f9f9',
   textColor: [],
   textSize: [],
@@ -278,8 +280,12 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
           if (current.width2) key.width2 = current.width2;
           if (current.height2) key.height2 = current.height2;
           if (current.rotation_angle) {
-            key.rotation_x = current.rotation_x;
-            key.rotation_y = current.rotation_y;
+            // Only set rotation center if it was explicitly set with rx/ry
+            // If not set, the key will rotate around its own center
+            if (current.rotation_x !== 0 || current.rotation_y !== 0) {
+              key.rotation_x = current.rotation_x;
+              key.rotation_y = current.rotation_y;
+            }
             key.rotation_angle = current.rotation_angle;
           }
           if (current.textColor.length > 0) key.textColor = [...current.textColor];
@@ -354,6 +360,9 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
         // Normal row increment
         rowY += 1;
       }
+      
+      // Reset rotation center flag for next row
+      current.rotation_center_set = false;
     } else if (typeof row === 'object' && !Array.isArray(row)) {
       // Keyboard metadata
       if ('name' in row) keyboard.meta.name = row.name;
