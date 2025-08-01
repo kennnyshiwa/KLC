@@ -12,8 +12,8 @@ A modern reimplementation of the Keyboard Layout Editor (KLE) with improved feat
 - **Preset Layouts** - Common layouts including ANSI 104, ISO 105, 60%, TKL, Planck, and ErgoDox
 
 ### Advanced Features
-- **Color Picker with Swatches** - Includes GMK/Uniqey, Signature Plastics ABS/PBT color palettes
-- **Character Picker** - Special characters for legends (arrows, math symbols, currency, etc.)
+- **Color Picker with Swatches** - Includes GMK, Signature Plastics ABS/PBT color palettes
+- **Character Picker** - Includes native Trashcon support for modifiers
 - **Export Options** - Save layouts as PNG or SVG
 - **Undo/Redo** - Full history support with keyboard shortcuts
 - **Grid & Snap** - Configurable grid with snap-to-grid functionality
@@ -30,7 +30,7 @@ A modern reimplementation of the Keyboard Layout Editor (KLE) with improved feat
 ## Tech Stack
 
 - **React 19** with TypeScript
-- **Konva.js** - Canvas rendering
+- **KeyboardCanvasUltraFast.tsx** - Custom Canvas Rendering for the keycap shapes
 - **Zustand** - State management
 - **Vite** - Build tool
 - **File Saver** - Export functionality
