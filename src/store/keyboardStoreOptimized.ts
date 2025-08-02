@@ -15,6 +15,8 @@ interface KeyboardState {
   currentLayoutId: string | null;
   isSettingRotationPoint: boolean;
   isRotationSectionExpanded: boolean;
+  multiSelectMode: boolean;
+  lastModifiedKeyId: string | null;
   
   // Actions
   setKeyboard: (keyboard: Keyboard) => void;
@@ -57,6 +59,9 @@ interface KeyboardState {
   
   // Current layout tracking
   setCurrentLayoutId: (id: string | null) => void;
+  
+  // Multi-select mode
+  setMultiSelectMode: (enabled: boolean) => void;
 }
 
 export const useKeyboardStore = create<KeyboardState>()(
@@ -85,6 +90,8 @@ export const useKeyboardStore = create<KeyboardState>()(
       currentLayoutId: null,
       isSettingRotationPoint: false,
       isRotationSectionExpanded: true,
+      multiSelectMode: false,
+      lastModifiedKeyId: null,
 
       setKeyboard: (keyboard) => {
         set({
@@ -107,6 +114,7 @@ export const useKeyboardStore = create<KeyboardState>()(
             ),
           },
           hasUnsavedChanges: true,
+          lastModifiedKeyId: keyId,
         }));
         get().saveToHistory();
       },
@@ -123,6 +131,8 @@ export const useKeyboardStore = create<KeyboardState>()(
             })
           },
           hasUnsavedChanges: true,
+          // Track the last modified key (use the last one in the updates array)
+          lastModifiedKeyId: updates.length > 0 ? updates[updates.length - 1].id : state.lastModifiedKeyId,
         }));
         get().saveToHistory();
       },
@@ -134,6 +144,7 @@ export const useKeyboardStore = create<KeyboardState>()(
             keys: [...state.keyboard.keys, key],
           },
           hasUnsavedChanges: true,
+          lastModifiedKeyId: key.id,
         }));
         get().saveToHistory();
       },
@@ -165,7 +176,9 @@ export const useKeyboardStore = create<KeyboardState>()(
 
       selectKey: (keyId, multiSelect = false) => {
         set((state) => {
-          const newSelection = new Set(multiSelect ? state.selectedKeys : []);
+          // Use multi-select if explicitly passed or if multiSelectMode is enabled
+          const useMultiSelect = multiSelect || state.multiSelectMode;
+          const newSelection = new Set(useMultiSelect ? state.selectedKeys : []);
           
           if (newSelection.has(keyId)) {
             newSelection.delete(keyId);
@@ -278,6 +291,10 @@ export const useKeyboardStore = create<KeyboardState>()(
 
       setCurrentLayoutId: (id) => {
         set({ currentLayoutId: id });
+      },
+      
+      setMultiSelectMode: (enabled) => {
+        set({ multiSelectMode: enabled });
       },
     })),
     {

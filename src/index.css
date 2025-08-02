@@ -382,13 +382,99 @@ body {
 }
 
 /* Toolbar Styles */
+.toolbar-container {
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: white;
-  border-bottom: 1px solid #ddd;
   padding: 0.5rem;
+}
+
+/* Color Menu Bar Styles */
+
+.color-menu-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.color-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.color-menu-expanded {
+  width: 100%;
+  background: white;
+  border-top: 1px solid #eee;
+}
+
+.color-menu-header {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.color-menu-header h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.color-menu-hint {
+  font-size: 0.75rem;
+  color: #666;
+  margin: 0;
+}
+
+.color-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.color-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 4px;
+  padding: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.color-menu-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.color-menu-item:hover {
+  transform: scale(1.1);
+  border-color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.color-tooltip {
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 1001;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .toolbar-group {
@@ -422,6 +508,10 @@ body {
 .toolbar-btn.active {
   background-color: #3498db;
   color: white;
+}
+
+.toolbar-btn.active:hover {
+  background-color: #2980b9;
 }
 
 .toolbar-separator {
@@ -1659,9 +1749,13 @@ body {
   border-bottom: 1px solid #333;
 }
 
-.dark-mode .toolbar {
+.dark-mode .toolbar-container {
   background-color: #2a2a2a;
   border-bottom: 1px solid #333;
+}
+
+.dark-mode .toolbar {
+  background-color: transparent;
 }
 
 .dark-mode .properties-panel {
@@ -1812,6 +1906,37 @@ body {
 
 .dark-mode .toolbar-info {
   color: #b0b0b0;
+}
+
+/* Dark mode for color menu */
+.dark-mode .color-menu-expanded {
+  background: #2a2a2a;
+  border-top-color: #444;
+}
+
+.dark-mode .color-menu-header {
+  border-bottom-color: #444;
+}
+
+.dark-mode .color-menu-header h4 {
+  color: #e0e0e0;
+}
+
+.dark-mode .color-menu-hint {
+  color: #b0b0b0;
+}
+
+.dark-mode .color-name {
+  color: #e0e0e0;
+}
+
+.dark-mode .color-menu-item:hover {
+  border-color: #e0e0e0;
+}
+
+.dark-mode .color-tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a1a1a;
 }
 
 /* Properties panel section headers */

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { Key, KeyProfile } from '../types';
 import { ChevronDown, ChevronRight, ChevronLeft, Type } from 'lucide-react';
@@ -57,12 +57,24 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
   const setIsSettingRotationPoint = useKeyboardStore((state) => state.setIsSettingRotationPoint);
   const isRotationSectionExpanded = useKeyboardStore((state) => state.isRotationSectionExpanded);
   const setIsRotationSectionExpanded = useKeyboardStore((state) => state.setIsRotationSectionExpanded);
+  
+  // Local state for position inputs to allow temporary empty values
+  const [localX, setLocalX] = useState<string>('');
+  const [localY, setLocalY] = useState<string>('');
 
   const selectedKeysList = Array.from(selectedKeys)
     .map(id => keyboard.keys.find(k => k.id === id))
     .filter(Boolean) as Key[];
 
   const firstKey = selectedKeysList[0];
+  
+  // Sync local state with key values when selection changes
+  useEffect(() => {
+    if (firstKey) {
+      setLocalX(firstKey.x.toString());
+      setLocalY(firstKey.y.toString());
+    }
+  }, [firstKey?.id, firstKey?.x, firstKey?.y]);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
@@ -71,7 +83,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
     }));
   };
 
-  const handleKeyUpdate = (field: keyof Key, value: any) => {
+  const handleKeyUpdate = (field: keyof Key, value: any, allowEmpty: boolean = false) => {
+    // Skip update if value is invalid (unless explicitly allowed)
+    if (!allowEmpty && (value === '' || (typeof value === 'number' && isNaN(value)))) {
+      return;
+    }
+    
     const updates = selectedKeysList.map(key => ({
       id: key.id,
       changes: { [field]: value }
@@ -284,8 +301,21 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     <label>X</label>
                     <input
                       type="number"
-                      value={firstKey.x}
-                      onChange={(e) => handleKeyUpdate('x', parseFloat(e.target.value))}
+                      value={localX}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setLocalX(value);
+                        if (value !== '' && !isNaN(parseFloat(value))) {
+                          handleKeyUpdate('x', parseFloat(value));
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || isNaN(parseFloat(value))) {
+                          alert('X position must be a valid number.');
+                          setLocalX(firstKey.x.toString());
+                        }
+                      }}
                       step="0.25"
                     />
                   </div>
@@ -293,8 +323,21 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     <label>Y</label>
                     <input
                       type="number"
-                      value={firstKey.y}
-                      onChange={(e) => handleKeyUpdate('y', parseFloat(e.target.value))}
+                      value={localY}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setLocalY(value);
+                        if (value !== '' && !isNaN(parseFloat(value))) {
+                          handleKeyUpdate('y', parseFloat(value));
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || isNaN(parseFloat(value))) {
+                          alert('Y position must be a valid number.');
+                          setLocalY(firstKey.y.toString());
+                        }
+                      }}
                       step="0.25"
                     />
                   </div>
@@ -317,7 +360,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                   <input
                     type="number"
                     value={firstKey.rotation_angle || 0}
-                    onChange={(e) => handleKeyUpdate('rotation_angle', parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value !== '') {
+                        handleKeyUpdate('rotation_angle', parseFloat(value));
+                      }
+                    }}
                     step="15"
                     min="-180"
                     max="180"
@@ -345,7 +393,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       <input
                         type="number"
                         value={firstKey.rotation_x || firstKey.x + firstKey.width / 2}
-                        onChange={(e) => handleKeyUpdate('rotation_x', parseFloat(e.target.value))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value !== '') {
+                            handleKeyUpdate('rotation_x', parseFloat(value));
+                          }
+                        }}
                         step="0.25"
                       />
                     </div>
@@ -354,7 +407,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       <input
                         type="number"
                         value={firstKey.rotation_y || firstKey.y + firstKey.height / 2}
-                        onChange={(e) => handleKeyUpdate('rotation_y', parseFloat(e.target.value))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value !== '') {
+                            handleKeyUpdate('rotation_y', parseFloat(value));
+                          }
+                        }}
                         step="0.25"
                       />
                     </div>
@@ -416,7 +474,19 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       <input
                         type="number"
                         value={firstKey.width}
-                        onChange={(e) => handleKeyUpdate('width', parseFloat(e.target.value))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value !== '') {
+                            handleKeyUpdate('width', parseFloat(value));
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || parseFloat(value) <= 0) {
+                            alert('Width must be greater than 0. Reverting to previous value.');
+                            e.target.value = firstKey.width.toString();
+                          }
+                        }}
                         step="0.25"
                         min="0.25"
                       />
@@ -426,7 +496,19 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       <input
                         type="number"
                         value={firstKey.height}
-                        onChange={(e) => handleKeyUpdate('height', parseFloat(e.target.value))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value !== '') {
+                            handleKeyUpdate('height', parseFloat(value));
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || parseFloat(value) <= 0) {
+                            alert('Height must be greater than 0. Reverting to previous value.');
+                            e.target.value = firstKey.height.toString();
+                          }
+                        }}
                         step="0.25"
                         min="0.25"
                       />
@@ -441,7 +523,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                         <input
                           type="number"
                           value={firstKey.x2 || 0}
-                          onChange={(e) => handleKeyUpdate('x2', parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value !== '') {
+                              handleKeyUpdate('x2', parseFloat(value));
+                            }
+                          }}
                           step="0.25"
                         />
                       </div>
@@ -450,7 +537,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                         <input
                           type="number"
                           value={firstKey.y2 || 0}
-                          onChange={(e) => handleKeyUpdate('y2', parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value !== '') {
+                              handleKeyUpdate('y2', parseFloat(value));
+                            }
+                          }}
                           step="0.25"
                         />
                       </div>
@@ -461,7 +553,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                         <input
                           type="number"
                           value={firstKey.width2 || 0}
-                          onChange={(e) => handleKeyUpdate('width2', parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value !== '') {
+                              handleKeyUpdate('width2', parseFloat(value));
+                            }
+                          }}
                           step="0.25"
                         />
                       </div>
@@ -470,7 +567,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                         <input
                           type="number"
                           value={firstKey.height2 || 0}
-                          onChange={(e) => handleKeyUpdate('height2', parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value !== '') {
+                              handleKeyUpdate('height2', parseFloat(value));
+                            }
+                          }}
                           step="0.25"
                         />
                       </div>
@@ -802,15 +904,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                 <div className="property-row">
                   <label>Default Color</label>
                   <ColorPicker
-                    value={firstKey.default?.color?.[0] || '#000000'}
+                    value={firstKey.textColor?.[0] || '#000000'}
                     onChange={(color) => {
                       const updates = selectedKeysList.map(key => ({
                         id: key.id,
                         changes: { 
-                          default: {
-                            ...key.default,
-                            color: [color]
-                          }
+                          textColor: [color]
                         }
                       }));
                       updateKeys(updates);

@@ -51,6 +51,7 @@ const AddKeyMenu: React.FC = () => {
   const addKey = useKeyboardStore((state) => state.addKey);
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
+  const lastModifiedKeyId = useKeyboardStore((state) => state.lastModifiedKeyId);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -72,16 +73,27 @@ const AddKeyMenu: React.FC = () => {
     let newY = 0;
     
     if (keyboard.keys.length > 0) {
-      // Find the rightmost key
-      const rightmostKey = keyboard.keys.reduce((prev, current) => 
-        (prev.x + prev.width > current.x + current.width) ? prev : current
-      );
-      newX = rightmostKey.x + rightmostKey.width;
-      newY = rightmostKey.y;
+      // Find the reference key - either the last modified key or the last key in the array
+      let referenceKey = null;
       
-      // If it would go off screen, start a new row
+      if (lastModifiedKeyId) {
+        referenceKey = keyboard.keys.find(k => k.id === lastModifiedKeyId);
+      }
+      
+      // If no last modified key or it was deleted, use the last key in array
+      if (!referenceKey) {
+        referenceKey = keyboard.keys[keyboard.keys.length - 1];
+      }
+      
+      // Place new key to the right of the reference key
+      newX = referenceKey.x + referenceKey.width; // 0.25 unit gap between keys
+      newY = referenceKey.y;
+      
+      // Check if the new key would go off screen (assuming 20 units width)
       if (newX + template.width > 20) {
+        // Move to the next row
         newX = 0;
+        // Find the bottom-most key for the new row position
         const bottomKey = keyboard.keys.reduce((prev, current) => 
           (prev.y + prev.height > current.y + current.height) ? prev : current
         );
