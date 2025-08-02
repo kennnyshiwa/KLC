@@ -166,9 +166,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         ctx.shadowOffsetY = 2;
       }
       
-      // Get base color (no longer change color when selected)
-      const baseColor = hoveredKey === key.id ? '#e0e0e0' : 
-                       (key.color || '#f9f9f9');
+      // Get base color - brighten slightly when hovered
+      const keyColor = key.color || '#f9f9f9';
+      const baseColor = keyColor;
       
       // 3D key rendering with visible edges
       const edgeHeight = key.decal ? 0 : 6; // Height of the visible edge (0 for decals)
@@ -178,7 +178,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       if (!key.decal) {
         // Parse base color to RGB
         const parseColor = (color: string) => {
-          const rgb = parseInt(color.slice(1), 16);
+          // Ensure color starts with #
+          const normalizedColor = color.startsWith('#') ? color : `#${color}`;
+          const rgb = parseInt(normalizedColor.slice(1), 16);
           return {
             r: (rgb >> 16) & 255,
             g: (rgb >> 8) & 255,
@@ -198,7 +200,13 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           return `rgb(${color.r}, ${color.g}, ${color.b})`;
         };
         
-        const baseRgb = parseColor(baseColor);
+        let baseRgb = parseColor(baseColor);
+        
+        // Brighten the key when hovered
+        if (hoveredKey === key.id) {
+          baseRgb = adjustBrightness(baseRgb, 20);
+        }
+        
         const sideColor = toRgbString(adjustBrightness(baseRgb, -40));
         const bottomColor = toRgbString(adjustBrightness(baseRgb, -80));
       
@@ -238,7 +246,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           
           
           // Draw the top surfaces
-          ctx.fillStyle = baseColor;
+          ctx.fillStyle = toRgbString(baseRgb);
           ctx.beginPath();
           ctx.roundRect(
             renderX + edgeHeight, 
@@ -267,7 +275,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             renderY + edgeHeight + 20
           );
           highlightGradient.addColorStop(0, toRgbString(adjustBrightness(baseRgb, 15)));
-          highlightGradient.addColorStop(1, baseColor);
+          highlightGradient.addColorStop(1, toRgbString(baseRgb));
           
           ctx.fillStyle = highlightGradient;
           ctx.beginPath();
@@ -305,7 +313,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           ctx.fill();
           
           // Draw the top surface
-          ctx.fillStyle = baseColor;
+          ctx.fillStyle = toRgbString(baseRgb);
           ctx.beginPath();
           ctx.roundRect(
             renderX + edgeHeight, 
@@ -324,7 +332,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             renderY + edgeHeight + 20
           );
           highlightGradient.addColorStop(0, toRgbString(adjustBrightness(baseRgb, 15)));
-          highlightGradient.addColorStop(1, baseColor);
+          highlightGradient.addColorStop(1, toRgbString(baseRgb));
           
           ctx.fillStyle = highlightGradient;
           ctx.beginPath();
@@ -508,6 +516,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         if (Array.isArray(key.textColor) && key.textColor[index]) {
           textColor = key.textColor[index];
+        } else if (Array.isArray(key.textColor) && key.textColor[0]) {
+          // Use first color as default for all positions if specific position not set
+          textColor = key.textColor[0];
         } else if (key.default?.color && Array.isArray(key.default.color) && key.default.color[0]) {
           textColor = key.default.color[0];
           // Override dark colors for decal keys in dark mode
