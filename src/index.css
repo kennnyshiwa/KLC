@@ -1870,7 +1870,7 @@ body {
   background-color: #444;
 }
 
-/* Menu bar text visibility */
+/* Menu bar and dropdown dark mode styles */
 .dark-mode .menu-item {
   color: #e0e0e0;
 }
@@ -1878,6 +1878,24 @@ body {
 .dark-mode .menu-item:hover {
   background-color: #3a3a3a;
   color: #fff;
+}
+
+.dark-mode .menu-dropdown {
+  background-color: #2a2a2a;
+  border-color: #444;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .menu-dropdown-item {
+  color: #e0e0e0;
+}
+
+.dark-mode .menu-dropdown-item:hover {
+  background-color: #3a3a3a;
+}
+
+.dark-mode .menu-dropdown-separator {
+  background-color: #444;
 }
 
 /* Toolbar buttons visibility */
@@ -1983,7 +2001,22 @@ body {
   background-color: #3a3a3a;
 }
 
-/* Add key menu items */
+/* Add key menu dark mode styles */
+.dark-mode .add-key-menu {
+  background-color: #2a2a2a;
+  border-color: #444;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .add-key-category {
+  border-bottom-color: #444;
+}
+
+.dark-mode .add-key-category-header {
+  background-color: #333;
+  color: #b0b0b0;
+}
+
 .dark-mode .add-key-menu-item {
   color: #e0e0e0;
 }

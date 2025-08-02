@@ -89,12 +89,76 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
       return;
     }
     
-    const updates = selectedKeysList.map(key => ({
-      id: key.id,
-      changes: { [field]: value }
-    }));
-    updateKeys(updates);
-    saveToHistory();
+    // Special handling for position changes when multiple keys are selected
+    if ((field === 'x' || field === 'y') && typeof value === 'number' && selectedKeysList.length > 1) {
+      // Calculate the offset from the first selected key
+      const referenceKey = selectedKeysList[0];
+      const offset = value - referenceKey[field];
+      
+      // Apply the same offset to all selected keys to maintain relative positions
+      const updates = selectedKeysList.map(key => ({
+        id: key.id,
+        changes: { [field]: key[field] + offset }
+      }));
+      
+      updateKeys(updates);
+      saveToHistory();
+    }
+    // Special handling for width changes to prevent collisions
+    else if (field === 'width' && typeof value === 'number') {
+      const allUpdates: Array<{ id: string; changes: Partial<Key> }> = [];
+      
+      // First, add the width updates for selected keys
+      selectedKeysList.forEach(key => {
+        allUpdates.push({
+          id: key.id,
+          changes: { width: value }
+        });
+      });
+      
+      // For each selected key, check if we need to move keys to the right
+      selectedKeysList.forEach(selectedKey => {
+        const widthDiff = value - selectedKey.width;
+        if (widthDiff > 0) {
+          // Key is getting wider, need to shift the entire row
+          const selectedKeyRow = selectedKey.y;
+          const selectedKeyOriginalRight = selectedKey.x + selectedKey.width;
+          
+          // Find all keys in the same row that are to the right of this key
+          const keysToMove = keyboard.keys.filter(key => {
+            // Don't move selected keys
+            if (selectedKeys.has(key.id)) return false;
+            
+            // Check if key is in the same row (within 0.1 units tolerance)
+            const sameRow = Math.abs(key.y - selectedKeyRow) < 0.1;
+            
+            // Check if key starts at or after the right edge of the selected key
+            const toTheRight = key.x >= selectedKeyOriginalRight - 0.1;
+            
+            return sameRow && toTheRight;
+          });
+          
+          // Move all keys to the right of the selected key by the width difference
+          keysToMove.forEach(key => {
+            allUpdates.push({
+              id: key.id,
+              changes: { x: key.x + widthDiff }
+            });
+          });
+        }
+      });
+      
+      updateKeys(allUpdates);
+      saveToHistory();
+    } else {
+      // Normal update for other fields
+      const updates = selectedKeysList.map(key => ({
+        id: key.id,
+        changes: { [field]: value }
+      }));
+      updateKeys(updates);
+      saveToHistory();
+    }
   };
 
   const handleLegendUpdate = (index: number, value: string) => {
