@@ -35,6 +35,7 @@ export interface Key {
   frontLegends?: string[];
   align?: number;
   font?: string;
+  legendRotation?: number[];
 }
 
 export interface KeyboardMetadata {

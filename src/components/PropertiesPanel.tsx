@@ -981,6 +981,54 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     }}
                   />
                 </div>
+                
+                {/* Legend rotation */}
+                <div className="property-row">
+                  <label>Legend Rotation</label>
+                  <p className="hint">Set rotation angle for each legend position (in degrees)</p>
+                </div>
+                
+                {/* Show rotation inputs for each legend that has text */}
+                {firstKey.labels.map((label, index) => {
+                  if (!label) return null;
+                  const positionMap: { [key: number]: string } = {
+                    0: 'TL', 10: 'TC', 2: 'TR',
+                    7: 'ML', 8: 'MC', 9: 'MR',
+                    1: 'BL', 11: 'BC', 3: 'BR',
+                    4: 'FL', 5: 'FC', 6: 'FR'
+                  };
+                  
+                  return (
+                    <div key={index} className="property-row-dual">
+                      <div className="property-field">
+                        <label>{positionMap[index] || `Pos ${index}`}: {label.substring(0, 10)}{label.length > 10 ? '...' : ''}</label>
+                        <input
+                          type="number"
+                          value={firstKey.legendRotation?.[index] || 0}
+                          onChange={(e) => {
+                            const rotation = parseFloat(e.target.value) || 0;
+                            const updates = selectedKeysList.map(key => {
+                              const newRotation = [...(key.legendRotation || [])];
+                              // Ensure array is long enough
+                              while (newRotation.length <= index) {
+                                newRotation.push(0);
+                              }
+                              newRotation[index] = rotation;
+                              return {
+                                id: key.id,
+                                changes: { legendRotation: newRotation }
+                              };
+                            });
+                            updateKeys(updates);
+                            saveToHistory();
+                          }}
+                          step="15"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

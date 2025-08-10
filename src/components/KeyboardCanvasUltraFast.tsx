@@ -471,6 +471,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         }
         
         const position = getLegendPosition(index);
+        const legendRotation = key.legendRotation?.[index] || 0;
         
         // Override position if key has align property
         let finalPosition = { ...position };
@@ -576,6 +577,17 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         // Calculate Y position using the relative position from getLegendPosition
         currentY = innerY + (innerHeight * finalPosition.y);
+        
+        // Apply rotation if needed
+        const needsRotation = legendRotation !== 0;
+        if (needsRotation) {
+          ctx.save();
+          ctx.translate(currentX, currentY);
+          ctx.rotate((legendRotation * Math.PI) / 180);
+          // Reset position to origin since we've translated
+          currentX = 0;
+          currentY = 0;
+        }
         
         // Measure total width if needed for center/right alignment
         if (finalPosition.align !== 'start') {
@@ -701,6 +713,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             }
           }
         });
+        
+        // Restore context if we applied rotation
+        if (needsRotation) {
+          ctx.restore();
+        }
       });
       
       // Restore canvas state if we applied rotation
@@ -783,7 +800,19 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
-    animationFrameRef.current = requestAnimationFrame(render);
+    animationFrameRef.current = requestAnimationFrame(() => {
+      // Ensure we have the latest state before rendering
+      const latestState = useKeyboardStore.getState();
+      stateRef.current = {
+        keyboard: latestState.keyboard,
+        selectedKeys: latestState.selectedKeys,
+        hoveredKey: latestState.hoveredKey,
+        editorSettings: latestState.editorSettings,
+        isSettingRotationPoint: latestState.isSettingRotationPoint,
+        isRotationSectionExpanded: latestState.isRotationSectionExpanded,
+      };
+      render();
+    });
   };
 
   // Get key at position
