@@ -381,22 +381,130 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       
       // Draw selection outline if selected
       if (selectedKeys.has(key.id)) {
+        // Check if this is a special shaped key
+        const hasSecondaryRect = key.x2 !== undefined || key.y2 !== undefined || 
+                                key.width2 !== undefined || key.height2 !== undefined;
+        
         // Draw a thick outline with a contrasting color
         ctx.strokeStyle = '#3498db';
         ctx.lineWidth = 3;
         ctx.setLineDash([]);
         
-        // Draw outline slightly outside the key bounds for better visibility
-        ctx.beginPath();
-        ctx.roundRect(renderX - 1, renderY - 1, keyWidth + 2, keyHeight + 2, 6);
-        ctx.stroke();
-        
-        // Add a white inner stroke for better contrast
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(renderX - 2, renderY - 2, keyWidth + 4, keyHeight + 4, 7);
-        ctx.stroke();
+        if (hasSecondaryRect) {
+          // For special keys, we need to draw a path that follows the actual shape
+          const x2 = (key.x2 || 0) * unitSize;
+          const y2 = (key.y2 || 0) * unitSize;
+          const width2 = (key.width2 || key.width) * unitSize - keyInset * 2;
+          const height2 = (key.height2 || key.height) * unitSize - keyInset * 2;
+          
+          // Draw the selection outline as a unified shape
+          const outlineOffset = 1;
+          const radius = 6;
+          
+          // Create a path that outlines the L-shaped key
+          ctx.beginPath();
+          
+          // Determine the type of special key based on x2/y2 values
+          if (y2 < 0) {
+            // ISO Enter type shape (secondary rect is above)
+            // Start from top-left of secondary rect
+            ctx.moveTo(renderX + x2 - outlineOffset + radius, renderY + y2 - outlineOffset);
+            ctx.arcTo(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, renderX + x2 - outlineOffset, renderY + y2 - outlineOffset + radius, radius);
+            
+            // Left side of secondary rect
+            ctx.lineTo(renderX + x2 - outlineOffset, renderY - outlineOffset - radius);
+            
+            // Connect to main rect
+            ctx.arcTo(renderX + x2 - outlineOffset, renderY - outlineOffset, renderX + x2 - outlineOffset + radius, renderY - outlineOffset, radius);
+            ctx.lineTo(renderX - outlineOffset + radius, renderY - outlineOffset);
+            
+            // Top-left of main rect
+            ctx.arcTo(renderX - outlineOffset, renderY - outlineOffset, renderX - outlineOffset, renderY - outlineOffset + radius, radius);
+            
+            // Left side of main rect
+            ctx.lineTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset - radius);
+            
+            // Bottom-left of main rect
+            ctx.arcTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset, renderX - outlineOffset + radius, renderY + keyHeight + outlineOffset, radius);
+            
+            // Bottom of main rect
+            ctx.lineTo(renderX + keyWidth + outlineOffset - radius, renderY + keyHeight + outlineOffset);
+            
+            // Bottom-right of main rect
+            ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset, renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset - radius, radius);
+            
+            // Right side of main rect
+            ctx.lineTo(renderX + keyWidth + outlineOffset, renderY + y2 + height2 + outlineOffset - radius);
+            
+            // Connect to secondary rect
+            ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + y2 + height2 + outlineOffset, renderX + keyWidth + outlineOffset - radius, renderY + y2 + height2 + outlineOffset, radius);
+            ctx.lineTo(renderX + x2 + width2 + outlineOffset - radius, renderY + y2 + height2 + outlineOffset);
+            
+            // Bottom-right of secondary rect
+            ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 + height2 + outlineOffset, renderX + x2 + width2 + outlineOffset, renderY + y2 + height2 + outlineOffset - radius, radius);
+            
+            // Right side of secondary rect
+            ctx.lineTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset + radius);
+            
+            // Top-right of secondary rect
+            ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset, renderX + x2 + width2 + outlineOffset - radius, renderY + y2 - outlineOffset, radius);
+            
+            // Close the path
+            ctx.closePath();
+          } else {
+            // For other special key types, fall back to a simpler approach
+            // Draw outlines for both rectangles but connect them
+            ctx.roundRect(renderX - outlineOffset, renderY - outlineOffset, keyWidth + outlineOffset * 2, keyHeight + outlineOffset * 2, radius);
+            ctx.roundRect(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, width2 + outlineOffset * 2, height2 + outlineOffset * 2, radius);
+          }
+          
+          ctx.stroke();
+          
+          // Add a white inner stroke for better contrast
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1;
+          const innerOffset = 2;
+          
+          // Repeat the same path but with larger offset for the inner stroke
+          ctx.beginPath();
+          if (y2 < 0) {
+            // Same path logic but with innerOffset instead of outlineOffset
+            ctx.moveTo(renderX + x2 - innerOffset + radius, renderY + y2 - innerOffset);
+            ctx.arcTo(renderX + x2 - innerOffset, renderY + y2 - innerOffset, renderX + x2 - innerOffset, renderY + y2 - innerOffset + radius, radius);
+            ctx.lineTo(renderX + x2 - innerOffset, renderY - innerOffset - radius);
+            ctx.arcTo(renderX + x2 - innerOffset, renderY - innerOffset, renderX + x2 - innerOffset + radius, renderY - innerOffset, radius);
+            ctx.lineTo(renderX - innerOffset + radius, renderY - innerOffset);
+            ctx.arcTo(renderX - innerOffset, renderY - innerOffset, renderX - innerOffset, renderY - innerOffset + radius, radius);
+            ctx.lineTo(renderX - innerOffset, renderY + keyHeight + innerOffset - radius);
+            ctx.arcTo(renderX - innerOffset, renderY + keyHeight + innerOffset, renderX - innerOffset + radius, renderY + keyHeight + innerOffset, radius);
+            ctx.lineTo(renderX + keyWidth + innerOffset - radius, renderY + keyHeight + innerOffset);
+            ctx.arcTo(renderX + keyWidth + innerOffset, renderY + keyHeight + innerOffset, renderX + keyWidth + innerOffset, renderY + keyHeight + innerOffset - radius, radius);
+            ctx.lineTo(renderX + keyWidth + innerOffset, renderY + y2 + height2 + innerOffset - radius);
+            ctx.arcTo(renderX + keyWidth + innerOffset, renderY + y2 + height2 + innerOffset, renderX + keyWidth + innerOffset - radius, renderY + y2 + height2 + innerOffset, radius);
+            ctx.lineTo(renderX + x2 + width2 + innerOffset - radius, renderY + y2 + height2 + innerOffset);
+            ctx.arcTo(renderX + x2 + width2 + innerOffset, renderY + y2 + height2 + innerOffset, renderX + x2 + width2 + innerOffset, renderY + y2 + height2 + innerOffset - radius, radius);
+            ctx.lineTo(renderX + x2 + width2 + innerOffset, renderY + y2 - innerOffset + radius);
+            ctx.arcTo(renderX + x2 + width2 + innerOffset, renderY + y2 - innerOffset, renderX + x2 + width2 + innerOffset - radius, renderY + y2 - innerOffset, radius);
+            ctx.closePath();
+          } else {
+            ctx.roundRect(renderX - innerOffset, renderY - innerOffset, keyWidth + innerOffset * 2, keyHeight + innerOffset * 2, radius);
+            ctx.roundRect(renderX + x2 - innerOffset, renderY + y2 - innerOffset, width2 + innerOffset * 2, height2 + innerOffset * 2, radius);
+          }
+          ctx.stroke();
+        } else {
+          // Regular key - single outline
+          // Draw outline slightly outside the key bounds for better visibility
+          ctx.beginPath();
+          ctx.roundRect(renderX - 1, renderY - 1, keyWidth + 2, keyHeight + 2, 6);
+          ctx.stroke();
+          
+          // Add a white inner stroke for better contrast
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(renderX - 2, renderY - 2, keyWidth + 4, keyHeight + 4, 7);
+          ctx.stroke();
+        }
       }
       
       // Draw front legends if present
