@@ -5,12 +5,13 @@ import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 interface SaveLayoutModalProps {
   onClose: () => void;
   layoutId?: string;
+  isSaveAs?: boolean;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.DEV ? 'http://localhost:3001' : '/api');
 
-const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) => {
+const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId, isSaveAs = false }) => {
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const [name, setName] = useState(keyboard.meta.name || '');
   const [description, setDescription] = useState(keyboard.meta.notes || '');
@@ -23,11 +24,14 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    // If we have a layout ID, fetch the existing layout data
-    if (layoutId) {
+    // If we have a layout ID and not doing Save As, fetch the existing layout data
+    if (layoutId && !isSaveAs) {
       fetchLayout();
+    } else if (isSaveAs) {
+      // For Save As, append " (Copy)" to the name
+      setName((keyboard.meta.name || '') + ' (Copy)');
     }
-  }, [layoutId]);
+  }, [layoutId, isSaveAs, keyboard.meta.name]);
 
   const fetchLayout = async () => {
     try {
@@ -79,11 +83,12 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
         tags
       };
 
-      const url = layoutId 
+      // For Save As, always create a new layout
+      const url = (layoutId && !isSaveAs)
         ? `${API_URL}/layouts/${layoutId}`
         : `${API_URL}/layouts`;
       
-      const method = layoutId ? 'PUT' : 'POST';
+      const method = (layoutId && !isSaveAs) ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
@@ -194,7 +199,7 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" style={{ width: '500px' }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{layoutId ? 'Update Layout' : 'Save Layout'}</h2>
+          <h2>{isSaveAs ? 'Save Layout As' : (layoutId ? 'Update Layout' : 'Save Layout')}</h2>
           <button className="close-btn" onClick={onClose}>
             <X size={20} />
           </button>
@@ -300,7 +305,7 @@ const SaveLayoutModal: React.FC<SaveLayoutModalProps> = ({ onClose, layoutId }) 
             ) : (
               <>
                 <Save size={16} />
-                <span style={{ marginLeft: '4px' }}>{layoutId ? 'Update' : 'Save'}</span>
+                <span style={{ marginLeft: '4px' }}>{isSaveAs ? 'Save As' : (layoutId ? 'Update' : 'Save')}</span>
               </>
             )}
           </button>

@@ -16,6 +16,7 @@ const MenuBar: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showRawDataModal, setShowRawDataModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showSaveAsModal, setShowSaveAsModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
   const keyboard = useKeyboardStore((state) => state.keyboard);
@@ -205,6 +206,9 @@ const MenuBar: React.FC = () => {
                 <button className="menu-dropdown-item" onClick={() => { setShowSaveModal(true); setActiveMenu(null); }}>
                   Save...
                 </button>
+                <button className="menu-dropdown-item" onClick={() => { setShowSaveAsModal(true); setActiveMenu(null); }}>
+                  Save As...
+                </button>
               </>
             )}
             <div className="menu-dropdown-separator" />
@@ -296,6 +300,14 @@ const MenuBar: React.FC = () => {
           layoutId={(() => {
             return currentLayoutId || undefined;
           })()}
+        />
+      )}
+      
+      {showSaveAsModal && (
+        <SaveLayoutModal 
+          onClose={() => setShowSaveAsModal(false)}
+          layoutId={undefined} // Force save as new layout
+          isSaveAs={true}
         />
       )}
     </>

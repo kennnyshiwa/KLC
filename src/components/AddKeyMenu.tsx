@@ -46,6 +46,7 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
 
 const AddKeyMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const menuRef = useRef<HTMLDivElement>(null);
   
   const addKey = useKeyboardStore((state) => state.addKey);
@@ -95,9 +96,12 @@ const AddKeyMenu: React.FC = () => {
       // Place new key to the right of the reference key
       newX = referenceKey.x + referenceKey.width;
       newY = referenceKey.y;
-      
+    }
+
+    // Create the specified number of keys
+    for (let i = 0; i < quantity; i++) {
       // Check if the new key would go off screen (assuming 20 units width)
-      if (newX + template.width > 20) {
+      if (keyboard.keys.length > 0 && newX + template.width > 20) {
         // Move to the next row
         newX = 0;
         // Find the bottom-most key for the new row position
@@ -106,27 +110,32 @@ const AddKeyMenu: React.FC = () => {
         );
         newY = bottomKey.y + bottomKey.height + 0.25;
       }
-    }
 
-    const newKey: Key = {
-      id: generateKeyId(),
-      x: newX,
-      y: newY,
-      width: template.width,
-      height: template.height,
-      x2: template.x2,
-      y2: template.y2,
-      width2: template.width2,
-      height2: template.height2,
-      labels: [''],
-      color: '#f9f9f9',
-      profile: 'OEM',
-      stepped: template.stepped,
-    };
+      const newKey: Key = {
+        id: generateKeyId(),
+        x: newX,
+        y: newY,
+        width: template.width,
+        height: template.height,
+        x2: template.x2,
+        y2: template.y2,
+        width2: template.width2,
+        height2: template.height2,
+        labels: [''],
+        color: '#f9f9f9',
+        profile: 'OEM',
+        stepped: template.stepped,
+      };
+      
+      addKey(newKey);
+      
+      // Update position for next key
+      newX += template.width;
+    }
     
-    addKey(newKey);
     saveToHistory();
     setIsOpen(false);
+    setQuantity(1); // Reset quantity after adding
   };
 
   return (
@@ -142,6 +151,17 @@ const AddKeyMenu: React.FC = () => {
       
       {isOpen && (
         <div className="add-key-menu">
+          <div className="add-key-quantity">
+            <label>Quantity:</label>
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+              className="quantity-input"
+            />
+          </div>
           {Object.entries(KEY_TEMPLATES).map(([category, templates]) => (
             <div key={category} className="add-key-category">
               <div className="add-key-category-header">{category}</div>
@@ -152,6 +172,7 @@ const AddKeyMenu: React.FC = () => {
                   onClick={() => handleAddKey(template)}
                 >
                   {template.name}
+                  {quantity > 1 && <span className="quantity-badge"> ×{quantity}</span>}
                 </button>
               ))}
             </div>

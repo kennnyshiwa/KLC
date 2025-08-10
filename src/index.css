@@ -1284,6 +1284,40 @@ body {
   background-color: #f0f0f0;
 }
 
+.add-key-quantity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.add-key-quantity label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+}
+
+.quantity-input {
+  width: 60px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.quantity-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.quantity-badge {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
 /* User Menu Styles */
 .login-button {
   display: flex;
@@ -2023,6 +2057,28 @@ body {
 
 .dark-mode .add-key-menu-item:hover {
   background-color: #3a3a3a;
+}
+
+.dark-mode .add-key-quantity {
+  border-bottom-color: #444;
+}
+
+.dark-mode .add-key-quantity label {
+  color: #999;
+}
+
+.dark-mode .quantity-input {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.dark-mode .quantity-input:focus {
+  border-color: #3498db;
+}
+
+.dark-mode .quantity-badge {
+  color: #999;
 }
 
 /* Input fields in properties panel */
