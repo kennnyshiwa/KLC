@@ -50,22 +50,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
     
     if (selectedKeysList.length === 0) return;
     
-    // Find the bottom-most key
-    const bottomKey = keyboard.keys.reduce((prev, current) => 
-      (prev.y + prev.height > current.y + current.height) ? prev : current
-    );
-    
-    const newY = bottomKey.y + bottomKey.height + 0.25; // 0.25 unit gap between rows
-    
-    // Calculate the leftmost position of selected keys to maintain relative positions
-    const leftmostSelected = selectedKeysList.reduce((prev, current) => 
-      (prev.x < current.x) ? prev : current
-    );
-    
     selectedKeysList.forEach(key => {
-      // Maintain relative X positions
-      const relativeX = key.x - leftmostSelected.x;
-      const duplicated = duplicateKey(key, { x: relativeX, y: newY - key.y });
+      const duplicated = duplicateKey(key, { 
+        x: key.width,
+        y: 0
+      });
       addKey(duplicated);
     });
     

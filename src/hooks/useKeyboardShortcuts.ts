@@ -13,6 +13,8 @@ export const useKeyboardShortcuts = () => {
   const clearSelection = useKeyboardStore((state) => state.clearSelection);
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
   const updateKeys = useKeyboardStore((state) => state.updateKeys);
+  const copyKeys = useKeyboardStore((state) => state.copyKeys);
+  const pasteKeys = useKeyboardStore((state) => state.pasteKeys);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,6 +69,20 @@ export const useKeyboardShortcuts = () => {
         }
       }
       
+      // Copy
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        e.preventDefault();
+        if (selectedKeys.size > 0) {
+          copyKeys(Array.from(selectedKeys));
+        }
+      }
+      
+      // Paste
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        e.preventDefault();
+        pasteKeys();
+      }
+      
       // Escape - Clear selection
       if (e.key === 'Escape') {
         clearSelection();
@@ -106,5 +122,5 @@ export const useKeyboardShortcuts = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedKeys, keyboard.keys, undo, redo, deleteKeys, addKey, selectAll, clearSelection, saveToHistory, updateKeys]);
+  }, [selectedKeys, keyboard.keys, undo, redo, deleteKeys, addKey, selectAll, clearSelection, saveToHistory, updateKeys, copyKeys, pasteKeys]);
 };

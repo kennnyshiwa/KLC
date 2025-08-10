@@ -52,6 +52,7 @@ const AddKeyMenu: React.FC = () => {
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
   const lastModifiedKeyId = useKeyboardStore((state) => state.lastModifiedKeyId);
+  const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -73,20 +74,26 @@ const AddKeyMenu: React.FC = () => {
     let newY = 0;
     
     if (keyboard.keys.length > 0) {
-      // Find the reference key - either the last modified key or the last key in the array
+      // Find the reference key - prioritize selected key, then last modified, then rightmost key
       let referenceKey = null;
       
-      if (lastModifiedKeyId) {
+      if (selectedKeys.size > 0) {
+        // Use the first selected key as reference
+        const selectedId = Array.from(selectedKeys)[0];
+        referenceKey = keyboard.keys.find(k => k.id === selectedId);
+      } else if (lastModifiedKeyId) {
         referenceKey = keyboard.keys.find(k => k.id === lastModifiedKeyId);
       }
       
-      // If no last modified key or it was deleted, use the last key in array
+      // If no selected or last modified key, find the rightmost key
       if (!referenceKey) {
-        referenceKey = keyboard.keys[keyboard.keys.length - 1];
+        referenceKey = keyboard.keys.reduce((prev, current) => 
+          (prev.x + prev.width > current.x + current.width) ? prev : current
+        );
       }
       
       // Place new key to the right of the reference key
-      newX = referenceKey.x + referenceKey.width; // 0.25 unit gap between keys
+      newX = referenceKey.x + referenceKey.width;
       newY = referenceKey.y;
       
       // Check if the new key would go off screen (assuming 20 units width)

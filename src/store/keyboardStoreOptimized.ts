@@ -17,6 +17,7 @@ interface KeyboardState {
   isRotationSectionExpanded: boolean;
   multiSelectMode: boolean;
   lastModifiedKeyId: string | null;
+  clipboard: Key[];
   
   // Actions
   setKeyboard: (keyboard: Keyboard) => void;
@@ -62,6 +63,10 @@ interface KeyboardState {
   
   // Multi-select mode
   setMultiSelectMode: (enabled: boolean) => void;
+  
+  // Clipboard
+  copyKeys: (keyIds: string[]) => void;
+  pasteKeys: () => void;
 }
 
 export const useKeyboardStore = create<KeyboardState>()(
@@ -92,6 +97,7 @@ export const useKeyboardStore = create<KeyboardState>()(
       isRotationSectionExpanded: true,
       multiSelectMode: false,
       lastModifiedKeyId: null,
+      clipboard: [],
 
       setKeyboard: (keyboard) => {
         set({
@@ -295,6 +301,83 @@ export const useKeyboardStore = create<KeyboardState>()(
       
       setMultiSelectMode: (enabled) => {
         set({ multiSelectMode: enabled });
+      },
+      
+      copyKeys: (keyIds) => {
+        const state = get();
+        const keysToCopy = keyIds
+          .map(id => state.keyboard.keys.find(k => k.id === id))
+          .filter(Boolean) as Key[];
+        
+        if (keysToCopy.length > 0) {
+          // Create deep copies of the keys
+          const copiedKeys = keysToCopy.map(key => ({
+            ...key,
+            labels: [...(key.labels || [])],
+            textColor: [...(key.textColor || [])],
+            textSize: [...(key.textSize || [])],
+          }));
+          
+          set({ clipboard: copiedKeys });
+        }
+      },
+      
+      pasteKeys: () => {
+        const state = get();
+        if (state.clipboard.length === 0) return;
+        
+        // Find reference position - either from selected key or rightmost key
+        let referenceKey = null;
+        let pasteX = 0;
+        let pasteY = 0;
+        
+        if (state.selectedKeys.size > 0) {
+          // Get the first selected key as reference
+          const selectedId = Array.from(state.selectedKeys)[0];
+          referenceKey = state.keyboard.keys.find(k => k.id === selectedId);
+        } else if (state.keyboard.keys.length > 0) {
+          // Find the rightmost key
+          referenceKey = state.keyboard.keys.reduce((prev, current) => 
+            (prev.x + prev.width > current.x + current.width) ? prev : current
+          );
+        }
+        
+        if (referenceKey) {
+          // Place to the right of the reference key
+          pasteX = referenceKey.x + referenceKey.width;
+          pasteY = referenceKey.y;
+        }
+        
+        // Find the leftmost and topmost positions of clipboard keys
+        const leftmostClipboard = state.clipboard.reduce((prev, current) => 
+          (prev.x < current.x) ? prev : current
+        );
+        const topmostClipboard = state.clipboard.reduce((prev, current) => 
+          (prev.y < current.y) ? prev : current
+        );
+        
+        // Create new keys with new IDs and positions
+        const newKeys = state.clipboard.map(key => ({
+          ...key,
+          id: `key-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+          x: key.x - leftmostClipboard.x + pasteX,
+          y: key.y - topmostClipboard.y + pasteY,
+          labels: [...(key.labels || [])],
+          textColor: [...(key.textColor || [])],
+          textSize: [...(key.textSize || [])],
+        }));
+        
+        // Add the new keys to the keyboard
+        set((state) => ({
+          keyboard: {
+            ...state.keyboard,
+            keys: [...state.keyboard.keys, ...newKeys],
+          },
+          hasUnsavedChanges: true,
+          selectedKeys: new Set(newKeys.map(k => k.id)),
+        }));
+        
+        get().saveToHistory();
       },
     })),
     {
