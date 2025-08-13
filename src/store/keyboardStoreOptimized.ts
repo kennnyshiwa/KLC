@@ -326,26 +326,17 @@ export const useKeyboardStore = create<KeyboardState>()(
         const state = get();
         if (state.clipboard.length === 0) return;
         
-        // Find reference position - either from selected key or rightmost key
-        let referenceKey = null;
+        // Find the bottom-most key in the current layout
         let pasteX = 0;
         let pasteY = 0;
         
-        if (state.selectedKeys.size > 0) {
-          // Get the first selected key as reference
-          const selectedId = Array.from(state.selectedKeys)[0];
-          referenceKey = state.keyboard.keys.find(k => k.id === selectedId);
-        } else if (state.keyboard.keys.length > 0) {
-          // Find the rightmost key
-          referenceKey = state.keyboard.keys.reduce((prev, current) => 
-            (prev.x + prev.width > current.x + current.width) ? prev : current
+        if (state.keyboard.keys.length > 0) {
+          // Find the bottom-most key
+          const bottomKey = state.keyboard.keys.reduce((prev, current) => 
+            (prev.y + prev.height > current.y + current.height) ? prev : current
           );
-        }
-        
-        if (referenceKey) {
-          // Place to the right of the reference key
-          pasteX = referenceKey.x + referenceKey.width;
-          pasteY = referenceKey.y;
+          // Place new keys 1 unit below the bottom-most key
+          pasteY = bottomKey.y + bottomKey.height + 1;
         }
         
         // Find the leftmost and topmost positions of clipboard keys

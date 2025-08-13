@@ -59,12 +59,28 @@ export const useKeyboardShortcuts = () => {
           .map(id => keyboard.keys.find(k => k.id === id))
           .filter(Boolean) as any[];
           
-        selectedKeysList.forEach(key => {
-          const duplicated = duplicateKey(key);
-          addKey(duplicated);
-        });
-        
         if (selectedKeysList.length > 0) {
+          // Find the bottom-most key in the entire layout
+          const bottomKey = keyboard.keys.reduce((prev, current) => 
+            (prev.y + prev.height > current.y + current.height) ? prev : current
+          );
+          
+          // Calculate new Y position (1 unit below bottom-most key)
+          const newY = bottomKey.y + bottomKey.height + 1;
+          
+          // Find the leftmost selected key to maintain relative positions
+          const leftmostSelected = selectedKeysList.reduce((prev, current) => 
+            (prev.x < current.x) ? prev : current
+          );
+          
+          selectedKeysList.forEach(key => {
+            const duplicated = duplicateKey(key, {
+              x: key.x - leftmostSelected.x,
+              y: newY - key.y
+            });
+            addKey(duplicated);
+          });
+          
           saveToHistory();
         }
       }
