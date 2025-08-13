@@ -35,6 +35,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const isSelectingRef = useRef(false);
   const selectionRectRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const isDuplicatingRef = useRef(false);
+  const duplicatedKeysRef = useRef<Set<string>>(new Set());
   
   // Store state cache
   const stateRef = useRef({
@@ -386,9 +388,15 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
                                 key.width2 !== undefined || key.height2 !== undefined;
         
         // Draw a thick outline with a contrasting color
-        ctx.strokeStyle = '#3498db';
+        // Use green for duplicated keys, blue for regular selection
+        if (isDuplicatingRef.current && duplicatedKeysRef.current.has(key.id)) {
+          ctx.strokeStyle = '#27ae60'; // Green for duplicates
+          ctx.setLineDash([5, 3]); // Dashed line for duplicates
+        } else {
+          ctx.strokeStyle = '#3498db';
+          ctx.setLineDash([]);
+        }
         ctx.lineWidth = 3;
-        ctx.setLineDash([]);
         
         if (hasSecondaryRect) {
           // For special keys, we need to draw a path that follows the actual shape
@@ -994,7 +1002,47 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         isDraggingRef.current = true;
         dragStartRef.current = { x, y };
         dragOffsetRef.current = { x: 0, y: 0 };
-        canvas.style.cursor = 'move';
+        
+        // Check if Alt is pressed - if so, we'll duplicate on drag
+        if (e.altKey) {
+          isDuplicatingRef.current = true;
+          duplicatedKeysRef.current.clear();
+          
+          // Create duplicates of all selected keys
+          const selectedKeysList = Array.from(store.selectedKeys)
+            .map(id => stateRef.current.keyboard.keys.find(k => k.id === id))
+            .filter(Boolean) as Key[];
+          
+          const newKeys: Key[] = [];
+          const newKeyIds: string[] = [];
+          
+          selectedKeysList.forEach(key => {
+            const newKey: Key = {
+              ...key,
+              id: `key-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+              labels: [...(key.labels || [])],
+              textColor: [...(key.textColor || [])],
+              textSize: [...(key.textSize || [])],
+            };
+            newKeys.push(newKey);
+            newKeyIds.push(newKey.id);
+            duplicatedKeysRef.current.add(newKey.id);
+          });
+          
+          // Add the new keys to the store
+          newKeys.forEach(key => store.addKey(key));
+          
+          // Update selection to the new duplicated keys
+          store.selectKeys(newKeyIds);
+          
+          // Update our cached state
+          stateRef.current.selectedKeys = new Set(newKeyIds);
+          stateRef.current.keyboard = store.keyboard;
+          
+          canvas.style.cursor = 'copy';
+        } else {
+          canvas.style.cursor = 'move';
+        }
       }
     } else {
       // Start selection rectangle
@@ -1022,6 +1070,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     const y = e.clientY - rect.top;
     
     if (isDraggingRef.current) {
+      // Update cursor based on whether Alt is still held
+      if (isDuplicatingRef.current) {
+        canvas.style.cursor = e.altKey ? 'copy' : 'move';
+      }
       // Update drag offset
       dragOffsetRef.current = {
         x: x - dragStartRef.current.x,
@@ -1074,6 +1126,41 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     }
   };
 
+  const handleKeyUp = (e: KeyboardEvent) => {
+    // If Alt is released during duplicate-drag, remove the duplicated keys
+    if (e.key === 'Alt' && isDuplicatingRef.current && isDraggingRef.current) {
+      const store = useKeyboardStore.getState();
+      
+      // Get the original keys that were selected before duplication
+      const originalKeys: string[] = [];
+      stateRef.current.keyboard.keys.forEach(key => {
+        if (!duplicatedKeysRef.current.has(key.id) && 
+            stateRef.current.selectedKeys.has(key.id)) {
+          originalKeys.push(key.id);
+        }
+      });
+      
+      // Remove duplicated keys
+      const keysToDelete = Array.from(duplicatedKeysRef.current);
+      store.deleteKeys(keysToDelete);
+      
+      // Restore selection to original keys
+      store.selectKeys(originalKeys);
+      
+      // Update state
+      isDuplicatingRef.current = false;
+      duplicatedKeysRef.current.clear();
+      stateRef.current.selectedKeys = new Set(originalKeys);
+      stateRef.current.keyboard = store.keyboard;
+      
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'move';
+      }
+      
+      requestRender();
+    }
+  };
+
   const handleMouseUp = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1109,6 +1196,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       }
       
       isDraggingRef.current = false;
+      isDuplicatingRef.current = false;
+      duplicatedKeysRef.current.clear();
       dragOffsetRef.current = { x: 0, y: 0 };
       canvas.style.cursor = 'default';
     } else if (isSelectingRef.current) {
@@ -1155,6 +1244,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     canvas.addEventListener('mouseup', handleMouseUp);
     canvas.addEventListener('mouseleave', handleMouseUp);
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
     
     // Initial render
     render();
@@ -1172,6 +1262,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       canvas.removeEventListener('mouseup', handleMouseUp);
       canvas.removeEventListener('mouseleave', handleMouseUp);
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
       
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
