@@ -67,9 +67,14 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
     );
     
     selectedKeysList.forEach(key => {
+      // Calculate the exact position where we want the duplicated key
+      const targetX = key.x - leftmostSelected.x;
+      const targetY = key.y - topmostSelected.y + newY;
+      
+      // Since duplicateKey adds offset to key position, we need to subtract key position
       const duplicated = duplicateKey(key, { 
-        x: key.x - leftmostSelected.x,
-        y: newY - topmostSelected.y
+        x: targetX - key.x,
+        y: targetY - key.y
       });
       addKey(duplicated);
     });
