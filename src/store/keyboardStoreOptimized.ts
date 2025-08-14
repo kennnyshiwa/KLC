@@ -335,8 +335,8 @@ export const useKeyboardStore = create<KeyboardState>()(
           const bottomKey = state.keyboard.keys.reduce((prev, current) => 
             (prev.y + prev.height > current.y + current.height) ? prev : current
           );
-          // Place new keys 1 unit below the bottom-most key
-          pasteY = bottomKey.y + bottomKey.height + 1;
+          // Place new keys directly below the bottom-most key
+          pasteY = bottomKey.y + bottomKey.height;
         }
         
         // Find the leftmost and topmost positions of clipboard keys

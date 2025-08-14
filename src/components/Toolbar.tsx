@@ -55,18 +55,21 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
       (prev.y + prev.height > current.y + current.height) ? prev : current
     );
     
-    // Calculate new Y position (1 unit below bottom-most key)
-    const newY = bottomKey.y + bottomKey.height + 1;
+    // Calculate new Y position (directly below bottom-most key)
+    const newY = bottomKey.y + bottomKey.height;
     
-    // Find the leftmost selected key to maintain relative positions
+    // Find the leftmost and topmost selected keys to maintain relative positions
     const leftmostSelected = selectedKeysList.reduce((prev, current) => 
       (prev.x < current.x) ? prev : current
+    );
+    const topmostSelected = selectedKeysList.reduce((prev, current) => 
+      (prev.y < current.y) ? prev : current
     );
     
     selectedKeysList.forEach(key => {
       const duplicated = duplicateKey(key, { 
         x: key.x - leftmostSelected.x,
-        y: newY - key.y
+        y: newY - topmostSelected.y
       });
       addKey(duplicated);
     });
