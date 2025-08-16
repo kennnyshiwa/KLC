@@ -518,7 +518,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Draw front legends if present
       if (key.frontLegends && key.frontLegends.some(l => l)) {
         ctx.save();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        // Use white text for decal keys in dark mode, otherwise black
+        ctx.fillStyle = (key.decal && isDarkMode) ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)';
         const frontFont = key.font || '';
         ctx.font = frontFont ? fontManager.getRenderFont(frontFont, 10) : '10px Arial';
         ctx.textBaseline = 'middle';
