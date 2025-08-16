@@ -79,3 +79,65 @@ export function getLegendPosition(index: number): { x: number; y: number; align:
   
   return positions[index] || positions[0];
 }
+
+export function getStabilizerPositions(keyWidth: number): { x: number; y: number }[] {
+  // Stabilizer positions are relative to the key (0-1 range)
+  // Standard stabilizer spacing for different key sizes
+  
+  if (keyWidth >= 2) {
+    const positions: { x: number; y: number }[] = [];
+    
+    // Center stabilizer
+    positions.push({ x: 0.5, y: 0.5 });
+    
+    // Standard stabilizer positions based on key width
+    // The outer stabilizers should be positioned based on standard spacing:
+    // - 2u: 23.8mm total span (11.9mm from center each side)
+    // - 2.25u-2.75u: 23.8mm total span 
+    // - 3u+: Wider spacing
+    // - 6.25u: 100mm total span (50mm from center each side)
+    // - 7u: 114.3mm total span (57.15mm from center each side)
+    
+    if (keyWidth >= 7) {
+      // 7u spacebar - stabilizers near the edges
+      const edgeOffset = 0.5 / keyWidth; // ~0.5u from each edge
+      positions.push({ x: edgeOffset, y: 0.5 });
+      positions.push({ x: 1 - edgeOffset, y: 0.5 });
+    } else if (keyWidth >= 6.25) {
+      // 6.25u spacebar - stabilizers closer to edges
+      const edgeOffset = 0.625 / keyWidth; // ~0.625u from each edge
+      positions.push({ x: edgeOffset, y: 0.5 });
+      positions.push({ x: 1 - edgeOffset, y: 0.5 });
+    } else if (keyWidth >= 2) {
+      // 2u to 6u keys
+      if (keyWidth === 2 || keyWidth === 2.75) {
+        // 2u and 2.75u keys use the same stabilizer positions
+        // 2.75u is special - it uses 2u stabilizer spacing (23.8mm total span)
+        const stabSpan = 1.25; // Total span between stabilizers in units
+        const offset = stabSpan / 2; // Distance from center to each stabilizer
+        positions.push({ x: 0.5 - offset / keyWidth, y: 0.5 });
+        positions.push({ x: 0.5 + offset / keyWidth, y: 0.5 });
+      } else if (keyWidth <= 2.5) {
+        // 2.25u keys - slightly different spacing
+        const edgeOffset = 0.4 / keyWidth; // Slightly more inset
+        positions.push({ x: edgeOffset, y: 0.5 });
+        positions.push({ x: 1 - edgeOffset, y: 0.5 });
+      } else if (keyWidth <= 3) {
+        // 3u keys - a bit more inset
+        const edgeOffset = 0.45 / keyWidth;
+        positions.push({ x: edgeOffset, y: 0.5 });
+        positions.push({ x: 1 - edgeOffset, y: 0.5 });
+      } else {
+        // 3u+ to 6u keys - stabilizers closer to edges
+        const edgeOffset = 0.5 / keyWidth;
+        positions.push({ x: edgeOffset, y: 0.5 });
+        positions.push({ x: 1 - edgeOffset, y: 0.5 });
+      }
+    }
+    
+    return positions;
+  }
+  
+  // No stabilizers for keys smaller than 2u
+  return [];
+}

@@ -163,6 +163,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
           >
             Snap
           </button>
+          <button 
+            onClick={() => updateEditorSettings({ showStabilizerPositions: !editorSettings.showStabilizerPositions })} 
+            className={`toolbar-btn ${editorSettings.showStabilizerPositions ? 'active' : ''}`}
+            title="Show Stabilizer Positions"
+          >
+            Stabs
+          </button>
         </div>
         
         <div className="toolbar-separator" />

@@ -1,7 +1,7 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { Key } from '../types';
-import { getLegendPosition } from '../utils/keyUtils';
+import { getLegendPosition, getStabilizerPositions } from '../utils/keyUtils';
 import { parseIconLegend } from '../utils/iconParser';
 import { fontManager } from '../utils/fontManager';
 
@@ -37,6 +37,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   const selectionRectRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
   const isDuplicatingRef = useRef(false);
   const duplicatedKeysRef = useRef<Set<string>>(new Set());
+  const hoveredStabRef = useRef<{ keyId: string; stabIndex: number; x: number; y: number; keyWidth: number } | null>(null);
+  const mousePositionRef = useRef({ x: 0, y: 0 });
   
   // Store state cache
   const stateRef = useRef({
@@ -841,6 +843,42 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       if (hasRotation) {
         ctx.restore();
       }
+      
+      // Draw stabilizer positions if enabled
+      if (editorSettings.showStabilizerPositions && key.width >= 2) {
+        const stabPositions = getStabilizerPositions(key.width);
+        
+        ctx.save();
+        ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
+        ctx.lineWidth = 1;
+        
+        stabPositions.forEach(pos => {
+          const stabX = renderX + pos.x * keyWidth;
+          const stabY = renderY + pos.y * keyHeight;
+          
+          // Draw outer circle
+          ctx.beginPath();
+          ctx.arc(stabX, stabY, 10, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          // Draw crosshair
+          ctx.beginPath();
+          // Horizontal line
+          ctx.moveTo(stabX - 8, stabY);
+          ctx.lineTo(stabX + 8, stabY);
+          // Vertical line
+          ctx.moveTo(stabX, stabY - 8);
+          ctx.lineTo(stabX, stabY + 8);
+          ctx.stroke();
+          
+          // Draw small inner circle
+          ctx.beginPath();
+          ctx.arc(stabX, stabY, 3, 0, Math.PI * 2);
+          ctx.stroke();
+        });
+        
+        ctx.restore();
+      }
     });
     
     // Draw selection rectangle
@@ -908,6 +946,77 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     // Update cursor if in rotation point setting mode
     if (stateRef.current.isSettingRotationPoint) {
       canvas.style.cursor = 'crosshair';
+    }
+    
+    // Draw stabilizer tooltip if hovering over one
+    if (hoveredStabRef.current && stateRef.current.editorSettings.showStabilizerPositions) {
+      const { keyId, stabIndex, x, y, keyWidth } = hoveredStabRef.current;
+      const key = keyboard.keys.find(k => k.id === keyId);
+      if (key) {
+        // Determine stabilizer type
+        let stabType = '';
+        if (stabIndex === 0) {
+          stabType = 'Center';
+        } else if (stabIndex === 1) {
+          stabType = 'Left';
+        } else if (stabIndex === 2) {
+          stabType = 'Right';
+        }
+        
+        // Calculate coordinates in units (relative to key position)
+        const stabPositions = getStabilizerPositions(keyWidth);
+        const relativeX = stabPositions[stabIndex].x * keyWidth;
+        const relativeY = stabPositions[stabIndex].y * key.height;
+        
+        // Create tooltip text
+        const tooltipLines = [
+          `${keyWidth}u ${stabType} Stem`,
+          `X: ${relativeX.toFixed(3)}u`,
+          `Y: ${relativeY.toFixed(3)}u`
+        ];
+        
+        // Measure tooltip dimensions
+        ctx.save();
+        ctx.font = '12px Arial';
+        const padding = 8;
+        const lineHeight = 16;
+        const maxWidth = Math.max(...tooltipLines.map(line => ctx.measureText(line).width));
+        const tooltipWidth = maxWidth + padding * 2;
+        const tooltipHeight = tooltipLines.length * lineHeight + padding * 2;
+        
+        // Position tooltip (offset from stabilizer position)
+        let tooltipX = x + 15;
+        let tooltipY = y - tooltipHeight - 10;
+        
+        // Keep tooltip on screen
+        if (tooltipX + tooltipWidth > canvas.width) {
+          tooltipX = x - tooltipWidth - 15;
+        }
+        if (tooltipY < 0) {
+          tooltipY = y + 20;
+        }
+        
+        // Draw tooltip background
+        ctx.fillStyle = isDarkMode ? 'rgba(50, 50, 50, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+        ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 4);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Draw tooltip text
+        ctx.fillStyle = isDarkMode ? '#ffffff' : '#000000';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'left';
+        
+        tooltipLines.forEach((line, index) => {
+          const textY = tooltipY + padding + lineHeight / 2 + index * lineHeight;
+          ctx.fillText(line, tooltipX + padding, textY);
+        });
+        
+        ctx.restore();
+      }
     }
   };
 
@@ -1102,6 +1211,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       };
       requestRender();
     } else {
+      // Store mouse position for tooltip
+      mousePositionRef.current = { x, y };
+      
       // Hover effect
       const keyRect = getKeyAtPosition(x, y);
       const hoveredId = keyRect?.id || null;
@@ -1110,6 +1222,56 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         useKeyboardStore.getState().setHoveredKey(hoveredId);
         stateRef.current.hoveredKey = hoveredId;
         requestRender();
+      }
+      
+      // Check for stabilizer hover if stabilizers are shown
+      if (stateRef.current.editorSettings.showStabilizerPositions) {
+        let foundStab = false;
+        const { unitSize } = stateRef.current.editorSettings;
+        
+        // Check each key for stabilizer positions
+        for (const keyRect of keyRectsRef.current) {
+          const key = stateRef.current.keyboard.keys.find(k => k.id === keyRect.id);
+          if (!key || key.width < 2) continue;
+          
+          const stabPositions = getStabilizerPositions(key.width);
+          const keyInset = 1;
+          const renderX = Math.round(key.x * unitSize + keyInset);
+          const renderY = Math.round(key.y * unitSize + keyInset);
+          const keyWidth = Math.round((key.x + key.width) * unitSize - keyInset) - renderX;
+          const keyHeight = Math.round((key.y + key.height) * unitSize - keyInset) - renderY;
+          
+          // Check each stabilizer position
+          for (let i = 0; i < stabPositions.length; i++) {
+            const pos = stabPositions[i];
+            const stabX = renderX + pos.x * keyWidth;
+            const stabY = renderY + pos.y * keyHeight;
+            
+            // Check if mouse is over this stabilizer (within 12 pixel radius)
+            const dist = Math.sqrt(Math.pow(x - stabX, 2) + Math.pow(y - stabY, 2));
+            if (dist <= 12) {
+              hoveredStabRef.current = {
+                keyId: key.id,
+                stabIndex: i,
+                x: stabX,
+                y: stabY,
+                keyWidth: key.width
+              };
+              foundStab = true;
+              break;
+            }
+          }
+          
+          if (foundStab) break;
+        }
+        
+        // Clear hovered stab if none found
+        if (!foundStab && hoveredStabRef.current) {
+          hoveredStabRef.current = null;
+          requestRender();
+        } else if (foundStab && !hoveredStabRef.current) {
+          requestRender();
+        }
       }
       
       canvas.style.cursor = keyRect ? 'pointer' : 'default';

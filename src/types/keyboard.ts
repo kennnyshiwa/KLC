@@ -107,6 +107,7 @@ export interface EditorSettings {
   showGrid: boolean;
   unitSize: number;
   keySpacing: number;
+  showStabilizerPositions: boolean;
 }
 
 export interface ColorSwatch {
