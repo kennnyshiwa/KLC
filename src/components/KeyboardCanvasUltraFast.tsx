@@ -414,58 +414,123 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           // Create a path that outlines the L-shaped key
           ctx.beginPath();
           
-          // Determine the type of special key based on x2/y2 values
-          if (y2 < 0) {
-            // ISO Enter type shape (secondary rect is above)
-            // Start from top-left of secondary rect
-            ctx.moveTo(renderX + x2 - outlineOffset + radius, renderY + y2 - outlineOffset);
-            ctx.arcTo(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, renderX + x2 - outlineOffset, renderY + y2 - outlineOffset + radius, radius);
+          // Determine the type of special key and draw appropriate outline
+          // Check if this is an L-shaped key (ISO Enter, Big Ass Enter, etc)
+          const isLShaped = (x2 !== 0 || y2 !== 0) && (width2 !== key.width || height2 !== key.height);
+                    
+          if (isLShaped) {
+            // Draw a continuous outline for L-shaped keys
+            // We'll create a path that traces the outer edge of the combined shape
             
-            // Left side of secondary rect
-            ctx.lineTo(renderX + x2 - outlineOffset, renderY - outlineOffset - radius);
-            
-            // Connect to main rect
-            ctx.arcTo(renderX + x2 - outlineOffset, renderY - outlineOffset, renderX + x2 - outlineOffset + radius, renderY - outlineOffset, radius);
-            ctx.lineTo(renderX - outlineOffset + radius, renderY - outlineOffset);
-            
-            // Top-left of main rect
-            ctx.arcTo(renderX - outlineOffset, renderY - outlineOffset, renderX - outlineOffset, renderY - outlineOffset + radius, radius);
-            
-            // Left side of main rect
-            ctx.lineTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset - radius);
-            
-            // Bottom-left of main rect
-            ctx.arcTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset, renderX - outlineOffset + radius, renderY + keyHeight + outlineOffset, radius);
-            
-            // Bottom of main rect
-            ctx.lineTo(renderX + keyWidth + outlineOffset - radius, renderY + keyHeight + outlineOffset);
-            
-            // Bottom-right of main rect
-            ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset, renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset - radius, radius);
-            
-            // Right side of main rect
-            ctx.lineTo(renderX + keyWidth + outlineOffset, renderY + y2 + height2 + outlineOffset - radius);
-            
-            // Connect to secondary rect
-            ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + y2 + height2 + outlineOffset, renderX + keyWidth + outlineOffset - radius, renderY + y2 + height2 + outlineOffset, radius);
-            ctx.lineTo(renderX + x2 + width2 + outlineOffset - radius, renderY + y2 + height2 + outlineOffset);
-            
-            // Bottom-right of secondary rect
-            ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 + height2 + outlineOffset, renderX + x2 + width2 + outlineOffset, renderY + y2 + height2 + outlineOffset - radius, radius);
-            
-            // Right side of secondary rect
-            ctx.lineTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset + radius);
-            
-            // Top-right of secondary rect
-            ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset, renderX + x2 + width2 + outlineOffset - radius, renderY + y2 - outlineOffset, radius);
-            
-            // Close the path
-            ctx.closePath();
+            // Draw the L-shape outline
+            if (x2 < 0 && height2 < keyHeight) {
+              // ISO Enter type - secondary rect is at top and extends left
+              // Typical ISO: x2:-0.25, y2:0, h2:1, h:2
+              
+              // For ISO Enter, we need to trace the actual L-shape outline
+              // Start from top-left of secondary rect
+              ctx.moveTo(renderX + x2 - outlineOffset + radius, renderY + y2 - outlineOffset);
+              
+              // Top-left corner of secondary rect
+              ctx.arcTo(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, renderX + x2 - outlineOffset, renderY + y2 - outlineOffset + radius, radius);
+              
+              // Left side of secondary rect going down
+              ctx.lineTo(renderX + x2 - outlineOffset, renderY + y2 + height2 + outlineOffset);
+              
+              // Since x2 is negative, this creates the notch - go RIGHT to main rect left edge
+              ctx.lineTo(renderX - outlineOffset, renderY + y2 + height2 + outlineOffset);
+              
+              // Down the left side of main rect (continuing from where secondary rect ends)
+              ctx.lineTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset - radius);
+              
+              // Bottom-left corner of main rect
+              ctx.arcTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset, renderX - outlineOffset + radius, renderY + keyHeight + outlineOffset, radius);
+              
+              // Bottom of main rect
+              ctx.lineTo(renderX + keyWidth + outlineOffset - radius, renderY + keyHeight + outlineOffset);
+              
+              // Bottom-right corner of main rect
+              ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset, renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset - radius, radius);
+              
+              // Right side of main rect going up to top of main rect
+              ctx.lineTo(renderX + keyWidth + outlineOffset, renderY + radius);
+              
+              // Top-right corner of main rect
+              ctx.arcTo(renderX + keyWidth + outlineOffset, renderY, renderX + keyWidth + outlineOffset - radius, renderY, radius);
+              
+              // Top of main rect going left to where secondary rect connects
+              ctx.lineTo(renderX + x2 + width2 + outlineOffset - radius, renderY);
+              
+              // Top-right corner of secondary rect area
+              ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY, renderX + x2 + width2 + outlineOffset, renderY + radius, radius);
+              
+              // Right side of secondary rect going up
+              ctx.lineTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset + radius);
+              
+              // Top-right corner of secondary rect
+              ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset, renderX + x2 + width2 + outlineOffset - radius, renderY + y2 - outlineOffset, radius);
+              
+              // Top of secondary rect back to start
+              ctx.lineTo(renderX + x2 - outlineOffset + radius, renderY + y2 - outlineOffset);
+              
+              ctx.closePath();
+            } else if (y2 < 0) {
+              // Original ISO Enter type where y2 is negative
+              ctx.moveTo(renderX + x2 - outlineOffset + radius, renderY + y2 - outlineOffset);
+              ctx.arcTo(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, renderX + x2 - outlineOffset, renderY + y2 - outlineOffset + radius, radius);
+              ctx.lineTo(renderX + x2 - outlineOffset, renderY - outlineOffset - radius);
+              ctx.arcTo(renderX + x2 - outlineOffset, renderY - outlineOffset, renderX + x2 - outlineOffset + radius, renderY - outlineOffset, radius);
+              ctx.lineTo(renderX - outlineOffset + radius, renderY - outlineOffset);
+              ctx.arcTo(renderX - outlineOffset, renderY - outlineOffset, renderX - outlineOffset, renderY - outlineOffset + radius, radius);
+              ctx.lineTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset - radius);
+              ctx.arcTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset, renderX - outlineOffset + radius, renderY + keyHeight + outlineOffset, radius);
+              ctx.lineTo(renderX + keyWidth + outlineOffset - radius, renderY + keyHeight + outlineOffset);
+              ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset, renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset - radius, radius);
+              ctx.lineTo(renderX + keyWidth + outlineOffset, renderY + y2 + height2 + outlineOffset - radius);
+              ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + y2 + height2 + outlineOffset, renderX + keyWidth + outlineOffset - radius, renderY + y2 + height2 + outlineOffset, radius);
+              ctx.lineTo(renderX + x2 + width2 + outlineOffset - radius, renderY + y2 + height2 + outlineOffset);
+              ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 + height2 + outlineOffset, renderX + x2 + width2 + outlineOffset, renderY + y2 + height2 + outlineOffset - radius, radius);
+              ctx.lineTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset + radius);
+              ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset, renderX + x2 + width2 + outlineOffset - radius, renderY + y2 - outlineOffset, radius);
+              ctx.closePath();
+            } else if (x2 > 0) {
+              // Big Ass Enter type (secondary rect extends to the right)
+              ctx.moveTo(renderX - outlineOffset + radius, renderY - outlineOffset);
+              ctx.arcTo(renderX - outlineOffset, renderY - outlineOffset, renderX - outlineOffset, renderY - outlineOffset + radius, radius);
+              ctx.lineTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset - radius);
+              ctx.arcTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset, renderX - outlineOffset + radius, renderY + keyHeight + outlineOffset, radius);
+              ctx.lineTo(renderX + x2 - outlineOffset - radius, renderY + keyHeight + outlineOffset);
+              ctx.arcTo(renderX + x2 - outlineOffset, renderY + keyHeight + outlineOffset, renderX + x2 - outlineOffset, renderY + keyHeight + outlineOffset - radius, radius);
+              ctx.lineTo(renderX + x2 - outlineOffset, renderY + y2 + height2 + outlineOffset - radius);
+              ctx.arcTo(renderX + x2 - outlineOffset, renderY + y2 + height2 + outlineOffset, renderX + x2 - outlineOffset + radius, renderY + y2 + height2 + outlineOffset, radius);
+              ctx.lineTo(renderX + x2 + width2 + outlineOffset - radius, renderY + y2 + height2 + outlineOffset);
+              ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 + height2 + outlineOffset, renderX + x2 + width2 + outlineOffset, renderY + y2 + height2 + outlineOffset - radius, radius);
+              ctx.lineTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset + radius);
+              ctx.arcTo(renderX + x2 + width2 + outlineOffset, renderY + y2 - outlineOffset, renderX + x2 + width2 + outlineOffset - radius, renderY + y2 - outlineOffset, radius);
+              ctx.lineTo(renderX + keyWidth + outlineOffset - radius, renderY + y2 - outlineOffset);
+              ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + y2 - outlineOffset, renderX + keyWidth + outlineOffset, renderY + y2 - outlineOffset - radius, radius);
+              ctx.lineTo(renderX + keyWidth + outlineOffset, renderY - outlineOffset + radius);
+              ctx.arcTo(renderX + keyWidth + outlineOffset, renderY - outlineOffset, renderX + keyWidth + outlineOffset - radius, renderY - outlineOffset, radius);
+              ctx.closePath();
+            } else {
+              // Generic L-shape - for now use the same approach as other ISO variants
+              // This ensures all L-shaped keys get a continuous outline
+              ctx.moveTo(renderX - outlineOffset + radius, renderY - outlineOffset);
+              ctx.arcTo(renderX - outlineOffset, renderY - outlineOffset, renderX - outlineOffset, renderY - outlineOffset + radius, radius);
+              ctx.lineTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset - radius);
+              ctx.arcTo(renderX - outlineOffset, renderY + keyHeight + outlineOffset, renderX - outlineOffset + radius, renderY + keyHeight + outlineOffset, radius);
+              ctx.lineTo(renderX + keyWidth + outlineOffset - radius, renderY + keyHeight + outlineOffset);
+              ctx.arcTo(renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset, renderX + keyWidth + outlineOffset, renderY + keyHeight + outlineOffset - radius, radius);
+              ctx.lineTo(renderX + keyWidth + outlineOffset, renderY - outlineOffset + radius);
+              ctx.arcTo(renderX + keyWidth + outlineOffset, renderY - outlineOffset, renderX + keyWidth + outlineOffset - radius, renderY - outlineOffset, radius);
+              ctx.closePath();
+            }
           } else {
-            // For other special key types, fall back to a simpler approach
-            // Draw outlines for both rectangles but connect them
+            // For stepped keys or other special cases, just draw rounded rectangles
             ctx.roundRect(renderX - outlineOffset, renderY - outlineOffset, keyWidth + outlineOffset * 2, keyHeight + outlineOffset * 2, radius);
-            ctx.roundRect(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, width2 + outlineOffset * 2, height2 + outlineOffset * 2, radius);
+            if (width2 > 0 || height2 > 0) {
+              ctx.roundRect(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, width2 + outlineOffset * 2, height2 + outlineOffset * 2, radius);
+            }
           }
           
           ctx.stroke();
@@ -477,28 +542,88 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           
           // Repeat the same path but with larger offset for the inner stroke
           ctx.beginPath();
-          if (y2 < 0) {
-            // Same path logic but with innerOffset instead of outlineOffset
-            ctx.moveTo(renderX + x2 - innerOffset + radius, renderY + y2 - innerOffset);
-            ctx.arcTo(renderX + x2 - innerOffset, renderY + y2 - innerOffset, renderX + x2 - innerOffset, renderY + y2 - innerOffset + radius, radius);
-            ctx.lineTo(renderX + x2 - innerOffset, renderY - innerOffset - radius);
-            ctx.arcTo(renderX + x2 - innerOffset, renderY - innerOffset, renderX + x2 - innerOffset + radius, renderY - innerOffset, radius);
-            ctx.lineTo(renderX - innerOffset + radius, renderY - innerOffset);
-            ctx.arcTo(renderX - innerOffset, renderY - innerOffset, renderX - innerOffset, renderY - innerOffset + radius, radius);
-            ctx.lineTo(renderX - innerOffset, renderY + keyHeight + innerOffset - radius);
-            ctx.arcTo(renderX - innerOffset, renderY + keyHeight + innerOffset, renderX - innerOffset + radius, renderY + keyHeight + innerOffset, radius);
-            ctx.lineTo(renderX + keyWidth + innerOffset - radius, renderY + keyHeight + innerOffset);
-            ctx.arcTo(renderX + keyWidth + innerOffset, renderY + keyHeight + innerOffset, renderX + keyWidth + innerOffset, renderY + keyHeight + innerOffset - radius, radius);
-            ctx.lineTo(renderX + keyWidth + innerOffset, renderY + y2 + height2 + innerOffset - radius);
-            ctx.arcTo(renderX + keyWidth + innerOffset, renderY + y2 + height2 + innerOffset, renderX + keyWidth + innerOffset - radius, renderY + y2 + height2 + innerOffset, radius);
-            ctx.lineTo(renderX + x2 + width2 + innerOffset - radius, renderY + y2 + height2 + innerOffset);
-            ctx.arcTo(renderX + x2 + width2 + innerOffset, renderY + y2 + height2 + innerOffset, renderX + x2 + width2 + innerOffset, renderY + y2 + height2 + innerOffset - radius, radius);
-            ctx.lineTo(renderX + x2 + width2 + innerOffset, renderY + y2 - innerOffset + radius);
-            ctx.arcTo(renderX + x2 + width2 + innerOffset, renderY + y2 - innerOffset, renderX + x2 + width2 + innerOffset - radius, renderY + y2 - innerOffset, radius);
-            ctx.closePath();
+          if (isLShaped) {
+            if (x2 < 0 && height2 < keyHeight) {
+              // ISO Enter type - Same path logic but with innerOffset instead of outlineOffset
+              // Typical ISO: x2:-0.25, y2:0, h2:1, h:2
+              
+              // For ISO Enter, we need to trace the actual L-shape outline
+              // Start from top-left of secondary rect
+              ctx.moveTo(renderX + x2 - innerOffset + radius, renderY + y2 - innerOffset);
+              
+              // Top-left corner of secondary rect
+              ctx.arcTo(renderX + x2 - innerOffset, renderY + y2 - innerOffset, renderX + x2 - innerOffset, renderY + y2 - innerOffset + radius, radius);
+              
+              // Left side of secondary rect going down
+              ctx.lineTo(renderX + x2 - innerOffset, renderY + y2 + height2 + innerOffset);
+              
+              // Since x2 is negative, this creates the notch - go RIGHT to main rect left edge
+              ctx.lineTo(renderX - innerOffset, renderY + y2 + height2 + innerOffset);
+              
+              // Down the left side of main rect (continuing from where secondary rect ends)
+              ctx.lineTo(renderX - innerOffset, renderY + keyHeight + innerOffset - radius);
+              
+              // Bottom-left corner of main rect
+              ctx.arcTo(renderX - innerOffset, renderY + keyHeight + innerOffset, renderX - innerOffset + radius, renderY + keyHeight + innerOffset, radius);
+              
+              // Bottom of main rect
+              ctx.lineTo(renderX + keyWidth + innerOffset - radius, renderY + keyHeight + innerOffset);
+              
+              // Bottom-right corner of main rect
+              ctx.arcTo(renderX + keyWidth + innerOffset, renderY + keyHeight + innerOffset, renderX + keyWidth + innerOffset, renderY + keyHeight + innerOffset - radius, radius);
+              
+              // Right side of main rect going up to top of main rect
+              ctx.lineTo(renderX + keyWidth + innerOffset, renderY + radius);
+              
+              // Top-right corner of main rect
+              ctx.arcTo(renderX + keyWidth + innerOffset, renderY, renderX + keyWidth + innerOffset - radius, renderY, radius);
+              
+              // Top of main rect going left to where secondary rect connects
+              ctx.lineTo(renderX + x2 + width2 + innerOffset - radius, renderY);
+              
+              // Top-right corner of secondary rect area
+              ctx.arcTo(renderX + x2 + width2 + innerOffset, renderY, renderX + x2 + width2 + innerOffset, renderY + radius, radius);
+              
+              // Right side of secondary rect going up
+              ctx.lineTo(renderX + x2 + width2 + innerOffset, renderY + y2 - innerOffset + radius);
+              
+              // Top-right corner of secondary rect
+              ctx.arcTo(renderX + x2 + width2 + innerOffset, renderY + y2 - innerOffset, renderX + x2 + width2 + innerOffset - radius, renderY + y2 - innerOffset, radius);
+              
+              // Top of secondary rect back to start
+              ctx.lineTo(renderX + x2 - innerOffset + radius, renderY + y2 - innerOffset);
+              
+              ctx.closePath();
+            } else if (y2 < 0) {
+              // Original ISO Enter type where y2 is negative
+              ctx.moveTo(renderX + x2 - innerOffset + radius, renderY + y2 - innerOffset);
+              ctx.arcTo(renderX + x2 - innerOffset, renderY + y2 - innerOffset, renderX + x2 - innerOffset, renderY + y2 - innerOffset + radius, radius);
+              ctx.lineTo(renderX + x2 - innerOffset, renderY - innerOffset - radius);
+              ctx.arcTo(renderX + x2 - innerOffset, renderY - innerOffset, renderX + x2 - innerOffset + radius, renderY - innerOffset, radius);
+              ctx.lineTo(renderX - innerOffset + radius, renderY - innerOffset);
+              ctx.arcTo(renderX - innerOffset, renderY - innerOffset, renderX - innerOffset, renderY - innerOffset + radius, radius);
+              ctx.lineTo(renderX - innerOffset, renderY + keyHeight + innerOffset - radius);
+              ctx.arcTo(renderX - innerOffset, renderY + keyHeight + innerOffset, renderX - innerOffset + radius, renderY + keyHeight + innerOffset, radius);
+              ctx.lineTo(renderX + keyWidth + innerOffset - radius, renderY + keyHeight + innerOffset);
+              ctx.arcTo(renderX + keyWidth + innerOffset, renderY + keyHeight + innerOffset, renderX + keyWidth + innerOffset, renderY + keyHeight + innerOffset - radius, radius);
+              ctx.lineTo(renderX + keyWidth + innerOffset, renderY + y2 + height2 + innerOffset - radius);
+              ctx.arcTo(renderX + keyWidth + innerOffset, renderY + y2 + height2 + innerOffset, renderX + keyWidth + innerOffset - radius, renderY + y2 + height2 + innerOffset, radius);
+              ctx.lineTo(renderX + x2 + width2 + innerOffset - radius, renderY + y2 + height2 + innerOffset);
+              ctx.arcTo(renderX + x2 + width2 + innerOffset, renderY + y2 + height2 + innerOffset, renderX + x2 + width2 + innerOffset, renderY + y2 + height2 + innerOffset - radius, radius);
+              ctx.lineTo(renderX + x2 + width2 + innerOffset, renderY + y2 - innerOffset + radius);
+              ctx.arcTo(renderX + x2 + width2 + innerOffset, renderY + y2 - innerOffset, renderX + x2 + width2 + innerOffset - radius, renderY + y2 - innerOffset, radius);
+              ctx.closePath();
+            } else {
+              // For other L-shaped keys, draw two rounded rectangles
+              ctx.roundRect(renderX - innerOffset, renderY - innerOffset, keyWidth + innerOffset * 2, keyHeight + innerOffset * 2, radius);
+              ctx.roundRect(renderX + x2 - innerOffset, renderY + y2 - innerOffset, width2 + innerOffset * 2, height2 + innerOffset * 2, radius);
+            }
           } else {
+            // For stepped keys or other special cases
             ctx.roundRect(renderX - innerOffset, renderY - innerOffset, keyWidth + innerOffset * 2, keyHeight + innerOffset * 2, radius);
-            ctx.roundRect(renderX + x2 - innerOffset, renderY + y2 - innerOffset, width2 + innerOffset * 2, height2 + innerOffset * 2, radius);
+            if (width2 > 0 || height2 > 0) {
+              ctx.roundRect(renderX + x2 - innerOffset, renderY + y2 - innerOffset, width2 + innerOffset * 2, height2 + innerOffset * 2, radius);
+            }
           }
           ctx.stroke();
         } else {
