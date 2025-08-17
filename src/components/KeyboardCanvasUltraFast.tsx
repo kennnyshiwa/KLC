@@ -839,12 +839,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         }
       });
       
-      // Restore canvas state if we applied rotation
-      if (hasRotation) {
-        ctx.restore();
-      }
-      
-      // Draw stabilizer positions if enabled
+      // Draw stabilizer positions if enabled (while rotation is still active)
       if (editorSettings.showStabilizerPositions && key.width >= 2) {
         const stabPositions = getStabilizerPositions(key.width);
         
@@ -877,6 +872,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           ctx.stroke();
         });
         
+        ctx.restore();
+      }
+      
+      // Restore canvas state if we applied rotation
+      if (hasRotation) {
         ctx.restore();
       }
     });
