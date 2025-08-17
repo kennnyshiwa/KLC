@@ -126,7 +126,7 @@ const PublicLayout: React.FC = () => {
     <div className="app">
       <header className="app-header">
         <div className="header-left">
-          <h1>KLE 2.0</h1>
+          <h1>KLC</h1>
           <div className="header-info">
             {keyboard.meta.name || 'Untitled Layout'}
             {layoutOwner && (
