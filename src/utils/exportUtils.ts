@@ -54,8 +54,8 @@ function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54) {
   // Add some padding
   const padding = 20;
   return {
-    minX: minX - padding,
-    minY: minY - padding,
+    minX: Math.max(0, minX - padding),
+    minY: Math.max(0, minY - padding),
     maxX: maxX + padding,
     maxY: maxY + padding,
     width: maxX - minX + padding * 2,

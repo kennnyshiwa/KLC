@@ -1785,11 +1785,12 @@ body {
 
 .dark-mode .toolbar-container {
   background-color: #2a2a2a;
-  border-bottom: 1px solid #333;
+  border-bottom: none;
 }
 
 .dark-mode .toolbar {
   background-color: transparent;
+  border-bottom: none;
 }
 
 .dark-mode .properties-panel {
@@ -2026,7 +2027,13 @@ body {
   color: #e0e0e0;
 }
 
-/* Export menu items */
+/* Export menu dark mode styles */
+.dark-mode .export-menu {
+  background-color: #2a2a2a;
+  border-color: #444;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 .dark-mode .export-menu-item {
   color: #e0e0e0;
 }
