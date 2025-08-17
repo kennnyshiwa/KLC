@@ -10,11 +10,12 @@ interface ExportMenuProps {
 const ExportMenu: React.FC<ExportMenuProps> = ({ getStage }) => {
   const [showMenu, setShowMenu] = useState(false);
   const keyboard = useKeyboardStore((state) => state.keyboard);
+  const editorSettings = useKeyboardStore((state) => state.editorSettings);
   
   const handleExportPNG = () => {
     const stage = getStage();
     if (stage) {
-      exportAsPNG(stage, keyboard);
+      exportAsPNG(stage, keyboard, editorSettings);
     }
     setShowMenu(false);
   };

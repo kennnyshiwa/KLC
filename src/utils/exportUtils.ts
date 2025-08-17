@@ -1,33 +1,122 @@
 import { saveAs } from 'file-saver';
-import { Keyboard } from '../types';
+import { Keyboard, Key } from '../types';
+import { getLegendPosition } from './keyUtils';
 
-export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard: Keyboard) => {
-  if (!stage) return;
-  const dataURL = stage.toDataURL();
-  
-  // Convert data URL to blob
-  const parts = dataURL.split(';base64,');
-  const contentType = parts[0].split(':')[1];
-  const raw = window.atob(parts[1]);
-  const rawLength = raw.length;
-  const uInt8Array = new Uint8Array(rawLength);
-  
-  for (let i = 0; i < rawLength; ++i) {
-    uInt8Array[i] = raw.charCodeAt(i);
+// Calculate the bounding box of all keys
+function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54) {
+  if (keyboard.keys.length === 0) {
+    return { minX: 0, minY: 0, maxX: 100, maxY: 100 };
   }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  keyboard.keys.forEach(key => {
+    // Calculate key bounds including secondary rectangles
+    const keyX = key.x * unitSize;
+    const keyY = key.y * unitSize;
+    const keyWidth = key.width * unitSize;
+    const keyHeight = key.height * unitSize;
+
+    // Main rectangle bounds
+    minX = Math.min(minX, keyX);
+    minY = Math.min(minY, keyY);
+    maxX = Math.max(maxX, keyX + keyWidth);
+    maxY = Math.max(maxY, keyY + keyHeight);
+
+    // Check secondary rectangle if exists
+    if (key.x2 !== undefined || key.y2 !== undefined) {
+      const x2 = (key.x2 || 0) * unitSize;
+      const y2 = (key.y2 || 0) * unitSize;
+      const width2 = (key.width2 || key.width) * unitSize;
+      const height2 = (key.height2 || key.height) * unitSize;
+
+      minX = Math.min(minX, keyX + x2);
+      minY = Math.min(minY, keyY + y2);
+      maxX = Math.max(maxX, keyX + x2 + width2);
+      maxY = Math.max(maxY, keyY + y2 + height2);
+    }
+
+    // Account for rotation if present
+    if (key.rotation_angle) {
+      // This is a simplified calculation - for more accuracy, 
+      // we'd need to calculate the rotated corners
+      const margin = Math.max(keyWidth, keyHeight) * 0.5;
+      minX = Math.min(minX, keyX - margin);
+      minY = Math.min(minY, keyY - margin);
+      maxX = Math.max(maxX, keyX + keyWidth + margin);
+      maxY = Math.max(maxY, keyY + keyHeight + margin);
+    }
+  });
+
+  // Add some padding
+  const padding = 20;
+  return {
+    minX: minX - padding,
+    minY: minY - padding,
+    maxX: maxX + padding,
+    maxY: maxY + padding,
+    width: maxX - minX + padding * 2,
+    height: maxY - minY + padding * 2
+  };
+}
+
+export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard: Keyboard, editorSettings?: any) => {
+  if (!stage) return;
   
-  const blob = new Blob([uInt8Array], { type: contentType });
-  saveAs(blob, `${keyboard.meta.name || 'keyboard'}.png`);
+  // Get the full canvas data
+  const fullDataURL = stage.toDataURL();
+  
+  // Create an image from the data URL
+  const img = new Image();
+  img.onload = () => {
+    // Calculate bounds using the same unit size as the editor
+    const unitSize = editorSettings?.unitSize || 54;
+    const bounds = getKeyboardBounds(keyboard, unitSize);
+    
+    // Create a new canvas with the cropped size
+    const canvas = document.createElement('canvas');
+    canvas.width = bounds.width;
+    canvas.height = bounds.height;
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return;
+    
+    // Fill with white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw the cropped portion of the original image
+    ctx.drawImage(
+      img,
+      bounds.minX, bounds.minY, bounds.width, bounds.height,  // Source rectangle
+      0, 0, bounds.width, bounds.height                       // Destination rectangle
+    );
+    
+    // Convert the cropped canvas to blob
+    canvas.toBlob((blob) => {
+      if (blob) {
+        saveAs(blob, `${keyboard.meta.name || 'keyboard'}.png`);
+      }
+    }, 'image/png');
+  };
+  
+  img.src = fullDataURL;
 };
 
 export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
-  // Get canvas dimensions
-  const width = 1200;
-  const height = 600;
+  const unitSize = 54; // Default unit size
+  const bounds = getKeyboardBounds(keyboard, unitSize);
   
-  // Create SVG header
+  // Use calculated dimensions
+  const width = bounds.width;
+  const height = bounds.height;
+  
+  // Create SVG header with viewBox for proper scaling
   let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
 <defs>
   <style>
     .key { fill: #cccccc; stroke: #7f8c8d; stroke-width: 1; }
@@ -43,18 +132,23 @@ export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
 </defs>`;
 
   // Add background
-  svg += `\n<rect width="${width}" height="${height}" fill="#fafafa" />`;
+  svg += `\n<rect width="${width}" height="${height}" fill="#ffffff" />`;
   
-  const unitSize = 54; // Default unit size
-  
-  // Add keys
+  // Add keys with adjusted positions relative to bounds
   keyboard.keys.forEach(key => {
-    const keyX = key.x * unitSize;
-    const keyY = key.y * unitSize;
+    const keyX = key.x * unitSize - bounds.minX;
+    const keyY = key.y * unitSize - bounds.minY;
     const keyWidth = key.width * unitSize - 1;
     const keyHeight = key.height * unitSize - 1;
     
-    svg += `\n<g transform="${key.rotation_angle ? `rotate(${key.rotation_angle} ${(key.rotation_x || 0) * unitSize} ${(key.rotation_y || 0) * unitSize})` : ''}">`;
+    // For text positioning, use the full key dimensions without inset
+    const textKeyWidth = key.width * unitSize;
+    const textKeyHeight = key.height * unitSize;
+    
+    // Apply rotation transform with adjusted center
+    const rotX = ((key.rotation_x !== undefined ? key.rotation_x : key.x + key.width / 2) * unitSize) - bounds.minX;
+    const rotY = ((key.rotation_y !== undefined ? key.rotation_y : key.y + key.height / 2) * unitSize) - bounds.minY;
+    svg += `\n<g transform="${key.rotation_angle ? `rotate(${key.rotation_angle} ${rotX} ${rotY})` : ''}">`;
     
     // Only render the key shape if it's not a decal
     if (!key.decal) {
@@ -152,54 +246,92 @@ export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
     
     // Front legends
     if (key.frontLegends && key.frontLegends.some(l => l)) {
-      const frontY = keyY + keyHeight - 4;
-      const padding = 5;
-      
-      // Left front legend
-      if (key.frontLegends[0]) {
-        svg += `\n  <text x="${keyX + padding}" y="${frontY}" ` +
-               `font-size="10" fill="rgba(0,0,0,0.6)" ` +
-               `text-anchor="start" dominant-baseline="middle" ` +
-               `font-family="Arial, sans-serif">${escapeXml(key.frontLegends[0])}</text>`;
-      }
-      
-      // Center front legend
-      if (key.frontLegends[1]) {
-        svg += `\n  <text x="${keyX + keyWidth / 2}" y="${frontY}" ` +
-               `font-size="10" fill="rgba(0,0,0,0.6)" ` +
-               `text-anchor="middle" dominant-baseline="middle" ` +
-               `font-family="Arial, sans-serif">${escapeXml(key.frontLegends[1])}</text>`;
-      }
-      
-      // Right front legend
-      if (key.frontLegends[2]) {
-        svg += `\n  <text x="${keyX + keyWidth - padding}" y="${frontY}" ` +
-               `font-size="10" fill="rgba(0,0,0,0.6)" ` +
-               `text-anchor="end" dominant-baseline="middle" ` +
-               `font-family="Arial, sans-serif">${escapeXml(key.frontLegends[2])}</text>`;
-      }
+      // Front legends are at positions 4, 5, 6
+      key.frontLegends.forEach((legend, frontIndex) => {
+        if (!legend) return;
+        
+        const index = frontIndex + 4; // Map to label positions 4, 5, 6
+        const position = getLegendPosition(index);
+        
+        // Calculate text position using full key dimensions
+        const textX = keyX + textKeyWidth * position.x;
+        const textY = keyY + textKeyHeight * position.y;
+        
+        // Get text size for front legends
+        let textSizeValue = 3;
+        if (Array.isArray(key.textSize) && key.textSize[index] !== undefined) {
+          textSizeValue = key.textSize[index];
+        } else if (key.default?.size && Array.isArray(key.default.size) && key.default.size[0] !== undefined) {
+          textSizeValue = key.default.size[0];
+        }
+        
+        // Convert KLE textSize to actual font size
+        const fontSize = 6 + 2 * textSizeValue;
+        
+        // Get text color
+        let textColor = 'rgba(0,0,0,0.6)'; // Default for front legends
+        if (Array.isArray(key.textColor) && key.textColor[index]) {
+          textColor = key.textColor[index];
+        } else if (key.default?.color?.[0]) {
+          textColor = key.default.color[0];
+        }
+        
+        const svgBaseline = position.baseline === 'alphabetic' ? 'baseline' : 
+                           position.baseline === 'hanging' ? 'hanging' : 
+                           'middle';
+        
+        svg += `\n  <text x="${textX}" y="${textY}" ` +
+               `font-size="${fontSize}" fill="${textColor}" ` +
+               `text-anchor="${position.align}" dominant-baseline="${svgBaseline}" ` +
+               `font-family="Arial, sans-serif">${escapeXml(legend)}</text>`;
+      });
     }
     
     // Key labels
     key.labels.forEach((label, index) => {
       if (!label) return;
       
-      const positions = [
-        { x: 0.1, y: 0.2, anchor: 'start', baseline: 'top' },
-        { x: 0.1, y: 0.8, anchor: 'start', baseline: 'bottom' },
-        { x: 0.9, y: 0.2, anchor: 'end', baseline: 'top' },
-        { x: 0.9, y: 0.8, anchor: 'end', baseline: 'bottom' },
-      ];
+      // Skip positions 4-6 if handled by front legends
+      if (index >= 4 && index <= 6 && key.frontLegends && key.frontLegends[index - 4]) {
+        return;
+      }
       
-      const pos = positions[index] || positions[0];
-      const textX = keyX + keyWidth * pos.x;
-      const textY = keyY + keyHeight * pos.y;
-      const fontSize = (key.textSize?.[index] || 12);
-      const textColor = key.textColor?.[index] || '#000000';
+      const position = getLegendPosition(index);
+      
+      // Calculate text position
+      const textX = keyX + keyWidth * position.x;
+      const textY = keyY + keyHeight * position.y;
+      
+      // Get text size - default is 3 in KLE
+      let textSizeValue = 3;
+      if (Array.isArray(key.textSize) && key.textSize[index] !== undefined) {
+        textSizeValue = key.textSize[index];
+      } else if (key.default?.size && Array.isArray(key.default.size) && key.default.size[0] !== undefined) {
+        textSizeValue = key.default.size[0];
+      }
+      
+      // Convert KLE textSize (1-9) to actual font size using the formula: 6 + 2*textSize
+      const fontSize = 6 + 2 * textSizeValue;
+      
+      // Get text color
+      let textColor = '#000000';
+      if (Array.isArray(key.textColor) && key.textColor[index]) {
+        textColor = key.textColor[index];
+      } else if (Array.isArray(key.textColor) && key.textColor[0]) {
+        textColor = key.textColor[0];
+      } else if (key.default?.color?.[0]) {
+        textColor = key.default.color[0];
+      }
+      
+      // Convert canvas text align/baseline to SVG equivalents
+      const svgBaseline = position.baseline === 'alphabetic' ? 'baseline' : 
+                         position.baseline === 'hanging' ? 'hanging' : 
+                         'middle';
       
       svg += `\n  <text x="${textX}" y="${textY}" ` +
              `font-size="${fontSize}" fill="${textColor}" ` +
-             `text-anchor="${pos.anchor}" dominant-baseline="${pos.baseline}">${escapeXml(label)}</text>`;
+             `text-anchor="${position.align}" dominant-baseline="${svgBaseline}" ` +
+             `font-family="Arial, sans-serif">${escapeXml(label)}</text>`;
     });
     
     svg += '\n</g>';
