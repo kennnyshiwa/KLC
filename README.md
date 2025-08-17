@@ -1,4 +1,4 @@
-# KLE 2.0 - Modern Keyboard Layout Editor
+# KLC - Keyboard Layout Creator
 
 A modern reimplementation of the Keyboard Layout Editor (KLE) with improved features and a contemporary tech stack.
 
@@ -68,7 +68,7 @@ npm run lint
 
 ## Data Format
 
-KLE 2.0 maintains full compatibility with the original KLE JSON format. Keys support:
+KLC maintains full compatibility with the original KLE JSON format. Keys support:
 
 - Position (x, y) and size (width, height)
 - Secondary dimensions for oddly-shaped keys (x2, y2, width2, height2)
