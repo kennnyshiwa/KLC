@@ -1,11 +1,25 @@
 import { saveAs } from 'file-saver';
-import { Keyboard, Key } from '../types';
+import { Keyboard } from '../types';
 import { getLegendPosition } from './keyUtils';
 
 // Calculate the bounding box of all keys
-function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54) {
+function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54): {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  width: number;
+  height: number;
+} {
   if (keyboard.keys.length === 0) {
-    return { minX: 0, minY: 0, maxX: 100, maxY: 100 };
+    return { 
+      minX: 0, 
+      minY: 0, 
+      maxX: 100, 
+      maxY: 100,
+      width: 100,
+      height: 100
+    };
   }
 
   let minX = Infinity;
@@ -78,8 +92,8 @@ export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard:
     
     // Create a new canvas with the cropped size
     const canvas = document.createElement('canvas');
-    canvas.width = bounds.width;
-    canvas.height = bounds.height;
+    canvas.width = Math.round(bounds.width);
+    canvas.height = Math.round(bounds.height);
     const ctx = canvas.getContext('2d');
     
     if (!ctx) return;
@@ -91,8 +105,8 @@ export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard:
     // Draw the cropped portion of the original image
     ctx.drawImage(
       img,
-      bounds.minX, bounds.minY, bounds.width, bounds.height,  // Source rectangle
-      0, 0, bounds.width, bounds.height                       // Destination rectangle
+      Math.round(bounds.minX), Math.round(bounds.minY), Math.round(bounds.width), Math.round(bounds.height),  // Source rectangle
+      0, 0, Math.round(bounds.width), Math.round(bounds.height)                                               // Destination rectangle
     );
     
     // Convert the cropped canvas to blob

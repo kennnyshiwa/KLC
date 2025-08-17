@@ -801,6 +801,7 @@ body {
   cursor: pointer;
   padding: 0;
   -webkit-appearance: none;
+  appearance: none;
 }
 
 /* Override property-row styling for color inputs inside color picker */
