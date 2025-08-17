@@ -220,10 +220,10 @@ const MenuBar: React.FC = () => {
             </button>
             <div className="menu-divider" />
             <button className="menu-dropdown-item" onClick={() => { handleImportJSON(); }}>
-              Import KLE2
+              Import KLC
             </button>
             <button className="menu-dropdown-item" onClick={() => { handleExportJSON(); }}>
-              Export KLE2
+              Export KLC
             </button>
           </div>
         )}

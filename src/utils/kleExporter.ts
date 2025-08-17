@@ -26,23 +26,65 @@ export function exportToKLE(keyboard: Keyboard): any[] {
     }
   }
   
-  // Group keys by rows based on Y position
-  const rows: Map<number, Key[]> = new Map();
+  // Separate keys into non-rotated and rotated
+  const nonRotatedKeys: Key[] = [];
+  const rotatedKeys: Key[] = [];
   
   keyboard.keys.forEach(key => {
-    const rowY = Math.round(key.y * 4) / 4; // Round to nearest 0.25
-    if (!rows.has(rowY)) {
-      rows.set(rowY, []);
+    if (key.rotation_angle && key.rotation_angle !== 0) {
+      rotatedKeys.push(key);
+    } else {
+      nonRotatedKeys.push(key);
     }
-    rows.get(rowY)!.push(key);
   });
   
-  // Sort rows by Y position
-  const sortedRowYs = Array.from(rows.keys()).sort((a, b) => a - b);
+  // Sort non-rotated keys by Y then X
+  nonRotatedKeys.sort((a, b) => {
+    if (Math.abs(a.y - b.y) < 0.001) {
+      return a.x - b.x;
+    }
+    return a.y - b.y;
+  });
   
-  // Track state between keys
-  let currentY = 0;
-  let lastKeyInRow: Key | null = null;
+  // Sort rotated keys by Y then X
+  rotatedKeys.sort((a, b) => {
+    if (Math.abs(a.y - b.y) < 0.001) {
+      return a.x - b.x;
+    }
+    return a.y - b.y;
+  });
+  
+  // Group non-rotated keys into rows
+  const rows: Key[][] = [];
+  let currentRow: Key[] = [];
+  let currentY: number | null = null;
+  
+  nonRotatedKeys.forEach(key => {
+    const keyY = Math.round(key.y * 4) / 4;
+    
+    // Check if we need to start a new row
+    const needNewRow = currentY === null || Math.abs(keyY - currentY) > 0.001;
+    
+    if (needNewRow) {
+      if (currentRow.length > 0) {
+        rows.push(currentRow);
+      }
+      currentRow = [];
+      currentY = keyY;
+    }
+    
+    currentRow.push(key);
+  });
+  
+  // Don't forget the last non-rotated row
+  if (currentRow.length > 0) {
+    rows.push(currentRow);
+  }
+  
+  // Add each rotated key as its own row at the end
+  rotatedKeys.forEach(key => {
+    rows.push([key]);
+  });
   
   // Default values to track changes
   const defaults = {
@@ -70,33 +112,70 @@ export function exportToKLE(keyboard: Keyboard): any[] {
   
   // Track current state
   let current = { ...defaults };
+  let lastY = 0;
   
-  sortedRowYs.forEach((rowY, rowIndex) => {
-    const row: any[] = [];
-    const keys = rows.get(rowY)!.sort((a, b) => a.x - b.x);
+  // Process each row
+  rows.forEach((rowKeys) => {
+    if (rowKeys.length === 0) return;
     
-    // Handle Y positioning
-    if (rowIndex > 0) {
-      const yDiff = rowY - currentY;
-      if (Math.abs(yDiff - 1) > 0.001) {
-        // Non-standard row spacing
-        row.push({ y: yDiff - 1 });
-      }
-    }
-    currentY = rowY;
+    const row: any[] = [];
+    const firstKey = rowKeys[0];
+    const rowY = Math.round(firstKey.y * 4) / 4;
+    
+    // Check if this row has rotation (only check first key)
+    const hasRowRotation = firstKey.rotation_angle !== undefined && firstKey.rotation_angle !== 0;
     
     // Reset X position for new row
     current.x = 0;
-    lastKeyInRow = null;
+    let lastKeyInRow: Key | null = null;
     
-    keys.forEach((key, keyIndex) => {
+    // Handle Y positioning first
+    let needsYOffset = false;
+    let yOffset = 0;
+    if (lastY !== 0 || result.length > 1) {
+      const yDiff = rowY - lastY;
+      if (Math.abs(yDiff - 1) > 0.001) {
+        needsYOffset = true;
+        yOffset = yDiff - 1;
+      }
+    }
+    
+    lastY = rowY;
+    
+    rowKeys.forEach((key, keyIndex) => {
       const props: KLEKeyData = {};
       
-      // Handle X positioning
-      const expectedX = keyIndex === 0 ? 0 : (lastKeyInRow ? lastKeyInRow.x + lastKeyInRow.width : current.x);
-      const xDiff = key.x - expectedX;
-      if (Math.abs(xDiff) > 0.001) {
-        props.x = xDiff;
+      // Handle first key in rotated row specially
+      if (keyIndex === 0 && hasRowRotation) {
+        // Calculate rotation center
+        const rx = key.rotation_x !== undefined ? key.rotation_x : (key.x + key.width / 2);
+        const ry = key.rotation_y !== undefined ? key.rotation_y : (key.y + key.height / 2);
+        
+        // Rotation properties MUST come first
+        props.r = key.rotation_angle;
+        props.rx = rx;
+        props.ry = ry;
+        
+        // X and Y positions relative to rotation center
+        props.x = key.x - rx;
+        props.y = key.y - ry;
+        
+        // Update tracking
+        current.rotation_angle = key.rotation_angle!;
+        current.rotation_x = rx;
+        current.rotation_y = ry;
+      } else {
+        // Non-rotated first key or any subsequent key
+        if (keyIndex === 0 && needsYOffset) {
+          props.y = yOffset;
+        }
+        
+        // Handle X positioning
+        const expectedX = keyIndex === 0 ? 0 : (lastKeyInRow ? lastKeyInRow.x + lastKeyInRow.width : current.x);
+        const xDiff = key.x - expectedX;
+        if (Math.abs(xDiff) > 0.001) {
+          props.x = xDiff;
+        }
       }
       current.x = key.x;
       
@@ -117,129 +196,113 @@ export function exportToKLE(keyboard: Keyboard): any[] {
       if (key.width2 !== undefined && key.width2 !== 0) props.w2 = key.width2;
       if (key.height2 !== undefined && key.height2 !== 0) props.h2 = key.height2;
       
-      // Rotation properties
-      if (key.rotation_angle !== undefined && key.rotation_angle !== 0) {
-        if (key.rotation_x !== current.rotation_x) {
-          props.rx = key.rotation_x;
-          current.rotation_x = key.rotation_x!;
+        // Color properties
+        if (key.color && key.color !== current.color) {
+          props.c = key.color;
+          current.color = key.color;
         }
-        if (key.rotation_y !== current.rotation_y) {
-          props.ry = key.rotation_y;
-          current.rotation_y = key.rotation_y!;
-        }
-        if (key.rotation_angle !== current.rotation_angle) {
-          props.r = key.rotation_angle;
-          current.rotation_angle = key.rotation_angle;
-        }
-      }
-      
-      // Color properties
-      if (key.color && key.color !== current.color) {
-        props.c = key.color;
-        current.color = key.color;
-      }
-      
-      // Text color
-      if (key.textColor && key.textColor.some(c => c !== undefined)) {
-        // Filter out undefined values and check if we have multiple colors
-        const colors = key.textColor.filter(c => c !== undefined);
-        if (colors.length === 1 && colors[0] !== current.textColor) {
-          // Single color
-          props.t = colors[0];
-          current.textColor = colors[0];
-        } else if (colors.length > 1) {
-          // Multiple colors - output as array
-          props.t = colors;
-        }
-      } else if (key.default?.color?.[0] && key.default.color[0] !== current.textColor) {
-        // Default color
-        props.t = key.default.color[0];
-        current.textColor = key.default.color[0];
-      }
-      
-      // Text size - only output if explicitly set and not default
-      if (key.textSize && key.textSize.length > 0) {
-        const sizes = key.textSize.filter(s => s !== undefined && s !== 3); // 3 is the default, don't output it
-        if (sizes.length > 0) {
-          // Check if all sizes are the same
-          const allSame = sizes.every(s => s === sizes[0]);
-          if (allSame && sizes[0] !== current.textSize) {
-            // Single size for all legends
-            props.f = sizes[0];
-            current.textSize = sizes[0];
-          } else if (!allSame || key.textSize.some(s => s === 3)) {
-            // Multiple sizes or mix of default and custom - output full array
-            props.f = key.textSize;
+        
+        // Text color
+        if (key.textColor && key.textColor.some(c => c !== undefined)) {
+          // Filter out undefined values and check if we have multiple colors
+          const colors = key.textColor.filter(c => c !== undefined);
+          if (colors.length === 1 && colors[0] !== current.textColor) {
+            // Single color
+            props.t = colors[0];
+            current.textColor = colors[0];
+          } else if (colors.length > 1) {
+            // Multiple colors - output as array
+            props.t = colors;
           }
+        } else if (key.default?.color?.[0] && key.default.color[0] !== current.textColor) {
+          // Default color
+          props.t = key.default.color[0];
+          current.textColor = key.default.color[0];
         }
-      } else if (key.default?.size?.[0] && key.default.size[0] !== 3 && key.default.size[0] !== current.textSize) {
-        props.f = key.default.size[0];
-        current.textSize = key.default.size[0];
-      }
-      
-      // Profile - only output if set and different
-      if (key.profile && key.profile !== 'DCS' && key.profile !== current.profile) {
-        props.p = key.profile;
-        current.profile = key.profile;
-      }
-      
-      // Boolean properties - treat undefined as false
-      const isGhost = key.ghost || false;
-      const isStepped = key.stepped || false;
-      const isNub = key.nub || false;
-      const isDecal = key.decal || false;
-      
-      // For decal keys, ALWAYS output d:true for original KLE compatibility
-      if (isDecal) {
-        props.d = true;
-        current.decal = true;
-      } else if (current.decal) {
-        // Only output d:false if previous key was a decal
-        props.d = false;
-        current.decal = false;
-      }
-      
-      // Other boolean properties work normally (only output on change)
-      if (isGhost !== current.ghost) {
-        props.g = isGhost;
-        current.ghost = isGhost;
-      }
-      if (isStepped !== current.stepped) {
-        props.l = isStepped;
-        current.stepped = isStepped;
-      }
-      if (isNub !== current.nub) {
-        props.n = isNub;
-        current.nub = isNub;
-      }
-      
-      // Alignment
-      if (key.align !== current.align) {
-        props.a = key.align;
-        current.align = key.align;
-      }
-      
-      // Add properties if any
-      if (Object.keys(props).length > 0) {
-        row.push(props);
-      }
-      
-      // Build label string
-      let labelString = buildLabelString(key);
-      row.push(labelString);
-      
-      // Update for next key
-      lastKeyInRow = key;
-      current.x = key.x + key.width;
-      
-      // Reset width/height to defaults after each key (they don't persist in KLE)
-      current.width = 1;
-      current.height = 1;
-      // Note: ghost, stepped, nub, decal DO persist in KLE until explicitly changed
-    });
+        
+        // Text size - only output if explicitly set and not default
+        if (key.textSize && key.textSize.length > 0) {
+          const sizes = key.textSize.filter(s => s !== undefined && s !== 3); // 3 is the default, don't output it
+          if (sizes.length > 0) {
+            // Check if all sizes are the same
+            const allSame = sizes.every(s => s === sizes[0]);
+            if (allSame && sizes[0] !== current.textSize) {
+              // Single size for all legends
+              props.f = sizes[0];
+              current.textSize = sizes[0];
+            } else if (!allSame || key.textSize.some(s => s === 3)) {
+              // Multiple sizes or mix of default and custom - output full array
+              props.f = key.textSize;
+            }
+          }
+        } else if (key.default?.size?.[0] && key.default.size[0] !== 3 && key.default.size[0] !== current.textSize) {
+          props.f = key.default.size[0];
+          current.textSize = key.default.size[0];
+        }
+        
+        // Profile - only output if set and different
+        if (key.profile && key.profile !== 'DCS' && key.profile !== current.profile) {
+          props.p = key.profile;
+          current.profile = key.profile;
+        }
+        
+        // Boolean properties - treat undefined as false
+        const isGhost = key.ghost || false;
+        const isStepped = key.stepped || false;
+        const isNub = key.nub || false;
+        const isDecal = key.decal || false;
+        
+        // For decal keys, ALWAYS output d:true for original KLE compatibility
+        if (isDecal) {
+          props.d = true;
+          current.decal = true;
+        } else if (current.decal) {
+          // Only output d:false if previous key was a decal
+          props.d = false;
+          current.decal = false;
+        }
+        
+        // Other boolean properties work normally (only output on change)
+        if (isGhost !== current.ghost) {
+          props.g = isGhost;
+          current.ghost = isGhost;
+        }
+        if (isStepped !== current.stepped) {
+          props.l = isStepped;
+          current.stepped = isStepped;
+        }
+        if (isNub !== current.nub) {
+          props.n = isNub;
+          current.nub = isNub;
+        }
+        
+        // Alignment
+        if (key.align !== current.align) {
+          props.a = key.align;
+          current.align = key.align;
+        }
+        
+        // Add properties if any
+        if (Object.keys(props).length > 0) {
+          row.push(props);
+        }
+        
+        // Build label string
+        let labelString = buildLabelString(key);
+        row.push(labelString);
+        
+        // Update for next key
+        lastKeyInRow = key;
+        current.x = key.x + key.width;
+        
+        // Reset width/height to defaults after each key (they don't persist in KLE)
+        current.width = 1;
+        current.height = 1;
+        // Note: ghost, stepped, nub, decal DO persist in KLE until explicitly changed
+      });
     
-    result.push(row);
-  });
+      result.push(row);
+    });
   
   return result;
 }
