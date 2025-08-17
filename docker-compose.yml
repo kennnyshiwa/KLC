@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: kle2-postgres
+    container_name: klc-postgres
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-kle2}
@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - kle2-network
+      - klc-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kle2}"]
       interval: 10s
@@ -20,8 +20,8 @@ services:
       retries: 5
 
   frontend:
-    image: ghcr.io/kennnyshiwa/kle2.0/frontend:latest
-    container_name: kle2-frontend
+    image: ghcr.io/kennnyshiwa/klc/frontend:latest
+    container_name: klc-frontend
     ports:
       - "${PORT:-80}:80"
     restart: always
@@ -30,7 +30,7 @@ services:
     depends_on:
       - backend
     networks:
-      - kle2-network
+      - klc-network
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
       interval: 30s
@@ -39,8 +39,8 @@ services:
       start_period: 40s
 
   backend:
-    image: ghcr.io/kennnyshiwa/kle2.0/backend:latest
-    container_name: kle2-backend
+    image: ghcr.io/kennnyshiwa/klc/backend:latest
+    container_name: klc-backend
     expose:
       - "3001"
     restart: always
@@ -57,7 +57,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - kle2-network
+      - klc-network
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/health"]
       interval: 30s
@@ -66,7 +66,7 @@ services:
       start_period: 40s
 
 networks:
-  kle2-network:
+  klc-network:
     driver: bridge
 
 volumes:
