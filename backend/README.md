@@ -1,6 +1,6 @@
-# KLE 2.0 Backend
+# KLC Backend
 
-Backend API server for KLE 2.0 with Discord authentication and layout storage using PostgreSQL.
+Backend API server for KLC with Discord authentication and layout storage using PostgreSQL.
 
 ## Setup
 
@@ -16,7 +16,7 @@ cp .env.example .env
 
 3. Set up PostgreSQL:
    - Install PostgreSQL locally or use a hosted service
-   - Create a database named `kle2`
+   - Create a database named `klc`
    - Update `DATABASE_URL` in `.env` with your connection string
 
 4. Run database migrations:
