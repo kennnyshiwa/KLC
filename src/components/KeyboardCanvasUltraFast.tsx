@@ -840,7 +840,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       });
       
       // Draw stabilizer positions if enabled (while rotation is still active)
-      if (editorSettings.showStabilizerPositions && key.width >= 2) {
+      // Skip decal keys as they're just labels, not physical keys
+      if (editorSettings.showStabilizerPositions && key.width >= 2 && !key.decal) {
         const stabPositions = getStabilizerPositions(key.width);
         
         ctx.save();
