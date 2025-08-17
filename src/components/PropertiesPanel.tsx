@@ -258,8 +258,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
           rotation_y: centerY
         }
       }));
+    } else if (mode === 'custom') {
+      // For custom mode, set the rotation point to current key center if not already set
+      updates = selectedKeysList.map(key => ({
+        id: key.id,
+        changes: {
+          rotation_x: key.rotation_x !== undefined ? key.rotation_x : key.x + key.width / 2,
+          rotation_y: key.rotation_y !== undefined ? key.rotation_y : key.y + key.height / 2
+        }
+      }));
     }
-    // For 'custom', don't change the values
     
     if (updates.length > 0) {
       updateKeys(updates);
@@ -456,11 +464,18 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       <label>Center X</label>
                       <input
                         type="number"
-                        value={firstKey.rotation_x || firstKey.x + firstKey.width / 2}
+                        value={firstKey.rotation_x !== undefined ? firstKey.rotation_x : ''}
+                        placeholder={(firstKey.x + firstKey.width / 2).toFixed(2)}
                         onChange={(e) => {
                           const value = e.target.value;
-                          if (value !== '') {
-                            handleKeyUpdate('rotation_x', parseFloat(value));
+                          if (value === '') {
+                            // Allow clearing to 0
+                            handleKeyUpdate('rotation_x', 0);
+                          } else {
+                            const numValue = parseFloat(value);
+                            if (!isNaN(numValue)) {
+                              handleKeyUpdate('rotation_x', numValue);
+                            }
                           }
                         }}
                         step="0.25"
@@ -470,11 +485,18 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       <label>Center Y</label>
                       <input
                         type="number"
-                        value={firstKey.rotation_y || firstKey.y + firstKey.height / 2}
+                        value={firstKey.rotation_y !== undefined ? firstKey.rotation_y : ''}
+                        placeholder={(firstKey.y + firstKey.height / 2).toFixed(2)}
                         onChange={(e) => {
                           const value = e.target.value;
-                          if (value !== '') {
-                            handleKeyUpdate('rotation_y', parseFloat(value));
+                          if (value === '') {
+                            // Allow clearing to 0
+                            handleKeyUpdate('rotation_y', 0);
+                          } else {
+                            const numValue = parseFloat(value);
+                            if (!isNaN(numValue)) {
+                              handleKeyUpdate('rotation_y', numValue);
+                            }
                           }
                         }}
                         step="0.25"

@@ -1070,8 +1070,12 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       if (selectedKeys.length > 0) {
         // Convert canvas coordinates to keyboard units
         const unitSize = store.editorSettings.unitSize;
-        const rotationX = x / unitSize;
-        const rotationY = y / unitSize;
+        let rotationX = x / unitSize;
+        let rotationY = y / unitSize;
+        
+        // Snap to 0.25 grid
+        rotationX = Math.round(rotationX * 4) / 4;
+        rotationY = Math.round(rotationY * 4) / 4;
         
         // Update all selected keys with the new rotation point
         const updates = selectedKeys.map(keyId => ({
