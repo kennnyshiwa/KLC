@@ -849,8 +849,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         const stabPositions = getStabilizerPositions(key.width);
         
         ctx.save();
-        ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = isDarkMode ? 'rgba(128, 128, 128, 0.7)' : 'rgba(0, 0, 0, 0.4)';
+        ctx.lineWidth = isDarkMode ? 1.5 : 1;
         
         stabPositions.forEach(pos => {
           const stabX = renderX + pos.x * keyWidth;
