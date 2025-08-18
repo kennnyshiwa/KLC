@@ -4,6 +4,17 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Get total count of layouts (no auth required)
+router.get('/count', async (req, res) => {
+  try {
+    const count = await prisma.layout.count();
+    res.json({ count });
+  } catch (error) {
+    console.error('Error getting layout count:', error);
+    res.status(500).json({ error: 'Failed to get layout count' });
+  }
+});
+
 // Get a public layout (no auth required)
 router.get('/public/:id', async (req, res) => {
   try {

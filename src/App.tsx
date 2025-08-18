@@ -6,11 +6,13 @@ import PropertiesPanel from './components/PropertiesPanel';
 import Toolbar from './components/Toolbar';
 import MenuBar from './components/MenuBar';
 import UserMenu from './components/UserMenu';
+import LayoutCounter from './components/LayoutCounter';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useImportedCSS } from './hooks/useImportedCSS';
 import { parseKLE } from './utils/kleParser';
 import { presetLayouts } from './constants/presetLayouts';
 import { initializeFonts } from './utils/fontManager';
+import { Code2 } from 'lucide-react';
 
 function App() {
   const keyboard = useKeyboardStore((state) => state.keyboard);
@@ -67,7 +69,19 @@ function App() {
             {keyboard.meta.name || 'Untitled Layout'}
           </div>
         </div>
-        <UserMenu />
+        <div className="header-right">
+          <LayoutCounter />
+          <a 
+            href="https://github.com/kennnyshiwa/KLE2.0" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="github-button"
+            title="View on GitHub"
+          >
+            <Code2 size={20} />
+          </a>
+          <UserMenu />
+        </div>
       </header>
       
       <div className="app-content">

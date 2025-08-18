@@ -5,13 +5,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useImportedCSS } from '../hooks/useImportedCSS';
 import { initializeFonts } from '../utils/fontManager';
-import { Loader, Home } from 'lucide-react';
+import { Loader, Home, Code2 } from 'lucide-react';
 import CanvasContainer from '../components/CanvasContainer';
 import { KeyboardCanvasRef } from '../components/KeyboardCanvasUltraFast';
 import PropertiesPanel from '../components/PropertiesPanel';
 import Toolbar from '../components/Toolbar';
 import MenuBar from '../components/MenuBar';
 import UserMenu from '../components/UserMenu';
+import LayoutCounter from '../components/LayoutCounter';
 
 const API_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.DEV ? 'http://localhost:3001' : '/api');
@@ -136,7 +137,19 @@ const PublicLayout: React.FC = () => {
             )}
           </div>
         </div>
-        <UserMenu />
+        <div className="header-right">
+          <LayoutCounter />
+          <a 
+            href="https://github.com/kennnyshiwa/KLC" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="github-button"
+            title="View on GitHub"
+          >
+            <Code2 size={20} />
+          </a>
+          <UserMenu />
+        </div>
       </header>
       
       <div className="app-content">
