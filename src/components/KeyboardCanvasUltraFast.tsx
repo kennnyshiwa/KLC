@@ -38,6 +38,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   const selectionRectRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
   const isDuplicatingRef = useRef(false);
   const duplicatedKeysRef = useRef<Set<string>>(new Set());
+  const lastSelectedKeyRef = useRef<string | null>(null);
+  const isAddingToSelectionRef = useRef(false); // Track if we're adding to selection
   const hoveredStabRef = useRef<{ keyId: string; stabIndex: number; x: number; y: number; keyWidth: number } | null>(null);
   const mousePositionRef = useRef({ x: 0, y: 0 });
   
@@ -1254,13 +1256,40 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Key clicked
       const store = useKeyboardStore.getState();
       const isMultiSelect = e.ctrlKey || e.metaKey;
+      const isShiftSelect = e.shiftKey;
       const isKeyAlreadySelected = store.selectedKeys.has(keyRect.id);
       
-      // If clicking on an already selected key without Ctrl/Cmd, don't change selection
-      // This allows dragging the group
-      if (!isKeyAlreadySelected || isMultiSelect) {
-        // selectKey handles toggle logic when multiSelect is true
+      if (isShiftSelect && lastSelectedKeyRef.current) {
+        // Shift-click: select range
+        const keysToSelect: string[] = [];
+        const lastKeyIndex = keyRectsRef.current.findIndex(k => k.id === lastSelectedKeyRef.current);
+        const currentKeyIndex = keyRectsRef.current.findIndex(k => k.id === keyRect.id);
+        
+        if (lastKeyIndex !== -1 && currentKeyIndex !== -1) {
+          const start = Math.min(lastKeyIndex, currentKeyIndex);
+          const end = Math.max(lastKeyIndex, currentKeyIndex);
+          
+          for (let i = start; i <= end; i++) {
+            keysToSelect.push(keyRectsRef.current[i].id);
+          }
+          
+          if (isMultiSelect) {
+            // Add to existing selection
+            const existingSelection = Array.from(store.selectedKeys);
+            const combinedSelection = [...new Set([...existingSelection, ...keysToSelect])];
+            store.selectKeys(combinedSelection);
+          } else {
+            // Replace selection
+            store.selectKeys(keysToSelect);
+          }
+        }
+      } else if (!isKeyAlreadySelected || isMultiSelect) {
+        // Normal click or ctrl-click
         store.selectKey(keyRect.id, isMultiSelect);
+        lastSelectedKeyRef.current = keyRect.id;
+      } else {
+        // Clicking on already selected key without modifiers
+        lastSelectedKeyRef.current = keyRect.id;
       }
       
       // Start dragging if key is selected (either was already selected or just got selected)
@@ -1312,7 +1341,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       }
     } else {
       // Start selection rectangle
-      if (!e.ctrlKey && !e.metaKey) {
+      isAddingToSelectionRef.current = e.ctrlKey || e.metaKey;
+      
+      if (!isAddingToSelectionRef.current) {
         useKeyboardStore.getState().clearSelection();
       }
       
@@ -1534,10 +1565,21 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       });
       
       if (selectedIds.length > 0) {
-        useKeyboardStore.getState().selectKeys(selectedIds);
+        const store = useKeyboardStore.getState();
+        
+        if (isAddingToSelectionRef.current) {
+          // Add to existing selection
+          const existingSelection = Array.from(store.selectedKeys);
+          const combinedSelection = [...new Set([...existingSelection, ...selectedIds])];
+          store.selectKeys(combinedSelection);
+        } else {
+          // Replace selection
+          store.selectKeys(selectedIds);
+        }
       }
       
       isSelectingRef.current = false;
+      isAddingToSelectionRef.current = false;
     }
     
     requestRender();

@@ -2610,3 +2610,37 @@ body {
   color: #ff6b6b;
   border-color: #5a2020;
 }
+/* Legend size selector styles */
+.legend-size-selector {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-size-selector label {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.legend-size-selector input {
+  flex: 1;
+  width: 60px;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  background-color: white;
+}
+
+/* Dark mode styles for legend size selector */
+
+.dark-mode .legend-size-selector label {
+  color: #aaa;
+}
+
+.dark-mode .legend-size-selector input {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  border-color: #444;
+}

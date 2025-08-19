@@ -114,35 +114,69 @@ export const useKeyboardShortcuts = () => {
         clearSelection();
       }
       
-      // Arrow keys - Move selected keys
+      // Arrow keys - Move or resize selected keys
       if (selectedKeys.size > 0 && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault();
         
-        const delta = e.shiftKey ? 1 : 0.25;
-        let dx = 0, dy = 0;
-        
-        switch (e.key) {
-          case 'ArrowUp': dy = -delta; break;
-          case 'ArrowDown': dy = delta; break;
-          case 'ArrowLeft': dx = -delta; break;
-          case 'ArrowRight': dx = delta; break;
-        }
-        
-        const updates = Array.from(selectedKeys).map(keyId => {
-          const key = keyboard.keys.find(k => k.id === keyId);
-          if (!key) return null;
+        if (e.ctrlKey || e.metaKey) {
+          // Ctrl+Arrow: Resize keys
+          const delta = e.shiftKey ? 0.5 : 0.25; // Larger steps with Shift
+          let dw = 0, dh = 0;
           
-          return {
-            id: keyId,
-            changes: { 
-              x: key.x + dx, 
-              y: key.y + dy 
-            }
-          };
-        }).filter(Boolean) as Array<{ id: string; changes: any }>;
-        
-        updateKeys(updates);
-        saveToHistory();
+          switch (e.key) {
+            case 'ArrowUp': dh = delta; break;      // Increase height
+            case 'ArrowDown': dh = -delta; break;   // Decrease height
+            case 'ArrowLeft': dw = -delta; break;   // Decrease width
+            case 'ArrowRight': dw = delta; break;   // Increase width
+          }
+          
+          const updates = Array.from(selectedKeys).map(keyId => {
+            const key = keyboard.keys.find(k => k.id === keyId);
+            if (!key) return null;
+            
+            // Ensure minimum size of 0.25 units
+            const newWidth = Math.max(0.25, key.width + dw);
+            const newHeight = Math.max(0.25, key.height + dh);
+            
+            return {
+              id: keyId,
+              changes: { 
+                width: newWidth,
+                height: newHeight
+              }
+            };
+          }).filter(Boolean) as Array<{ id: string; changes: any }>;
+          
+          updateKeys(updates);
+          saveToHistory();
+        } else {
+          // Normal arrow keys: Move keys
+          const delta = e.shiftKey ? 1 : 0.25;
+          let dx = 0, dy = 0;
+          
+          switch (e.key) {
+            case 'ArrowUp': dy = -delta; break;
+            case 'ArrowDown': dy = delta; break;
+            case 'ArrowLeft': dx = -delta; break;
+            case 'ArrowRight': dx = delta; break;
+          }
+          
+          const updates = Array.from(selectedKeys).map(keyId => {
+            const key = keyboard.keys.find(k => k.id === keyId);
+            if (!key) return null;
+            
+            return {
+              id: keyId,
+              changes: { 
+                x: key.x + dx, 
+                y: key.y + dy 
+              }
+            };
+          }).filter(Boolean) as Array<{ id: string; changes: any }>;
+          
+          updateKeys(updates);
+          saveToHistory();
+        }
       }
     };
 

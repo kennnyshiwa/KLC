@@ -54,6 +54,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
   });
   const [showCharPicker, setShowCharPicker] = useState(false);
   const [charPickerTarget, setCharPickerTarget] = useState<number | null>(null);
+  const [activeLegendField, setActiveLegendField] = useState<number | null>(null);
   const setIsSettingRotationPoint = useKeyboardStore((state) => state.setIsSettingRotationPoint);
   const isRotationSectionExpanded = useKeyboardStore((state) => state.isRotationSectionExpanded);
   const setIsRotationSectionExpanded = useKeyboardStore((state) => state.setIsRotationSectionExpanded);
@@ -74,6 +75,8 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
       setLocalX(firstKey.x.toString());
       setLocalY(firstKey.y.toString());
     }
+    // Reset active legend field when selection changes
+    setActiveLegendField(null);
   }, [firstKey?.id, firstKey?.x, firstKey?.y]);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -676,7 +679,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
               <span>Legends</span>
             </div>
             {expandedSections.legends && firstKey && (
-              <div className="section-content">
+              <div className="section-content" onClick={(e) => {
+                // Clear active legend field if clicking outside a legend field
+                if ((e.target as HTMLElement).closest('.legend-field') === null) {
+                  setActiveLegendField(null);
+                }
+              }}>
                 <div className="legends-controls">
                   <button 
                     className="btn btn-sm"
@@ -704,7 +712,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       if (index === 10) {
                         const [topPart] = getDualLegendParts(firstKey.labels[0]);
                         return (
-                          <div key={index} className="legend-field">
+                          <div 
+                            key={index} 
+                            className="legend-field"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveLegendField(index);
+                            }}
+                          >
                             <input
                               type="text"
                               value={topPart}
@@ -712,7 +727,10 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                                 const [, bottomPart] = getDualLegendParts(firstKey.labels[0]);
                                 handleLegendUpdate(0, `${e.target.value}\n${bottomPart}`);
                               }}
-                              onFocus={() => setCharPickerTarget(index)}
+                              onFocus={() => {
+                                setCharPickerTarget(index);
+                                setActiveLegendField(index);
+                              }}
                               placeholder={label}
                             />
                             {charPickerTarget === index && (
@@ -722,8 +740,37 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                                   const [, bottomPart] = getDualLegendParts(firstKey.labels[0]);
                                   handleLegendUpdate(0, `${value}\n${bottomPart}`);
                                 }}
-                                onIconAdded={() => handleIconAdded(0)}
+                                onIconAdded={() => handleIconAdded(10)}
                               />
+                            )}
+                            {activeLegendField === index && topPart && (
+                              <div className="legend-size-selector">
+                                <label>Size:</label>
+                                <input
+                                  type="number"
+                                  value={firstKey.textSize?.[10] || firstKey.default?.size?.[0] || 3}
+                                  onChange={(e) => {
+                                    const size = parseInt(e.target.value) || 3;
+                                    const updates = selectedKeysList.map(key => {
+                                      const newSizes = [...(key.textSize || [])];
+                                      // Ensure array is long enough
+                                      while (newSizes.length <= 10) {
+                                        newSizes.push(key.default?.size?.[0] || 3);
+                                      }
+                                      newSizes[10] = size;
+                                      return {
+                                        id: key.id,
+                                        changes: { textSize: newSizes }
+                                      };
+                                    });
+                                    updateKeys(updates);
+                                    saveToHistory();
+                                  }}
+                                  min="1"
+                                  max="9"
+                                  step="1"
+                                />
+                              </div>
                             )}
                           </div>
                         );
@@ -732,7 +779,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       else if (index === 11) {
                         const [, bottomPart] = getDualLegendParts(firstKey.labels[0]);
                         return (
-                          <div key={index} className="legend-field">
+                          <div 
+                            key={index} 
+                            className="legend-field"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveLegendField(index);
+                            }}
+                          >
                             <input
                               type="text"
                               value={bottomPart}
@@ -740,7 +794,10 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                                 const [topPart] = getDualLegendParts(firstKey.labels[0]);
                                 handleLegendUpdate(0, `${topPart}\n${e.target.value}`);
                               }}
-                              onFocus={() => setCharPickerTarget(index)}
+                              onFocus={() => {
+                                setCharPickerTarget(index);
+                                setActiveLegendField(index);
+                              }}
                               placeholder={label}
                             />
                             {charPickerTarget === index && (
@@ -750,8 +807,37 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                                   const [topPart] = getDualLegendParts(firstKey.labels[0]);
                                   handleLegendUpdate(0, `${topPart}\n${value}`);
                                 }}
-                                onIconAdded={() => handleIconAdded(0)}
+                                onIconAdded={() => handleIconAdded(11)}
                               />
+                            )}
+                            {activeLegendField === index && bottomPart && (
+                              <div className="legend-size-selector">
+                                <label>Size:</label>
+                                <input
+                                  type="number"
+                                  value={firstKey.textSize?.[11] || firstKey.default?.size?.[0] || 3}
+                                  onChange={(e) => {
+                                    const size = parseInt(e.target.value) || 3;
+                                    const updates = selectedKeysList.map(key => {
+                                      const newSizes = [...(key.textSize || [])];
+                                      // Ensure array is long enough
+                                      while (newSizes.length <= 11) {
+                                        newSizes.push(key.default?.size?.[0] || 3);
+                                      }
+                                      newSizes[11] = size;
+                                      return {
+                                        id: key.id,
+                                        changes: { textSize: newSizes }
+                                      };
+                                    });
+                                    updateKeys(updates);
+                                    saveToHistory();
+                                  }}
+                                  min="1"
+                                  max="9"
+                                  step="1"
+                                />
+                              </div>
                             )}
                           </div>
                         );
@@ -774,20 +860,59 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     
                     // Normal rendering for all other cases
                     return (
-                    <div key={index} className="legend-field">
+                    <div 
+                      key={index} 
+                      className="legend-field"
+                      onClick={() => setActiveLegendField(index)}
+                    >
                       <input
                         type="text"
                         value={firstKey.labels[index] || ''}
                         onChange={(e) => handleLegendUpdate(index, e.target.value)}
-                        onFocus={() => setCharPickerTarget(index)}
+                        onFocus={() => {
+                          setCharPickerTarget(index);
+                          setActiveLegendField(index);
+                        }}
                         placeholder={label}
                       />
                       {charPickerTarget === index && (
-                        <IconDropdown 
-                          currentValue={firstKey.labels[index] || ''}
-                          onChange={(value) => handleLegendUpdate(index, value)}
-                          onIconAdded={() => handleIconAdded(index)}
-                        />
+                        <>
+                          <IconDropdown 
+                            currentValue={firstKey.labels[index] || ''}
+                            onChange={(value) => handleLegendUpdate(index, value)}
+                            onIconAdded={() => handleIconAdded(index)}
+                          />
+                        </>
+                      )}
+                      {/* Show size selector when this field is active and has content */}
+                      {activeLegendField === index && firstKey.labels[index] && (
+                        <div className="legend-size-selector">
+                          <label>Size:</label>
+                          <input
+                            type="number"
+                            value={firstKey.textSize?.[index] || firstKey.default?.size?.[0] || 3}
+                            onChange={(e) => {
+                              const size = parseInt(e.target.value) || 3;
+                              const updates = selectedKeysList.map(key => {
+                                const newSizes = [...(key.textSize || [])];
+                                // Ensure array is long enough
+                                while (newSizes.length <= index) {
+                                  newSizes.push(key.default?.size?.[0] || 3);
+                                }
+                                newSizes[index] = size;
+                                return {
+                                  id: key.id,
+                                  changes: { textSize: newSizes }
+                                };
+                              });
+                              updateKeys(updates);
+                              saveToHistory();
+                            }}
+                            min="1"
+                            max="9"
+                            step="1"
+                          />
+                        </div>
                       )}
                     </div>
                   );
