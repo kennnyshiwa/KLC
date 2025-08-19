@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { Loader, Edit2, Trash2, Download, Eye, Lock, Copy, ExternalLink } from 'lucide-react';
 import SaveLayoutModal from '../components/SaveLayoutModal';
+import { parseOriginalKLE } from '../utils/originalKLEParser';
+import { debugLayoutIssues } from '../utils/debugLayout';
 
 interface Layout {
   id: string;
@@ -62,8 +64,17 @@ const MyLayouts: React.FC = () => {
   };
 
   const handleLoadLayout = (layout: Layout) => {
-    // Load the layout into the editor
-    setKeyboard(layout.data);
+    // Parse the raw KLE JSON data into a Keyboard object
+    const parsedKeyboard = parseOriginalKLE(layout.data);
+    
+    // Debug: Check for layout issues
+    const issues = debugLayoutIssues(parsedKeyboard);
+    if (issues.length > 0) {
+      console.warn('Layout issues detected:', issues);
+    }
+    
+    // Load the parsed layout into the editor
+    setKeyboard(parsedKeyboard);
     // Set the current layout ID so saves update this layout
     setCurrentLayoutId(layout.id);
     // Navigate back to the editor

@@ -7,11 +7,19 @@ import pg from 'pg';
 import { PrismaClient } from '../generated/prisma/index.js';
 import authRoutes from './routes/auth.js';
 import layoutRoutes from './routes/layouts.js';
+import githubRoutes from './routes/github.js';
 
 // Load environment variables (only in development)
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
+
+// Debug: Log GitHub-related env vars
+console.log('GitHub Environment Variables:', {
+  GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID ? 'Set' : 'Not set',
+  GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET ? 'Set' : 'Not set',
+  GITHUB_REDIRECT_URI: process.env.GITHUB_REDIRECT_URI || 'Not set'
+});
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -90,6 +98,7 @@ app.get('/api/config', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/layouts', layoutRoutes);
+app.use('/api/github', githubRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

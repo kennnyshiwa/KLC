@@ -66,7 +66,7 @@ function App() {
         <div className="header-left">
           <h1>KLC</h1>
           <div className="header-info">
-            {keyboard.meta.name || 'Untitled Layout'}
+            {keyboard?.meta?.name || 'Untitled Layout'}
           </div>
         </div>
         <div className="header-right">

@@ -1494,6 +1494,216 @@ body {
   padding: 2rem;
 }
 
+/* Import Gists Page */
+.import-gists-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 2rem;
+}
+
+.import-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.import-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.github-connect-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.github-connect-box {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.github-connect-box svg {
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+.github-connect-box h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.github-connect-box p {
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.privacy-note {
+  font-size: 0.875rem;
+  color: #999;
+}
+
+.btn-large {
+  padding: 12px 24px !important;
+  font-size: 1rem !important;
+}
+
+.import-controls {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.selection-info {
+  font-weight: 500;
+  color: #666;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.gist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gist-item {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.gist-item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gist-item.selected {
+  border-color: #3498db;
+  background-color: #f0f8ff;
+}
+
+.gist-item.has-error {
+  opacity: 0.7;
+}
+
+.gist-checkbox {
+  padding-top: 0.25rem;
+}
+
+.gist-info {
+  flex: 1;
+}
+
+.gist-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.name-editor {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.name-editor input {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.name-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  padding: 0.25rem !important;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.gist-item:hover .btn-icon {
+  opacity: 1;
+}
+
+.gist-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.gist-meta .filename {
+  font-family: monospace;
+  background-color: #f0f0f0;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+}
+
+.gist-meta .key-count {
+  font-weight: 500;
+  color: #27ae60;
+}
+
+.gist-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.empty-state svg {
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+.empty-state h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -2291,6 +2501,68 @@ body {
 
 .dark-mode .layout-card-header h3 {
   color: #e0e0e0;
+}
+
+/* Dark mode import gists page */
+.dark-mode .import-gists-page {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.dark-mode .github-connect-box {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.dark-mode .github-connect-box h2 {
+  color: #e0e0e0;
+}
+
+.dark-mode .github-connect-box p {
+  color: #bbb;
+}
+
+.dark-mode .import-controls {
+  background-color: #2a2a2a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .gist-item {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.dark-mode .gist-item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .gist-item.selected {
+  background-color: #1e3a5f;
+  border-color: #4a90e2;
+}
+
+.dark-mode .gist-meta .filename {
+  background-color: #333;
+  color: #e0e0e0;
+}
+
+.dark-mode .name-editor input {
+  background-color: #333;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .empty-state {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.dark-mode .empty-state h2 {
+  color: #e0e0e0;
+}
+
+.dark-mode .empty-state p {
+  color: #bbb;
 }
 
 .dark-mode .layout-visibility {

@@ -322,7 +322,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
               <label>Name</label>
               <input
                 type="text"
-                value={keyboard.meta.name || ''}
+                value={keyboard?.meta?.name || ''}
                 onChange={(e) => updateMetadata({ name: e.target.value })}
                 placeholder="Keyboard name"
               />
@@ -331,7 +331,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
               <label>Author</label>
               <input
                 type="text"
-                value={keyboard.meta.author || ''}
+                value={keyboard?.meta?.author || ''}
                 onChange={(e) => updateMetadata({ author: e.target.value })}
                 placeholder="Author name"
               />
@@ -339,7 +339,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
             <div className="property-row">
               <label>Notes</label>
               <textarea
-                value={keyboard.meta.notes || ''}
+                value={keyboard?.meta?.notes || ''}
                 onChange={(e) => updateMetadata({ notes: e.target.value })}
                 placeholder="Additional notes"
                 rows={3}

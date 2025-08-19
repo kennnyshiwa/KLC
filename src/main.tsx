@@ -5,6 +5,8 @@ import App from './App';
 import AuthCallback from './pages/AuthCallback';
 import MyLayouts from './pages/MyLayouts';
 import PublicLayout from './pages/PublicLayout';
+import ImportGists from './pages/ImportGists';
+import GitHubCallback from './pages/GitHubCallback';
 import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 
@@ -15,8 +17,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/auth/github/callback" element={<GitHubCallback />} />
           <Route path="/my-layouts" element={<MyLayouts />} />
           <Route path="/layout/:id" element={<PublicLayout />} />
+          <Route path="/import-gists" element={<ImportGists />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

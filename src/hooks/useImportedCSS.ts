@@ -6,7 +6,7 @@ export function useImportedCSS() {
   
   useEffect(() => {
     // Check if we have imported CSS
-    if (keyboard.meta.css) {
+    if (keyboard?.meta?.css) {
       // Create or update a style element for imported CSS
       let styleElement = document.getElementById('kle-imported-css');
       
@@ -21,7 +21,7 @@ export function useImportedCSS() {
       styleElement.textContent = sanitizedCSS;
       
     }
-  }, [keyboard.meta.css]);
+  }, [keyboard?.meta?.css]);
 }
 
 function sanitizeImportedCSS(css: string): string {

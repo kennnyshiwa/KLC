@@ -159,6 +159,9 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
   // Track the Y position for rows
   let currentRowY = 0;
   
+  // Track rotation origin for maintaining position in rotated sections
+  let rotationOriginX: number | null = null;
+  
   // Process each row
   for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
     const row = data[rowIndex];
@@ -171,7 +174,14 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
     }
     
     // Start new row
-    current.x = 0;
+    // If we have a rotation origin, maintain X position relative to it
+    if (rotationOriginX !== null) {
+      current.x = rotationOriginX;
+    } else {
+      current.x = 0;
+    }
+    
+    // Always use currentRowY for Y position
     current.y = currentRowY;
     current.rowStartY = currentRowY;
     current.maxRowHeight = 1;
@@ -184,7 +194,34 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         // Process key properties
         const props = item as KLEKeyData;
         
-        // Position adjustments
+        // Rotation properties MUST be processed FIRST
+        if (props.rx !== undefined || props.ry !== undefined) {
+          // When setting any rotation origin, check if we have both values
+          if (props.rx !== undefined) {
+            current.rotation_x = props.rx;
+            current.x = props.rx; // Reset x to rotation origin
+            rotationOriginX = props.rx; // Track this for new rows
+          }
+          if (props.ry !== undefined) {
+            current.rotation_y = props.ry;
+            current.y = props.ry; // Reset y to rotation origin
+            currentRowY = props.ry; // Also update currentRowY to start from here
+          } else if (props.rx !== undefined) {
+            // If only rx is set (common for split keyboards), use the current rotation_y
+            // This maintains the Y position from the previous rotation section
+            current.y = current.rotation_y;
+            currentRowY = current.rotation_y;
+          }
+        }
+        if (props.r !== undefined) {
+          current.rotation_angle = props.r;
+          // Clear rotation origin when rotation is reset to 0
+          if (props.r === 0) {
+            rotationOriginX = null;
+          }
+        }
+        
+        // Position adjustments (AFTER rotation properties)
         if (props.x !== undefined) current.x += props.x;
         if (props.y !== undefined) {
           // y adjustment is relative to current position
@@ -205,17 +242,6 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         if (props.y2 !== undefined) current.y2 = props.y2;
         if (props.w2 !== undefined) current.width2 = props.w2;
         if (props.h2 !== undefined) current.height2 = props.h2;
-        
-        // Rotation properties
-        if (props.rx !== undefined) {
-          current.rotation_x = props.rx;
-          current.x = props.rx; // Reset x to rotation origin
-        }
-        if (props.ry !== undefined) {
-          current.rotation_y = props.ry;
-          current.y = props.ry; // Reset y to rotation origin
-        }
-        if (props.r !== undefined) current.rotation_angle = props.r;
         
         // Appearance properties
         if (props.c !== undefined) current.color = props.c;

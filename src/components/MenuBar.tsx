@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +14,7 @@ import { initializeFonts } from '../utils/fontManager';
 import { saveAs } from 'file-saver';
 
 const MenuBar: React.FC = () => {
+  const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showRawDataModal, setShowRawDataModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -225,6 +227,14 @@ const MenuBar: React.FC = () => {
             <button className="menu-dropdown-item" onClick={() => { handleExportJSON(); }}>
               Export KLC
             </button>
+            {user && (
+              <>
+                <div className="menu-divider" />
+                <button className="menu-dropdown-item" onClick={() => { navigate('/import-gists'); setActiveMenu(null); }}>
+                  Import from KLE Gists
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

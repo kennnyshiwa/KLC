@@ -3,7 +3,11 @@ import { Key } from '../types';
 let keyIdCounter = 0;
 
 export function generateKeyId(): string {
-  return `key_${Date.now()}_${keyIdCounter++}`;
+  // Use a combination of timestamp, counter, and random value to ensure uniqueness
+  const timestamp = Date.now();
+  const counter = keyIdCounter++;
+  const random = Math.random().toString(36).substring(2, 9);
+  return `key_${timestamp}_${counter}_${random}`;
 }
 
 export function getKeyBounds(key: Key): { x: number; y: number; width: number; height: number } {
