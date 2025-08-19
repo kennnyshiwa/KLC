@@ -4,6 +4,7 @@ import { Key } from '../types';
 import { getLegendPosition, getStabilizerPositions } from '../utils/keyUtils';
 import { parseIconLegend } from '../utils/iconParser';
 import { fontManager } from '../utils/fontManager';
+import { isPointInRotatedRect } from '../utils/rotationUtils';
 
 interface KeyboardCanvasProps {
   width: number;
@@ -1169,11 +1170,36 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
 
   // Get key at position
   const getKeyAtPosition = (x: number, y: number): KeyRect | null => {
+    const unitSize = stateRef.current.editorSettings.unitSize;
+    
+    // Check keys in reverse order (top to bottom) for proper overlap handling
     for (let i = keyRectsRef.current.length - 1; i >= 0; i--) {
       const rect = keyRectsRef.current[i];
-      if (x >= rect.x && x <= rect.x + rect.width &&
-          y >= rect.y && y <= rect.y + rect.height) {
-        return rect;
+      const key = rect.key;
+      
+      // Use rotation-aware hit testing if the key is rotated
+      if (key.rotation_angle) {
+        const isInside = isPointInRotatedRect(
+          x,
+          y,
+          rect.x,
+          rect.y,
+          rect.width,
+          rect.height,
+          key.rotation_angle,
+          key.rotation_x !== undefined ? key.rotation_x * unitSize : undefined,
+          key.rotation_y !== undefined ? key.rotation_y * unitSize : undefined
+        );
+        
+        if (isInside) {
+          return rect;
+        }
+      } else {
+        // Simple bounds check for non-rotated keys
+        if (x >= rect.x && x <= rect.x + rect.width &&
+            y >= rect.y && y <= rect.y + rect.height) {
+          return rect;
+        }
       }
     }
     return null;
