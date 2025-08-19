@@ -38,6 +38,7 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
   'Special Keys': [
     { name: 'ISO Enter', width: 1.25, height: 2, x2: -0.25, y2: 0, width2: 1.5, height2: 1 },
     { name: 'Big Ass Enter', width: 2.25, height: 1, x2: .75, y2: -1, width2: 1.5, height2: 2 },
+    { name: 'Medium Ass Enter', width: 1.75, height: 1, x2: .75, y2: -1, width2: 1, height2: 2},
     { name: 'Little Ass Enter', width: 1.5, height: 1, x2: .75, y2: -1, width2: .75, height2: 2 },
     { name: 'Stepped Caps', width: 1.75, height: 1, stepped: true },
     { name: 'Stepped Shift', width: 2.25, height: 1, stepped: true },

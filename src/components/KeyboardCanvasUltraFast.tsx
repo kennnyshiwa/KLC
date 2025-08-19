@@ -91,11 +91,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Round AFTER applying inset to ensure consistent gaps
       const keyX = Math.round(baseX + keyInset);
       const keyY = Math.round(baseY + keyInset);
-      // Round the end position, then calculate width from that
-      const keyEndX = Math.round(baseX + baseWidth - keyInset);
-      const keyEndY = Math.round(baseY + baseHeight - keyInset);
-      const keyWidth = keyEndX - keyX;
-      const keyHeight = keyEndY - keyY;
+      // Calculate width/height directly to preserve fractional key sizes
+      const keyWidth = Math.round(baseWidth - keyInset * 2);
+      const keyHeight = Math.round(baseHeight - keyInset * 2);
       
       // Apply drag offset to selected keys
       let renderX = keyX;
@@ -1425,8 +1423,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           const keyInset = 1;
           const renderX = Math.round(key.x * unitSize + keyInset);
           const renderY = Math.round(key.y * unitSize + keyInset);
-          const keyWidth = Math.round((key.x + key.width) * unitSize - keyInset) - renderX;
-          const keyHeight = Math.round((key.y + key.height) * unitSize - keyInset) - renderY;
+          const keyWidth = Math.round(key.width * unitSize - keyInset * 2);
+          const keyHeight = Math.round(key.height * unitSize - keyInset * 2);
           
           // Check each stabilizer position
           for (let i = 0; i < stabPositions.length; i++) {
