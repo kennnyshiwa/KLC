@@ -710,12 +710,27 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       key.labels.forEach((label, index) => {
         if (!label) return;
         
-        // Skip positions that should be handled by front legends
-        if (index >= 4 && index <= 6 && key.frontLegends) {
+        // Skip positions that should be handled by front legends or center legend
+        if ((index === 4 || index === 6) && key.frontLegends && !key.decal) {
+          return;
+        }
+        if (index === 8 && key.centerLegend && !key.decal) {
           return;
         }
         
-        const position = getLegendPosition(index);
+        // For decal keys, remap certain positions:
+        // Position 6 should render as middle-left (position 7)
+        // Position 8 should render as top-center (position 10)
+        let mappedIndex = index;
+        if (key.decal) {
+          if (index === 6) {
+            mappedIndex = 7; // middle-left
+          } else if (index === 8) {
+            mappedIndex = 10; // top-center
+          }
+        }
+        
+        const position = getLegendPosition(mappedIndex);
         const legendRotation = key.legendRotation?.[index] || 0;
         
         // Override position if key has align property
@@ -964,6 +979,24 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           ctx.restore();
         }
       });
+      
+      // Draw center legend LAST so it's on top of everything else
+      if (key.centerLegend) {
+        ctx.save();
+        // Use the same font as other labels
+        const centerFont = key.font || '';
+        ctx.font = centerFont ? fontManager.getRenderFont(centerFont, 12) : '12px Arial';
+        // Use the same color as other labels
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Draw in the center of the key
+        const centerX = renderX + keyWidth / 2;
+        const centerY = renderY + keyHeight / 2;
+        ctx.fillText(key.centerLegend, centerX, centerY);
+        ctx.restore();
+      }
       
       // Draw stabilizer positions if enabled (while rotation is still active)
       // Skip decal keys as they're just labels, not physical keys

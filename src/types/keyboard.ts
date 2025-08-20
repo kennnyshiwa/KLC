@@ -33,6 +33,7 @@ export interface Key {
   stepped?: boolean;
   decal?: boolean;
   frontLegends?: string[];
+  centerLegend?: string;
   align?: number;
   font?: string;
   legendRotation?: number[];
