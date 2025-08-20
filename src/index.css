@@ -2677,3 +2677,39 @@ body {
   color: #ff6b6b;
   background-color: rgba(255, 107, 107, 0.1);
 }
+
+/* More dark mode fixes for import page */
+.dark-mode .import-header {
+  color: #e0e0e0;
+}
+
+.dark-mode .gist-name {
+  color: #e0e0e0;
+}
+
+.dark-mode .name-display {
+  color: #e0e0e0;
+}
+
+.dark-mode .gist-meta .date {
+  color: #888;
+}
+
+.dark-mode .gist-meta .key-count {
+  color: #4ade80;
+}
+
+.dark-mode .control-buttons .btn {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .control-buttons .btn:hover:not(:disabled) {
+  background-color: #333;
+  border-color: #555;
+}
+
+.dark-mode .gist-checkbox input[type="checkbox"] {
+  accent-color: #3498db;
+}
