@@ -2507,7 +2507,7 @@ body {
 }
 
 /* Dark mode import gists page */
-body.dark-mode {
+html.dark-mode body {
   background-color: #1a1a1a;
 }
 
@@ -2703,13 +2703,13 @@ body.dark-mode {
   color: #4ade80;
 }
 
-.dark-mode .control-buttons .btn {
+.dark-mode .control-buttons .btn:not(.btn-primary) {
   background-color: #2a2a2a;
   border-color: #444;
   color: #e0e0e0;
 }
 
-.dark-mode .control-buttons .btn:hover:not(:disabled) {
+.dark-mode .control-buttons .btn:not(.btn-primary):hover:not(:disabled) {
   background-color: #333;
   border-color: #555;
 }

@@ -41,6 +41,14 @@ const ImportGists: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
+  // Apply dark mode on mount
+  useEffect(() => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) {
+      document.documentElement.classList.add('dark-mode');
+    }
+  }, []);
+
   useEffect(() => {
     
     // Don't redirect if auth is still loading
