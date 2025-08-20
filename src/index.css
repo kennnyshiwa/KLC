@@ -2507,6 +2507,10 @@ body {
 }
 
 /* Dark mode import gists page */
+body.dark-mode {
+  background-color: #1a1a1a;
+}
+
 .dark-mode .import-gists-page {
   background-color: #1a1a1a;
   color: #e0e0e0;
