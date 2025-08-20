@@ -42,31 +42,21 @@ const ImportGists: React.FC = () => {
   const [editingName, setEditingName] = useState('');
 
   useEffect(() => {
-    console.log('ImportGists useEffect triggered');
-    console.log('User:', user);
-    console.log('Auth loading:', authLoading);
-    console.log('Location search:', location.search);
     
     // Don't redirect if auth is still loading
     if (authLoading) {
-      console.log('Auth still loading, waiting...');
       return;
     }
     
     if (!user) {
-      console.log('No user, redirecting to home');
       navigate('/');
       return;
     }
 
     // Check if we're returning from GitHub OAuth
     const params = new URLSearchParams(location.search);
-    console.log('URL params:', Object.fromEntries(params));
-    
     if (params.get('success') === 'true') {
-      console.log('Success detected, setting githubConnected to true');
       setGithubConnected(true);
-      console.log('Calling fetchGists...');
       fetchGists();
     } else if (params.get('error')) {
       const errorType = params.get('error');
@@ -91,12 +81,9 @@ const ImportGists: React.FC = () => {
     setError('');
     
     try {
-      console.log('Fetching gists from:', `${API_URL}/github/gists`);
       const response = await fetch(`${API_URL}/github/gists`, {
         credentials: 'include'
       });
-
-      console.log('Gists response status:', response.status);
 
       if (response.status === 401) {
         setGithubConnected(false);
@@ -111,11 +98,7 @@ const ImportGists: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log('Fetched gists data:', data);
-      console.log('Number of gists found:', data.gists?.length || 0);
-      
       if (!data.gists || data.gists.length === 0) {
-        console.log('No gists found');
         setPreviews([]);
         return;
       }
@@ -299,7 +282,7 @@ const ImportGists: React.FC = () => {
       <div className="import-header">
         <button className="btn btn-sm" onClick={() => navigate('/')}>
           <ArrowLeft size={16} />
-          <span>Back to Editor</span>
+          Back to Editor
         </button>
         <h1>Import from KLE Gists</h1>
       </div>
@@ -312,8 +295,7 @@ const ImportGists: React.FC = () => {
             <p>To import your KLE layouts from GitHub Gists, you need to connect your GitHub account.</p>
             <p className="privacy-note">We only request access to read your gists. Your data remains private.</p>
             <button className="btn btn-primary btn-large" onClick={connectGitHub}>
-              <Github size={20} />
-              <span>Connect GitHub Account</span>
+              Connect GitHub Account
             </button>
           </div>
         </div>
@@ -374,12 +356,12 @@ const ImportGists: React.FC = () => {
                 {importing ? (
                   <>
                     <Loader size={16} className="spin" />
-                    <span>Importing...</span>
+                    Importing...
                   </>
                 ) : (
                   <>
                     <Save size={16} />
-                    <span>Import Selected ({selectedCount})</span>
+                    Import Selected ({selectedCount})
                   </>
                 )}
               </button>

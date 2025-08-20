@@ -580,6 +580,9 @@ body {
 
 /* Button Styles */
 .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.5rem 1rem;
   border: 1px solid #ddd;
   background-color: white;
@@ -2643,4 +2646,34 @@ body {
   background-color: #1a1a1a;
   color: #e0e0e0;
   border-color: #444;
+}
+
+/* Button icon and text alignment */
+.btn svg {
+  flex-shrink: 0;
+}
+
+/* Additional dark mode styles for import gists page */
+.dark-mode .gist-list {
+  background-color: transparent;
+}
+
+.dark-mode .gist-item.selected {
+  background-color: #333;
+  border-color: #3498db;
+}
+
+.dark-mode .gist-meta {
+  color: #999;
+}
+
+.dark-mode .name-editor input {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.dark-mode .gist-error {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
 }
