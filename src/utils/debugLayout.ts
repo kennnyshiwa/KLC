@@ -32,18 +32,6 @@ export function debugLayoutIssues(keyboard: Keyboard) {
     }
   });
   
-  // Log rotated keys for debugging
-  const rotatedKeys = keyboard.keys.filter(k => k.rotation_angle);
-  console.log(`Found ${rotatedKeys.length} rotated keys:`);
-  rotatedKeys.forEach((key, index) => {
-    console.log(`  Key ${index}: rotation=${key.rotation_angle}°, pos=(${key.x}, ${key.y}), size=${key.width}x${key.height}, labels=${JSON.stringify(key.labels)}`);
-    if (key.rotation_x !== undefined || key.rotation_y !== undefined) {
-      console.log(`    Custom rotation center: (${key.rotation_x}, ${key.rotation_y})`);
-    }
-    if (key.x2 !== undefined || key.y2 !== undefined || key.width2 !== undefined || key.height2 !== undefined) {
-      console.log(`    Secondary dimensions: x2=${key.x2}, y2=${key.y2}, w2=${key.width2}, h2=${key.height2}`);
-    }
-  });
   
   return issues;
 }

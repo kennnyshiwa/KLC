@@ -64,8 +64,20 @@ const MyLayouts: React.FC = () => {
   };
 
   const handleLoadLayout = (layout: Layout) => {
-    // Parse the raw KLE JSON data into a Keyboard object
-    const parsedKeyboard = parseOriginalKLE(layout.data);
+    let parsedKeyboard;
+    
+    // Check if the data is already a Keyboard object (old format) or a KLE array (new format)
+    if (Array.isArray(layout.data)) {
+      // New format: KLE array from imported gists
+      parsedKeyboard = parseOriginalKLE(layout.data);
+    } else if (layout.data && typeof layout.data === 'object' && 'keys' in layout.data) {
+      // Old format: Direct Keyboard object
+      parsedKeyboard = layout.data;
+    } else {
+      console.error('Unknown layout format:', layout.data);
+      alert('Unable to load this layout - unknown format');
+      return;
+    }
     
     // Debug: Check for layout issues
     const issues = debugLayoutIssues(parsedKeyboard);
