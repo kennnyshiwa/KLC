@@ -282,8 +282,6 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         
         // Split the original string by \n to get actual positions
         const originalParts = [...labels];
-        // Keep a copy for checking size indicators
-        const originalPartsCopy = [...originalParts];
         
         if (originalParts.length > 4) {
           let foundFrontLegend = false;
