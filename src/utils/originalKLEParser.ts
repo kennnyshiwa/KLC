@@ -293,8 +293,20 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
           // For regular keys, positions 4 and 6 are front legends
           if (!current.decal) {
             // Position 4: Front legend
+            // If there's already a legend at position 0, then position 4 is front-center
+            // Otherwise it's front-left
             if (originalParts[4] && originalParts[4].trim()) {
-              frontLegends[0] = originalParts[4].trim();
+              // Check if there's a preceding legend (position 0)
+              const hasPrecedingLegend = originalParts[0] && originalParts[0].trim();
+              
+              if (hasPrecedingLegend) {
+                // If there's a legend before this, position 4 is front-center
+                frontLegends[1] = originalParts[4].trim();
+              } else {
+                // Otherwise it's front-left
+                frontLegends[0] = originalParts[4].trim();
+              }
+              
               foundFrontLegend = true;
               originalParts[4] = '';
             }
