@@ -47,6 +47,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
     position: true,
     rotation: true,
     size: true,
+    sizeAdvanced: false,
     legends: true,
     legendStyle: true,
     appearance: true,
@@ -550,124 +551,140 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
             </div>
             {expandedSections.size && firstKey && (
               <div className="section-content">
-                {/* Check if this is a complex key shape */}
-                {(firstKey.x2 !== undefined || firstKey.y2 !== undefined || 
-                  firstKey.width2 !== undefined || firstKey.height2 !== undefined) ? (
-                  <div className="property-row">
-                    <p className="hint">Complex key shapes (ISO Enter, Big Ass Enter) have fixed dimensions and cannot be resized.</p>
+                <div className="property-row-dual">
+                  <div className="property-field">
+                    <label>Width</label>
+                    <input
+                      type="number"
+                      value={firstKey.width}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value !== '') {
+                          handleKeyUpdate('width', parseFloat(value));
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || parseFloat(value) <= 0) {
+                          alert('Width must be greater than 0. Reverting to previous value.');
+                          e.target.value = firstKey.width.toString();
+                        }
+                      }}
+                      step="0.25"
+                      min="0.25"
+                    />
                   </div>
-                ) : (
-                  <div className="property-row-dual">
-                    <div className="property-field">
-                      <label>Width</label>
-                      <input
-                        type="number"
-                        value={firstKey.width}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value !== '') {
-                            handleKeyUpdate('width', parseFloat(value));
-                          }
-                        }}
-                        onBlur={(e) => {
-                          const value = e.target.value;
-                          if (value === '' || parseFloat(value) <= 0) {
-                            alert('Width must be greater than 0. Reverting to previous value.');
-                            e.target.value = firstKey.width.toString();
-                          }
-                        }}
-                        step="0.25"
-                        min="0.25"
-                      />
-                    </div>
-                    <div className="property-field">
-                      <label>Height</label>
-                      <input
-                        type="number"
-                        value={firstKey.height}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value !== '') {
-                            handleKeyUpdate('height', parseFloat(value));
-                          }
-                        }}
-                        onBlur={(e) => {
-                          const value = e.target.value;
-                          if (value === '' || parseFloat(value) <= 0) {
-                            alert('Height must be greater than 0. Reverting to previous value.');
-                            e.target.value = firstKey.height.toString();
-                          }
-                        }}
-                        step="0.25"
-                        min="0.25"
-                      />
-                    </div>
+                  <div className="property-field">
+                    <label>Height</label>
+                    <input
+                      type="number"
+                      value={firstKey.height}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value !== '') {
+                          handleKeyUpdate('height', parseFloat(value));
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || parseFloat(value) <= 0) {
+                          alert('Height must be greater than 0. Reverting to previous value.');
+                          e.target.value = firstKey.height.toString();
+                        }
+                      }}
+                      step="0.25"
+                      min="0.25"
+                    />
                   </div>
-                )}
-                {false && (firstKey.x2 !== undefined || firstKey.y2 !== undefined) && (
-                  <>
-                    <div className="property-row-dual">
-                      <div className="property-field">
-                        <label>X2</label>
-                        <input
-                          type="number"
-                          value={firstKey.x2 || 0}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value !== '') {
-                              handleKeyUpdate('x2', parseFloat(value));
-                            }
-                          }}
-                          step="0.25"
-                        />
+                </div>
+                
+                {/* Advanced Size Options - Special Keys */}
+                <div className="property-subsection" style={{ marginTop: '12px' }}>
+                  <div 
+                    className="subsection-header" 
+                    onClick={() => toggleSection('sizeAdvanced')}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '4px', 
+                      cursor: 'pointer',
+                      padding: '4px 0',
+                      userSelect: 'none'
+                    }}
+                  >
+                    {expandedSections.sizeAdvanced ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    <span style={{ fontSize: '12px', color: '#888' }}>Advanced (Special Keys)</span>
+                  </div>
+                  {expandedSections.sizeAdvanced && (
+                    <>
+                      <div className="property-row">
+                        <p className="hint" style={{ fontSize: '11px', marginBottom: '8px' }}>
+                          Create custom special keys like ISO Enter or Big Ass Enter by defining a secondary rectangle.
+                        </p>
                       </div>
-                      <div className="property-field">
-                        <label>Y2</label>
-                        <input
-                          type="number"
-                          value={firstKey.y2 || 0}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value !== '') {
-                              handleKeyUpdate('y2', parseFloat(value));
-                            }
-                          }}
-                          step="0.25"
-                        />
+                      <div className="property-row-dual">
+                        <div className="property-field">
+                          <label>X2 Offset</label>
+                          <input
+                            type="number"
+                            value={firstKey.x2 || 0}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value !== '') {
+                                handleKeyUpdate('x2', parseFloat(value));
+                              }
+                            }}
+                            step="0.25"
+                          />
+                        </div>
+                        <div className="property-field">
+                          <label>Y2 Offset</label>
+                          <input
+                            type="number"
+                            value={firstKey.y2 || 0}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value !== '') {
+                                handleKeyUpdate('y2', parseFloat(value));
+                              }
+                            }}
+                            step="0.25"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="property-row-dual">
-                      <div className="property-field">
-                        <label>Width2</label>
-                        <input
-                          type="number"
-                          value={firstKey.width2 || 0}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value !== '') {
-                              handleKeyUpdate('width2', parseFloat(value));
-                            }
-                          }}
-                          step="0.25"
-                        />
+                      <div className="property-row-dual">
+                        <div className="property-field">
+                          <label>Width2</label>
+                          <input
+                            type="number"
+                            value={firstKey.width2 || 0}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value !== '') {
+                                handleKeyUpdate('width2', parseFloat(value));
+                              }
+                            }}
+                            step="0.25"
+                          />
+                        </div>
+                        <div className="property-field">
+                          <label>Height2</label>
+                          <input
+                            type="number"
+                            value={firstKey.height2 || 0}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value !== '') {
+                                handleKeyUpdate('height2', parseFloat(value));
+                              }
+                            }}
+                            step="0.25"
+                          />
+                        </div>
                       </div>
-                      <div className="property-field">
-                        <label>Height2</label>
-                        <input
-                          type="number"
-                          value={firstKey.height2 || 0}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value !== '') {
-                              handleKeyUpdate('height2', parseFloat(value));
-                            }
-                          }}
-                          step="0.25"
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>

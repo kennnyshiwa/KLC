@@ -151,7 +151,8 @@ export const useKeyboardShortcuts = () => {
           saveToHistory();
         } else {
           // Normal arrow keys: Move keys
-          const delta = e.shiftKey ? 1 : 0.25;
+          // Alt: 0.125 increments, Normal: 0.25, Shift: 1
+          const delta = e.altKey ? 0.125 : (e.shiftKey ? 1 : 0.25);
           let dx = 0, dy = 0;
           
           switch (e.key) {

@@ -24,6 +24,10 @@ interface KeyRect {
   key: Key;
 }
 
+// Canvas padding for easier edge selection
+const CANVAS_PADDING_LEFT = 40;
+const CANVAS_PADDING_TOP = 40;
+
 const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ width, height }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -76,6 +80,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     const unitSize = editorSettings.unitSize;
     const keyInset = 1; // 1 pixel inset on all sides = 2 pixel gap between keys
 
+    // Save context and apply padding transform
+    ctx.save();
+    ctx.translate(CANVAS_PADDING_LEFT, CANVAS_PADDING_TOP);
 
     // Update key rectangles
     keyRectsRef.current = [];
@@ -1041,7 +1048,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       }
     });
     
-    // Draw selection rectangle
+    // Restore transform before drawing selection rectangle
+    ctx.restore();
+    
+    // Draw selection rectangle (in screen coordinates)
     if (isSelectingRef.current) {
       ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
       ctx.strokeStyle = '#3498db';
@@ -1051,6 +1061,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
     }
     
+    // Re-apply transform for rotation points
+    ctx.save();
+    ctx.translate(CANVAS_PADDING_LEFT, CANVAS_PADDING_TOP);
+    
     // Draw rotation points for selected keys (only when rotation section is expanded)
     if (stateRef.current.selectedKeys.size > 0 && stateRef.current.isRotationSectionExpanded) {
       ctx.save();
@@ -1059,7 +1073,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         if (key) {
           let rotX: number, rotY: number;
           
-          // Determine rotation center position
+          // Determine rotation center position (with canvas padding)
           if (key.rotation_x !== undefined && key.rotation_y !== undefined) {
             // Use existing rotation center
             rotX = key.rotation_x * unitSize;
@@ -1178,6 +1192,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         ctx.restore();
       }
     }
+    
+    // Final restore of transform
+    ctx.restore();
   };
 
   // Request animation frame render
@@ -1205,6 +1222,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   const getKeyAtPosition = (x: number, y: number): KeyRect | null => {
     const unitSize = stateRef.current.editorSettings.unitSize;
     
+    // Adjust coordinates for canvas padding
+    const adjustedX = x - CANVAS_PADDING_LEFT;
+    const adjustedY = y - CANVAS_PADDING_TOP;
+    
     // Check keys in reverse order (top to bottom) for proper overlap handling
     for (let i = keyRectsRef.current.length - 1; i >= 0; i--) {
       const rect = keyRectsRef.current[i];
@@ -1213,8 +1234,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Use rotation-aware hit testing if the key is rotated
       if (key.rotation_angle) {
         const isInside = isPointInRotatedRect(
-          x,
-          y,
+          adjustedX,
+          adjustedY,
           rect.x,
           rect.y,
           rect.width,
@@ -1229,8 +1250,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         }
       } else {
         // Simple bounds check for non-rotated keys
-        if (x >= rect.x && x <= rect.x + rect.width &&
-            y >= rect.y && y <= rect.y + rect.height) {
+        if (adjustedX >= rect.x && adjustedX <= rect.x + rect.width &&
+            adjustedY >= rect.y && adjustedY <= rect.y + rect.height) {
           return rect;
         }
       }
@@ -1253,10 +1274,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     if (store.isSettingRotationPoint) {
       const selectedKeys = Array.from(store.selectedKeys);
       if (selectedKeys.length > 0) {
-        // Convert canvas coordinates to keyboard units
+        // Convert canvas coordinates to keyboard units (accounting for padding)
         const unitSize = store.editorSettings.unitSize;
-        let rotationX = x / unitSize;
-        let rotationY = y / unitSize;
+        let rotationX = (x - CANVAS_PADDING_LEFT) / unitSize;
+        let rotationY = (y - CANVAS_PADDING_TOP) / unitSize;
         
         // Snap to 0.25 grid
         rotationX = Math.round(rotationX * 4) / 4;

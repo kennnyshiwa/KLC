@@ -1205,6 +1205,71 @@ body {
   flex-direction: column;
 }
 
+/* Keyboard Shortcuts Modal */
+.shortcuts-modal {
+  width: 800px;
+  max-width: 90vw;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.shortcuts-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.shortcut-keys {
+  font-family: monospace;
+  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.shortcut-description {
+  color: #333;
+  margin-left: 12px;
+  flex: 1;
+}
+
+.dark-mode .shortcuts-section h3 {
+  color: #999;
+}
+
+.dark-mode .shortcut-keys {
+  background: #333;
+  color: #e0e0e0;
+}
+
+.dark-mode .shortcut-description {
+  color: #ccc;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;

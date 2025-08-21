@@ -90,10 +90,14 @@ export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard:
     const unitSize = editorSettings?.unitSize || 54;
     const bounds = getKeyboardBounds(keyboard, unitSize);
     
-    // Create a new canvas with the cropped size
+    // Add space for footer if we have name or author
+    const hasFooter = keyboard.meta.name || keyboard.meta.author;
+    const footerHeight = hasFooter ? 40 : 0;
+    
+    // Create a new canvas with the cropped size plus footer
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(bounds.width);
-    canvas.height = Math.round(bounds.height);
+    canvas.height = Math.round(bounds.height) + footerHeight;
     const ctx = canvas.getContext('2d');
     
     if (!ctx) return;
@@ -108,6 +112,35 @@ export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard:
       Math.round(bounds.minX), Math.round(bounds.minY), Math.round(bounds.width), Math.round(bounds.height),  // Source rectangle
       0, 0, Math.round(bounds.width), Math.round(bounds.height)                                               // Destination rectangle
     );
+    
+    // Add footer with name and author if available
+    if (hasFooter) {
+      // Draw a subtle separator line
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(20, bounds.height + 5);
+      ctx.lineTo(canvas.width - 20, bounds.height + 5);
+      ctx.stroke();
+      
+      // Prepare text
+      const footerText = [];
+      if (keyboard.meta.name) {
+        footerText.push(keyboard.meta.name);
+      }
+      if (keyboard.meta.author) {
+        footerText.push(`by ${keyboard.meta.author}`);
+      }
+      
+      // Draw footer text
+      ctx.fillStyle = '#333333';
+      ctx.font = '14px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const textY = bounds.height + footerHeight / 2 + 5;
+      ctx.fillText(footerText.join(' • '), canvas.width / 2, textY);
+    }
     
     // Convert the cropped canvas to blob
     canvas.toBlob((blob) => {

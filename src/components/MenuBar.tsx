@@ -7,6 +7,7 @@ import { parseKLE } from '../utils/kleParser';
 import { presetLayouts } from '../constants/presetLayouts';
 import RawDataModal from './RawDataModal';
 import SaveLayoutModal from './SaveLayoutModal';
+import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import { exportToKLE2String, importFromKLE2String } from '../utils/kle2Serializer';
 import { importOriginalKLEFile } from '../utils/originalKLEParser';
 import { exportToKLEString } from '../utils/kleExporter';
@@ -19,6 +20,7 @@ const MenuBar: React.FC = () => {
   const [showRawDataModal, setShowRawDataModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showSaveAsModal, setShowSaveAsModal] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
   const keyboard = useKeyboardStore((state) => state.keyboard);
@@ -297,6 +299,18 @@ const MenuBar: React.FC = () => {
           </div>
         )}
       </div>
+
+      <div className="menu-item" onClick={() => setActiveMenu(activeMenu === 'help' ? null : 'help')}>
+        <span>Help</span>
+        <ChevronDown size={14} />
+        {activeMenu === 'help' && (
+          <div className="menu-dropdown">
+            <button className="menu-dropdown-item" onClick={() => { setShowShortcutsModal(true); setActiveMenu(null); }}>
+              Keyboard Shortcuts <span style={{float: 'right', opacity: 0.6}}>?</span>
+            </button>
+          </div>
+        )}
+      </div>
       </div>
       
       <RawDataModal 
@@ -320,6 +334,11 @@ const MenuBar: React.FC = () => {
           isSaveAs={true}
         />
       )}
+      
+      <KeyboardShortcutsModal
+        isOpen={showShortcutsModal}
+        onClose={() => setShowShortcutsModal(false)}
+      />
     </>
   );
 };
