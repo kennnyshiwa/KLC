@@ -87,6 +87,7 @@ export const useKeyboardStore = create<KeyboardState>()(
         unitSize: 54,
         keySpacing: 1,
         showStabilizerPositions: false,
+        selectionMode: 'touch',
       },
       history: [],
       historyIndex: -1,

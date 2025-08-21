@@ -1606,13 +1606,33 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Select keys in rectangle
       const rect = selectionRectRef.current;
       const selectedIds: string[] = [];
+      const selectionMode = stateRef.current.editorSettings.selectionMode || 'touch';
+      
+      // Adjust selection rectangle for canvas padding
+      const adjustedRect = {
+        x: rect.x - CANVAS_PADDING_LEFT,
+        y: rect.y - CANVAS_PADDING_TOP,
+        width: rect.width,
+        height: rect.height
+      };
       
       keyRectsRef.current.forEach(keyRect => {
-        if (!(keyRect.x + keyRect.width < rect.x ||
-              keyRect.x > rect.x + rect.width ||
-              keyRect.y + keyRect.height < rect.y ||
-              keyRect.y > rect.y + rect.height)) {
-          selectedIds.push(keyRect.id);
+        if (selectionMode === 'touch') {
+          // Touch mode: select if any part of the key overlaps with the selection
+          if (!(keyRect.x + keyRect.width < adjustedRect.x ||
+                keyRect.x > adjustedRect.x + adjustedRect.width ||
+                keyRect.y + keyRect.height < adjustedRect.y ||
+                keyRect.y > adjustedRect.y + adjustedRect.height)) {
+            selectedIds.push(keyRect.id);
+          }
+        } else {
+          // Enclose mode: select only if the key is fully contained within the selection
+          if (keyRect.x >= adjustedRect.x &&
+              keyRect.x + keyRect.width <= adjustedRect.x + adjustedRect.width &&
+              keyRect.y >= adjustedRect.y &&
+              keyRect.y + keyRect.height <= adjustedRect.y + adjustedRect.height) {
+            selectedIds.push(keyRect.id);
+          }
         }
       });
       

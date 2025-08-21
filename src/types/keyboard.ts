@@ -109,6 +109,7 @@ export interface EditorSettings {
   unitSize: number;
   keySpacing: number;
   showStabilizerPositions: boolean;
+  selectionMode: 'touch' | 'enclose'; // touch = partial overlap, enclose = fully contained
 }
 
 export interface ColorSwatch {

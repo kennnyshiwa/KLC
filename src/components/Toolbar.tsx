@@ -18,6 +18,31 @@ interface ToolbarProps {
   getStage: () => any;
 }
 
+// Custom selection mode icons
+const SelectionModeIcon: React.FC<{ mode: 'touch' | 'enclose' }> = ({ mode }) => {
+  if (mode === 'touch') {
+    // Icon showing partial overlap selection
+    return (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
+        {/* Selection box */}
+        <rect x="2" y="2" width="10" height="10" strokeDasharray="2 2" />
+        {/* Key partially inside */}
+        <rect x="8" y="8" width="8" height="8" fill="currentColor" opacity="0.3" />
+      </svg>
+    );
+  } else {
+    // Icon showing fully enclosed selection
+    return (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
+        {/* Selection box */}
+        <rect x="2" y="2" width="14" height="14" strokeDasharray="2 2" />
+        {/* Key fully inside */}
+        <rect x="5" y="5" width="8" height="8" fill="currentColor" opacity="0.3" />
+      </svg>
+    );
+  }
+};
+
 const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const [activeColorMenu, setActiveColorMenu] = React.useState<'GMK' | 'ABS' | 'PBT' | null>(null);
   const toolbarContainerRef = React.useRef<HTMLDivElement>(null);
@@ -150,6 +175,21 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
             title="Multi-select Mode (for touch devices)"
           >
             <MousePointer2 size={18} />
+          </button>
+          <button 
+            onClick={() => updateEditorSettings({ 
+              selectionMode: editorSettings.selectionMode === 'touch' ? 'enclose' : 'touch' 
+            })} 
+            className="toolbar-btn toolbar-btn-with-text"
+            title={editorSettings.selectionMode === 'touch' 
+              ? "Touch Mode: Select keys that touch selection box (Click for Enclose mode)" 
+              : "Enclose Mode: Select only fully enclosed keys (Click for Touch mode)"}
+            style={{ minWidth: '80px', gap: '4px' }}
+          >
+            <SelectionModeIcon mode={editorSettings.selectionMode || 'touch'} />
+            <span style={{ fontSize: '11px' }}>
+              {editorSettings.selectionMode === 'touch' ? 'Touch' : 'Enclose'}
+            </span>
           </button>
         </div>
         
