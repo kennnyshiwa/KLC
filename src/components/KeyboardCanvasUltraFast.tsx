@@ -146,8 +146,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       });
       
       // Handle special key types
-      if (key.ghost) {
-        // Ghost keys are rendered as flat, semi-transparent rectangles
+      if (key.ghost && !(key.decal && key.color === 'transparent')) {
+        // Regular ghost keys (not row labels) are rendered as flat, semi-transparent rectangles
         ctx.save();
         ctx.globalAlpha = 0.3;
         ctx.fillStyle = key.color || '#cccccc';
@@ -162,7 +162,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         ctx.restore();
         
-        // Skip the rest of the rendering for ghost keys
+        // Skip the rest of the rendering for regular ghost keys
         return;
       }
       
@@ -391,8 +391,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       } // End of if (!key.decal)
       
       
-      // Draw selection outline if selected
-      if (selectedKeys.has(key.id)) {
+      // Draw selection outline if selected (skip for row labels)
+      if (selectedKeys.has(key.id) && !(key.decal && key.ghost)) {
         // Check if this is a special shaped key
         const hasSecondaryRect = key.x2 !== undefined || key.y2 !== undefined || 
                                 key.width2 !== undefined || key.height2 !== undefined;
@@ -712,6 +712,34 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       
       // Draw labels
       ctx.fillStyle = '#000000';
+      
+      // Special handling for row labels (decal + ghost keys with transparent color)
+      if (key.decal && key.ghost && key.color === 'transparent') {
+        // Row labels are fully transparent like ghost keys
+        ctx.save();
+        
+        // Draw a ghost key style border
+        ctx.globalAlpha = 0.3;
+        ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeRect(renderX, renderY, keyWidth, keyHeight);
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+        
+        // Draw the text if there's a label
+        if (key.labels && key.labels.length > 0 && key.labels[0]) {
+          const label = key.labels[0];
+          ctx.font = 'bold 16px system-ui';
+          ctx.fillStyle = isDarkMode ? '#888888' : '#666666';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const centerX = renderX + keyWidth / 2;
+          const centerY = renderY + keyHeight / 2;
+          ctx.fillText(label, centerX, centerY);
+        }
+        ctx.restore();
+      } else {
       
       
       key.labels.forEach((label, index) => {
@@ -1041,6 +1069,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         ctx.restore();
       }
+      } // End of else block for non-row-label keys
       
       // Restore canvas state if we applied rotation
       if (hasRotation) {

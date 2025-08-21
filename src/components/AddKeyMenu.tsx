@@ -13,6 +13,8 @@ interface KeyTemplate {
   x2?: number;
   y2?: number;
   stepped?: boolean;
+  isLabel?: boolean; // For pure label elements
+  label?: string; // Pre-defined label text
 }
 
 const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
@@ -43,6 +45,13 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
     { name: 'Stepped Caps', width: 1.75, height: 1, stepped: true },
     { name: 'Stepped Shift', width: 2.25, height: 1, stepped: true },
   ],
+  'Row Labels': [
+    { name: 'R1 Label', width: 1, height: 1, isLabel: true, label: 'R1' },
+    { name: 'R2 Label', width: 1, height: 1, isLabel: true, label: 'R2' },
+    { name: 'R3 Label', width: 1, height: 1, isLabel: true, label: 'R3' },
+    { name: 'R4 Label', width: 1, height: 1, isLabel: true, label: 'R4' },
+    { name: 'R5 Label', width: 1, height: 1, isLabel: true, label: 'R5' },
+  ],
 };
 
 const AddKeyMenu: React.FC = () => {
@@ -55,6 +64,7 @@ const AddKeyMenu: React.FC = () => {
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
   const lastModifiedKeyId = useKeyboardStore((state) => state.lastModifiedKeyId);
   const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
+  const updateKeys = useKeyboardStore((state) => state.updateKeys);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -76,27 +86,74 @@ const AddKeyMenu: React.FC = () => {
     let newY = 0;
     
     if (keyboard.keys.length > 0) {
-      // Find the reference key - prioritize selected key, then last modified, then rightmost key
-      let referenceKey = null;
-      
-      if (selectedKeys.size > 0) {
-        // Use the first selected key as reference
-        const selectedId = Array.from(selectedKeys)[0];
-        referenceKey = keyboard.keys.find(k => k.id === selectedId);
-      } else if (lastModifiedKeyId) {
-        referenceKey = keyboard.keys.find(k => k.id === lastModifiedKeyId);
-      }
-      
-      // If no selected or last modified key, find the rightmost key
-      if (!referenceKey) {
-        referenceKey = keyboard.keys.reduce((prev, current) => 
-          (prev.x + prev.width > current.x + current.width) ? prev : current
+      // Special positioning for row labels - place them at the far left and shift all keys
+      if (template.isLabel) {
+        // Check if this specific row label already exists
+        const existingSpecificRowLabel = keyboard.keys.find(key => 
+          key.decal && key.ghost && key.color === 'transparent' && 
+          key.labels && key.labels[0] === template.label
         );
+        
+        if (existingSpecificRowLabel) {
+          alert(`Row label ${template.label} already exists`);
+          return;
+        }
+        
+        // Check if ANY row labels exist
+        const anyRowLabelsExist = keyboard.keys.some(key => 
+          key.decal && key.ghost && key.color === 'transparent'
+        );
+        
+        // Only shift keys if this is the FIRST row label being added
+        if (!anyRowLabelsExist) {
+          const shiftAmount = 2;
+          const updates = keyboard.keys
+            .filter(key => !(key.decal && key.ghost && key.color === 'transparent')) // Don't shift other row labels
+            .map(key => ({
+              id: key.id,
+              changes: {
+                x: key.x + shiftAmount
+              }
+            }));
+          
+          // Apply the shift
+          if (updates.length > 0) {
+            updateKeys(updates);
+          }
+        }
+        
+        // Position the row label at the far left (x=0)
+        newX = 0;
+        
+        // Find the appropriate Y position based on the row number
+        const rowNumber = parseInt(template.label?.replace('R', '') || '1');
+        // Y positions for typical keyboard rows (R1-R5)
+        // R1: Function row, R2: Number row, R3: QWERTY row, R4: ASDF row, R5: ZXCV row
+        const rowYPositions = [0, 1, 2, 3, 4];
+        newY = rowYPositions[rowNumber - 1] || 0;
+      } else {
+        // Find the reference key - prioritize selected key, then last modified, then rightmost key
+        let referenceKey = null;
+        
+        if (selectedKeys.size > 0) {
+          // Use the first selected key as reference
+          const selectedId = Array.from(selectedKeys)[0];
+          referenceKey = keyboard.keys.find(k => k.id === selectedId);
+        } else if (lastModifiedKeyId) {
+          referenceKey = keyboard.keys.find(k => k.id === lastModifiedKeyId);
+        }
+        
+        // If no selected or last modified key, find the rightmost key
+        if (!referenceKey) {
+          referenceKey = keyboard.keys.reduce((prev, current) => 
+            (prev.x + prev.width > current.x + current.width) ? prev : current
+          );
+        }
+        
+        // Place new key to the right of the reference key
+        newX = referenceKey.x + referenceKey.width;
+        newY = referenceKey.y;
       }
-      
-      // Place new key to the right of the reference key
-      newX = referenceKey.x + referenceKey.width;
-      newY = referenceKey.y;
     }
 
     // Create the specified number of keys
@@ -122,10 +179,12 @@ const AddKeyMenu: React.FC = () => {
         y2: template.y2,
         width2: template.width2,
         height2: template.height2,
-        labels: [''],
-        color: '#f9f9f9',
+        labels: template.isLabel ? [template.label || ''] : [''],
+        color: template.isLabel ? 'transparent' : '#f9f9f9',
         profile: 'OEM',
         stepped: template.stepped,
+        decal: template.isLabel, // Row labels are decal keys (no physical rendering)
+        ghost: template.isLabel, // Also mark as ghost for no border
       };
       
       addKey(newKey);

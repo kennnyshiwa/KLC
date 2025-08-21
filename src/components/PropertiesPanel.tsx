@@ -70,6 +70,9 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
 
   const firstKey = selectedKeysList[0];
   
+  // Check if the selected key is a row label (decal + ghost + transparent)
+  const isRowLabel = firstKey && firstKey.decal && firstKey.ghost && firstKey.color === 'transparent';
+  
   // Sync local state with key values when selection changes
   useEffect(() => {
     if (firstKey) {
@@ -362,6 +365,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
         <>
           <div className="selection-info">
             {selectedKeysList.length} key{selectedKeysList.length > 1 ? 's' : ''} selected
+            {isRowLabel && <span className="row-label-indicator"> (Row Label)</span>}
           </div>
 
           {/* Position Properties */}
@@ -423,7 +427,8 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
             )}
           </div>
 
-          {/* Rotation Properties */}
+          {/* Rotation Properties - Hidden for row labels */}
+          {!isRowLabel && (
           <div className="property-section">
             <div className="section-header" onClick={() => setIsRotationSectionExpanded(!isRotationSectionExpanded)}>
               {isRotationSectionExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -542,8 +547,10 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
               </div>
             )}
           </div>
+          )}
 
-          {/* Size Properties */}
+          {/* Size Properties - Hidden for row labels */}
+          {!isRowLabel && (
           <div className="property-section">
             <div className="section-header" onClick={() => toggleSection('size')}>
               {expandedSections.size ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -688,8 +695,10 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
               </div>
             )}
           </div>
+          )}
 
-          {/* Legend Properties */}
+          {/* Legend Properties - Hidden for row labels */}
+          {!isRowLabel && (
           <div className="property-section">
             <div className="section-header" onClick={() => toggleSection('legends')}>
               {expandedSections.legends ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -943,8 +952,10 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
               </div>
             )}
           </div>
+          )}
 
-          {/* Appearance Properties */}
+          {/* Appearance Properties - Hidden for row labels */}
+          {!isRowLabel && (
           <div className="property-section">
             <div className="section-header" onClick={() => toggleSection('appearance')}>
               {expandedSections.appearance ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -1078,8 +1089,10 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
               </div>
             )}
           </div>
+          )}
 
-          {/* Legend Style Properties */}
+          {/* Legend Style Properties - Hidden for row labels */}
+          {!isRowLabel && (
           <div className="property-section">
             <div className="section-header" onClick={() => toggleSection('legendStyle')}>
               {expandedSections.legendStyle ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -1196,6 +1209,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
               </div>
             )}
           </div>
+          )}
         </>
       )}
       
