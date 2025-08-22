@@ -9,6 +9,8 @@ export interface ParsedIcon {
 
 // Map of icon class names to their unicode characters for trashcons font
 const ICON_MAP: Record<string, string> = {
+  // Custom icons (will be handled differently in rendering)
+  'icon-40s-logo': '',  // Custom SVG icon
   // Trashcons mappings
   'icon-left': '\ue900',
   'icon-right': '\ue901',
@@ -80,10 +82,11 @@ export function parseIconLegend(legend: string): ParsedIcon[] {
     
     // Look for icon classes
     for (const cls of classes) {
-      if (ICON_MAP[cls]) {
+      // Check if this is a known icon (including custom icons)
+      if (cls in ICON_MAP) {
         result.push({
           type: 'icon',
-          content: ICON_MAP[cls],
+          content: ICON_MAP[cls] || '', // Custom icons may have empty content
           className: match[1],
           iconName: cls,
         });
@@ -121,6 +124,7 @@ export function parseIconLegend(legend: string): ParsedIcon[] {
 // Available icons for dropdown
 export const AVAILABLE_ICONS = [
   { name: 'None', value: '' },
+  { name: '40s Logo', value: '<span class="custom-icon icon-40s-logo"></span>' },
   { name: 'Enter', value: '<span class="trashcons icon-enter"></span>' },
   { name: 'Escape', value: '<span class="trashcons icon-esc"></span>' },
   { name: 'Tab', value: '<span class="trashcons icon-tab"></span>' },

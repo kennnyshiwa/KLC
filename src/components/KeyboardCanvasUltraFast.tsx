@@ -73,6 +73,35 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     return `rgb(${r}, ${g}, ${b})`;
   };
 
+  // Cache for loaded SVG images
+  const svgImageCache = useRef<Map<string, HTMLImageElement>>(new Map());
+  
+  // Load SVG icon if needed
+  const loadSvgIcon = (iconName: string): HTMLImageElement | null => {
+    const cacheKey = iconName;
+    
+    if (svgImageCache.current.has(cacheKey)) {
+      return svgImageCache.current.get(cacheKey) || null;
+    }
+    
+    // Map icon names to their SVG paths
+    const svgPaths: Record<string, string> = {
+      'icon-40s-logo': '/icons/40s-logo.svg'
+    };
+    
+    const path = svgPaths[iconName];
+    if (!path) return null;
+    
+    const img = new Image();
+    img.src = path;
+    img.onload = () => {
+      requestRender(); // Re-render when image loads
+    };
+    
+    svgImageCache.current.set(cacheKey, img);
+    return img;
+  };
+
   // Fast render function
   const render = () => {
     const canvas = canvasRef.current;
@@ -978,9 +1007,14 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           let totalWidth = 0;
           parsedLabel.forEach(part => {
             if (part.type === 'icon') {
-              // Use font manager for consistent font handling
-              ctx.font = fontManager.getRenderFont('trashcons', fontSize);
-              totalWidth += ctx.measureText(part.content).width;
+              // Check if this is a custom SVG icon
+              if (part.className === 'custom-icon icon-40s-logo') {
+                totalWidth += fontSize * 1.2; // SVG icons are sized based on font size
+              } else {
+                // Use font manager for consistent font handling
+                ctx.font = fontManager.getRenderFont('trashcons', fontSize);
+                totalWidth += ctx.measureText(part.content).width;
+              }
             } else {
               const keyFont = key.font || '';
               ctx.font = keyFont ? fontManager.getRenderFont(keyFont, fontSize) : `${fontSize}px Arial`;
@@ -1009,18 +1043,42 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         
         parsedLabel.forEach(part => {
           if (part.type === 'icon') {
-            // Draw icon using font manager
-            // Force trashcons font directly to test
-            ctx.font = `${fontSize}px trashcons`;
-            ctx.fillStyle = textColor;
-            ctx.textAlign = 'left';
-            ctx.textBaseline = finalPosition.baseline as CanvasTextBaseline;
-            
-            
-            // Render the icon character
-            if (part.content && part.content.length > 0) {
-              ctx.fillText(part.content, currentX, currentY);
-              currentX += ctx.measureText(part.content).width;
+            // Check if this is a custom SVG icon
+            if (part.className === 'custom-icon icon-40s-logo') {
+              const svgImage = loadSvgIcon('icon-40s-logo');
+              if (svgImage && svgImage.complete) {
+                // Calculate icon size based on font size
+                const iconSize = fontSize * 1.2;
+                // Draw the SVG image
+                ctx.save();
+                // Adjust Y position based on text baseline
+                let iconY = currentY;
+                if (finalPosition.baseline === 'middle') {
+                  // For middle baseline, center the icon vertically
+                  iconY = currentY - iconSize / 2;
+                } else if (finalPosition.baseline === 'alphabetic') {
+                  // For alphabetic baseline, position icon above baseline
+                  iconY = currentY - iconSize * 0.8;
+                } else if (finalPosition.baseline === 'hanging') {
+                  // For hanging baseline, position icon at current Y
+                  iconY = currentY;
+                }
+                ctx.drawImage(svgImage, currentX, iconY, iconSize, iconSize);
+                ctx.restore();
+                currentX += iconSize;
+              }
+            } else {
+              // Draw regular font icon using trashcons
+              ctx.font = `${fontSize}px trashcons`;
+              ctx.fillStyle = textColor;
+              ctx.textAlign = 'left';
+              ctx.textBaseline = finalPosition.baseline as CanvasTextBaseline;
+              
+              // Render the icon character
+              if (part.content && part.content.length > 0) {
+                ctx.fillText(part.content, currentX, currentY);
+                currentX += ctx.measureText(part.content).width;
+              }
             }
           } else {
             // Draw regular text - handle newlines for dual legend keys
