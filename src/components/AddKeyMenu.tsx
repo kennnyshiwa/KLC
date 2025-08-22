@@ -15,6 +15,8 @@ interface KeyTemplate {
   stepped?: boolean;
   isLabel?: boolean; // For pure label elements
   label?: string; // Pre-defined label text
+  isLED?: boolean; // For LED indicator circles
+  isEncoder?: boolean; // For rotary encoder knobs
 }
 
 const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
@@ -44,6 +46,14 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
     { name: 'Little Ass Enter', width: 1.5, height: 1, x2: .75, y2: -1, width2: .75, height2: 2 },
     { name: 'Stepped Caps', width: 1.75, height: 1, stepped: true },
     { name: 'Stepped Shift', width: 2.25, height: 1, stepped: true },
+  ],
+  'Indicators': [
+    { name: '3mm LED', width: 0.25, height: 0.25, isLED: true },
+    { name: '5mm LED', width: 0.35, height: 0.35, isLED: true },
+  ],
+  'Encoders': [
+    { name: '19mm Encoder', width: 1, height: 1, isEncoder: true },
+    { name: '35mm Encoder', width: 1.75, height: 1.75, isEncoder: true },
   ],
   'Row Labels': [
     { name: 'R1 Label', width: 1, height: 1, isLabel: true, label: 'R1' },
@@ -179,13 +189,13 @@ const AddKeyMenu: React.FC = () => {
         y2: template.y2,
         width2: template.width2,
         height2: template.height2,
-        labels: template.isLabel ? [template.label || ''] : [''],
-        color: template.isLabel ? 'transparent' : '#f9f9f9',
-        profile: 'OEM',
+        labels: template.isLabel ? [template.label || ''] : ((template.isLED || template.isEncoder) ? [] : ['']),
+        color: template.isLabel ? 'transparent' : (template.isLED ? '#ff0000' : (template.isEncoder ? '#cccccc' : '#f9f9f9')),
+        profile: template.isLED ? 'LED' : (template.isEncoder ? 'ENCODER' : 'OEM'),
         stepped: template.stepped,
-        decal: template.isLabel, // Row labels are decal keys (no physical rendering)
-        ghost: template.isLabel, // Also mark as ghost for no border
-      };
+        decal: template.isLabel || template.isLED || template.isEncoder, // Row labels, LEDs, and encoders are decal keys
+        ghost: template.isLabel, // Only row labels are ghost
+      } as Key;
       
       addKey(newKey);
       

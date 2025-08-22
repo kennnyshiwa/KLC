@@ -1,4 +1,4 @@
-export type KeyProfile = 'DCS' | 'DSA' | 'SA' | 'OEM' | 'CHICKLET' | 'FLAT' | 'XDA' | 'MA';
+export type KeyProfile = 'DCS' | 'DSA' | 'SA' | 'OEM' | 'CHICKLET' | 'FLAT' | 'XDA' | 'MA' | 'LED' | 'ENCODER';
 
 export interface KeyLegends {
   [position: number]: string;

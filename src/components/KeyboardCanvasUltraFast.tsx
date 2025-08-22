@@ -63,6 +63,16 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     } : null
   }));
 
+  // Helper function to adjust color brightness
+  const adjustColorBrightness = (color: string, amount: number): string => {
+    const normalizedColor = color.startsWith('#') ? color : `#${color}`;
+    const rgb = parseInt(normalizedColor.slice(1), 16);
+    const r = Math.max(0, Math.min(255, ((rgb >> 16) & 255) + amount));
+    const g = Math.max(0, Math.min(255, ((rgb >> 8) & 255) + amount));
+    const b = Math.max(0, Math.min(255, (rgb & 255) + amount));
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
   // Fast render function
   const render = () => {
     const canvas = canvasRef.current;
@@ -166,8 +176,87 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         return;
       }
       
-      // Check if this is a decal (transparent) key
-      if (key.decal) {
+      // Check if this is a rotary encoder
+      if (key.profile === 'ENCODER') {
+        // Draw simple encoder circle with position indicator
+        ctx.save();
+        
+        const centerX = renderX + keyWidth / 2;
+        const centerY = renderY + keyHeight / 2;
+        const radius = Math.min(keyWidth, keyHeight) / 2 - 2; // Slight padding
+        
+        // Draw outer circle
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        const baseColor = key.color || '#cccccc';
+        ctx.fillStyle = baseColor;
+        ctx.fill();
+        
+        // Draw border
+        ctx.strokeStyle = isDarkMode ? '#666666' : '#333333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Draw position indicator line (from center to top)
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX, centerY - radius * 0.7);
+        ctx.strokeStyle = '#000000';
+        // Make line thickness proportional to encoder size
+        ctx.lineWidth = Math.max(2, radius * 0.1);
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        
+        ctx.restore();
+        
+        // Skip normal key rendering for encoders
+      } else if (key.profile === 'LED') {
+        // Draw LED indicator as a circle
+        ctx.save();
+        
+        // LED should be drawn as a circle at the center of the key position
+        const centerX = renderX + keyWidth / 2;
+        const centerY = renderY + keyHeight / 2;
+        const radius = Math.min(keyWidth, keyHeight) / 2;
+        
+        // Draw outer ring (bezel)
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#333333';
+        ctx.fill();
+        
+        // Draw inner LED
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius * 0.8, 0, Math.PI * 2);
+        
+        // Use the key color for the LED
+        const ledColor = key.color || '#ff0000';
+        
+        // Create gradient for LED effect
+        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius * 0.8);
+        gradient.addColorStop(0, ledColor);
+        gradient.addColorStop(0.7, ledColor);
+        gradient.addColorStop(1, adjustColorBrightness(ledColor, -50));
+        
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Add glossy effect
+        ctx.beginPath();
+        ctx.arc(centerX, centerY - radius * 0.3, radius * 0.3, 0, Math.PI * 2);
+        const glossGradient = ctx.createRadialGradient(
+          centerX, centerY - radius * 0.3, 0,
+          centerX, centerY - radius * 0.3, radius * 0.3
+        );
+        glossGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+        glossGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = glossGradient;
+        ctx.fill();
+        
+        ctx.restore();
+        
+        // Skip normal key rendering for LEDs
+      } else if (key.decal) {
         // For decal keys, skip all the key rendering and only draw text
         // No shadow, no key shape, just transparent
         ctx.shadowColor = 'transparent';
@@ -186,8 +275,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       const edgeHeight = key.decal ? 0 : 6; // Height of the visible edge (0 for decals)
       const topOffset = key.decal ? 0 : 3; // How much the top surface is offset (0 for decals)
       
-      // Only render the key shape if it's not a decal
-      if (!key.decal) {
+      // Only render the key shape if it's not a decal, LED, or encoder
+      if (!key.decal && key.profile !== 'LED' && key.profile !== 'ENCODER') {
         // Parse base color to RGB
         const parseColor = (color: string) => {
           // Ensure color starts with #
