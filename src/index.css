@@ -73,6 +73,23 @@ body {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
+.discord-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.discord-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
 .layout-counter {
   display: flex;
   align-items: center;
@@ -2110,6 +2127,14 @@ body {
 }
 
 .dark-mode .github-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .discord-button {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .discord-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
