@@ -28,6 +28,7 @@ const PublicLayout: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [layoutOwner, setLayoutOwner] = useState<any>(null);
+  const [isPropertiesPanelCollapsed, setIsPropertiesPanelCollapsed] = useState(false);
 
   useKeyboardShortcuts();
   useImportedCSS();
@@ -157,8 +158,11 @@ const PublicLayout: React.FC = () => {
         <Toolbar getStage={() => canvasRef.current?.getStage() || null} />
         
         <div className="editor-container">
-          <div className="sidebar sidebar-left">
-            <PropertiesPanel />
+          <div className={`sidebar sidebar-left ${isPropertiesPanelCollapsed ? 'collapsed' : ''}`}>
+            <PropertiesPanel 
+              isCollapsed={isPropertiesPanelCollapsed}
+              onToggleCollapse={() => setIsPropertiesPanelCollapsed(!isPropertiesPanelCollapsed)}
+            />
           </div>
           
           <div className="canvas-container">

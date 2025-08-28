@@ -194,11 +194,18 @@ body {
 .collapse-button {
   background: none;
   border: none;
-  padding: 0.25rem;
+  padding: 0.5rem;
   cursor: pointer;
   color: #666;
   transition: color 0.2s;
   border-radius: 4px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .collapse-button:hover {
@@ -226,6 +233,13 @@ body {
   color: #666;
   transition: all 0.2s;
   border-radius: 4px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .expand-button:hover {
@@ -2806,4 +2820,38 @@ html.dark-mode body {
 
 .dark-mode .gist-checkbox input[type="checkbox"] {
   accent-color: #3498db;
+}
+
+
+/* Mobile and touch device optimizations */
+@media (max-width: 768px) {
+  .collapse-button,
+  .expand-button {
+    min-width: 44px;
+    min-height: 44px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .properties-panel-header {
+    padding: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .dark-mode .collapse-button,
+  .dark-mode .expand-button {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .collapse-button,
+  .expand-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
 }
