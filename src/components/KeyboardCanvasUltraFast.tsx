@@ -75,6 +75,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
 
   // Cache for loaded SVG images
   const svgImageCache = useRef<Map<string, HTMLImageElement>>(new Map());
+  // Cache for colored icon canvases
+  const coloredIconCache = useRef<Map<string, HTMLCanvasElement>>(new Map());
   
   // Load SVG icon if needed
   const loadSvgIcon = (iconName: string): HTMLImageElement | null => {
@@ -95,11 +97,46 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     const img = new Image();
     img.src = path;
     img.onload = () => {
+      // Clear colored cache when base image loads
+      coloredIconCache.current.clear();
       requestRender(); // Re-render when image loads
     };
     
     svgImageCache.current.set(cacheKey, img);
     return img;
+  };
+  
+  // Get or create colored version of icon
+  const getColoredIcon = (iconName: string, color: string, size: number): HTMLCanvasElement | null => {
+    const cacheKey = `${iconName}-${color}-${size}`;
+    
+    // Check cache first
+    if (coloredIconCache.current.has(cacheKey)) {
+      return coloredIconCache.current.get(cacheKey) || null;
+    }
+    
+    const svgImage = loadSvgIcon(iconName);
+    if (!svgImage || !svgImage.complete) return null;
+    
+    // Create colored version
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return null;
+    
+    // Draw the SVG
+    ctx.drawImage(svgImage, 0, 0, size, size);
+    
+    // Apply color by compositing
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Cache the result
+    coloredIconCache.current.set(cacheKey, canvas);
+    return canvas;
   };
 
   // Fast render function
@@ -1045,26 +1082,25 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           if (part.type === 'icon') {
             // Check if this is a custom SVG icon
             if (part.className === 'custom-icon icon-40s-logo') {
-              const svgImage = loadSvgIcon('icon-40s-logo');
-              if (svgImage && svgImage.complete) {
-                // Calculate icon size based on font size
-                const iconSize = fontSize * 1.2;
-                // Draw the SVG image
-                ctx.save();
-                // Adjust Y position based on text baseline
+              // Calculate icon size based on font size
+              const iconSize = Math.round(fontSize * 1.2);
+              
+              // Get colored version of the icon
+              const coloredIcon = getColoredIcon('icon-40s-logo', textColor, iconSize);
+              
+              if (coloredIcon) {
+                // Calculate Y position based on text baseline
                 let iconY = currentY;
                 if (finalPosition.baseline === 'middle') {
-                  // For middle baseline, center the icon vertically
                   iconY = currentY - iconSize / 2;
                 } else if (finalPosition.baseline === 'alphabetic') {
-                  // For alphabetic baseline, position icon above baseline
                   iconY = currentY - iconSize * 0.8;
                 } else if (finalPosition.baseline === 'hanging') {
-                  // For hanging baseline, position icon at current Y
                   iconY = currentY;
                 }
-                ctx.drawImage(svgImage, currentX, iconY, iconSize, iconSize);
-                ctx.restore();
+                
+                // Draw the colored icon
+                ctx.drawImage(coloredIcon, currentX, iconY);
                 currentX += iconSize;
               }
             } else {

@@ -916,6 +916,23 @@ body {
   margin-right: 1rem;
 }
 
+.color-hex-input {
+  width: 80px;
+  padding: 2px 4px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  font-family: monospace;
+  background-color: white;
+  color: #333;
+}
+
+.color-hex-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
 .color-hex {
   font-family: monospace;
   font-size: 0.85rem;
@@ -2556,6 +2573,17 @@ body {
 
 .dark-mode .color-name {
   color: #888;
+}
+
+.dark-mode .color-hex-input {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .color-hex-input:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 
 /* Editor content textarea */

@@ -10,6 +10,7 @@ interface ColorPickerProps {
 const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
   const [expandedSwatch, setExpandedSwatch] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [hexInput, setHexInput] = useState(value);
   
   const toggleSwatch = (swatchName: string) => {
     setExpandedSwatch(expandedSwatch === swatchName ? null : swatchName);
@@ -29,6 +30,45 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
   };
   
   const currentColorInfo = getColorName(value);
+  
+  // Update hex input when value changes
+  React.useEffect(() => {
+    setHexInput(value);
+  }, [value]);
+  
+  // Handle hex input change
+  const handleHexInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    setHexInput(input);
+    
+    // Validate and apply hex color
+    if (/^#[0-9A-Fa-f]{6}$/.test(input)) {
+      onChange(input);
+    } else if (/^[0-9A-Fa-f]{6}$/.test(input)) {
+      // Add # if missing
+      onChange('#' + input);
+    }
+  };
+  
+  // Handle paste event
+  const handleHexPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text').trim();
+    
+    // Clean up the pasted text
+    let cleanHex = pastedText.replace(/[^0-9A-Fa-f#]/g, '');
+    
+    // Ensure it starts with #
+    if (!cleanHex.startsWith('#')) {
+      cleanHex = '#' + cleanHex;
+    }
+    
+    // Ensure it's 7 characters (# + 6 hex digits)
+    if (cleanHex.length === 7) {
+      setHexInput(cleanHex);
+      onChange(cleanHex);
+    }
+  };
   
   // Filter and sort colors based on search term
   const filteredSwatches = useMemo(() => {
@@ -64,9 +104,26 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
             type="color"
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            title="Click to pick a color"
           />
           <div className="color-info">
-            <span className="color-hex">{value}</span>
+            <input
+              type="text"
+              className="color-hex-input"
+              value={hexInput}
+              onChange={handleHexInputChange}
+              onPaste={handleHexPaste}
+              placeholder="#000000"
+              title="Enter or paste hex color code"
+              style={{ 
+                width: '80px',
+                padding: '2px 4px',
+                border: '1px solid #ddd',
+                borderRadius: '3px',
+                fontSize: '0.9rem',
+                fontFamily: 'monospace'
+              }}
+            />
             {currentColorInfo && (
               <span className="color-name">
                 {currentColorInfo.swatch} {currentColorInfo.name}
