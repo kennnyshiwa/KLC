@@ -390,7 +390,7 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
   return keyboard;
 }
 
-export function serializeToKLE(keyboard: Keyboard): any[] {
+export function serializeToKLE(keyboard: Keyboard, krkMode: boolean = false): any[] {
   const output: any[] = [];
   
   // Add metadata if present
@@ -413,9 +413,12 @@ export function serializeToKLE(keyboard: Keyboard): any[] {
 
   let lastState = { ...defaultState };
 
-  for (const [, rowKeys] of sortedRows) {
+  for (const [rowIndex, rowKeys] of sortedRows) {
     const row: any[] = [];
     const sortedKeys = rowKeys.sort((a, b) => a.x - b.x);
+    
+    // Track if we've set KRK position for this row
+    let krkPositionSetForRow = false;
     
     for (const key of sortedKeys) {
       const props: any = {};
@@ -447,7 +450,16 @@ export function serializeToKLE(keyboard: Keyboard): any[] {
       if (key.color !== lastState.color) props.c = key.color;
       if (key.textColor && key.textColor.length > 0) props.t = key.textColor;
       if (key.textSize && key.textSize.length > 0) props.f = key.textSize;
-      if (key.profile !== lastState.profile) props.p = key.profile;
+      
+      // KRK mode: add row position (only for first key in row)
+      // Only output p value when KRK mode is enabled
+      if (krkMode && !krkPositionSetForRow) {
+        // Use the key's rowPosition if it exists, otherwise calculate based on row index
+        const rowPos = key.rowPosition || `K${rowIndex + 1}`;
+        props.p = rowPos;
+        krkPositionSetForRow = true;
+      }
+      // No profile output when KRK is off - p is only for KRK
       
       // Flags
       if (key.ghost) props.g = true;
@@ -480,8 +492,8 @@ export function serializeToKLE(keyboard: Keyboard): any[] {
 }
 
 // Convert JSON to KLE's JavaScript object notation string
-export function serializeToKLEString(keyboard: Keyboard): string {
-  const kleData = serializeToKLE(keyboard);
+export function serializeToKLEString(keyboard: Keyboard, krkMode: boolean = false): string {
+  const kleData = serializeToKLE(keyboard, krkMode);
   
   // Convert to JavaScript object notation by removing quotes from property names
   const jsonString = JSON.stringify(kleData, null, 2);

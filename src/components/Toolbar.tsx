@@ -210,6 +210,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
           >
             Stabs
           </button>
+          <button 
+            onClick={() => updateEditorSettings({ krkMode: !editorSettings.krkMode })} 
+            className={`toolbar-btn ${editorSettings.krkMode ? 'active' : ''}`}
+            title="Enable KRK mode (adds row position data)"
+          >
+            KRK
+          </button>
         </div>
         
         <div className="toolbar-separator" />

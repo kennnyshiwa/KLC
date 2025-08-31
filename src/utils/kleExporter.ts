@@ -3,7 +3,7 @@ import { Keyboard, Key, KLEKeyData } from '../types';
 /**
  * Export a keyboard to original KLE JSON format
  */
-export function exportToKLE(keyboard: Keyboard): any[] {
+export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[] {
   const result: any[] = [];
   
   // Add metadata if present
@@ -115,7 +115,7 @@ export function exportToKLE(keyboard: Keyboard): any[] {
   let lastY = 0;
   
   // Process each row
-  rows.forEach((rowKeys) => {
+  rows.forEach((rowKeys, rowIndex) => {
     if (rowKeys.length === 0) return;
     
     const row: any[] = [];
@@ -141,6 +141,9 @@ export function exportToKLE(keyboard: Keyboard): any[] {
     }
     
     lastY = rowY;
+    
+    // Track if we've set KRK position for this row
+    let krkPositionSetForRow = false;
     
     rowKeys.forEach((key, keyIndex) => {
       const props: KLEKeyData = {};
@@ -240,11 +243,15 @@ export function exportToKLE(keyboard: Keyboard): any[] {
           current.textSize = key.default.size[0];
         }
         
-        // Profile - only output if set and different
-        if (key.profile && key.profile !== 'DCS' && key.profile !== current.profile) {
-          props.p = key.profile;
-          current.profile = key.profile;
+        // KRK row position - only output p value when KRK mode is enabled
+        if (krkMode && !krkPositionSetForRow) {
+          // Only set row position for the first key in the row
+          const rowNum = Math.floor(key.y) + 1;
+          const rowPos = key.rowPosition || `K${rowNum}`;
+          props.p = rowPos;
+          krkPositionSetForRow = true;
         }
+        // No profile output when KRK is off - p is only for KRK
         
         // Boolean properties - treat undefined as false
         const isGhost = key.ghost || false;
@@ -368,7 +375,7 @@ function buildLabelString(key: Key): string {
 /**
  * Export keyboard to KLE JSON string
  */
-export function exportToKLEString(keyboard: Keyboard): string {
-  const kleData = exportToKLE(keyboard);
+export function exportToKLEString(keyboard: Keyboard, krkMode: boolean = false): string {
+  const kleData = exportToKLE(keyboard, krkMode);
   return JSON.stringify(kleData, null, 2);
 }

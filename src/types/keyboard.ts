@@ -37,6 +37,7 @@ export interface Key {
   align?: number;
   font?: string;
   legendRotation?: number[];
+  rowPosition?: string; // KRK row position (e.g., "K1", "K2", etc.)
 }
 
 export interface KeyboardMetadata {
@@ -77,7 +78,7 @@ export interface KLEKeyData {
   n?: boolean;
   d?: boolean;
   g?: boolean;
-  p?: KeyProfile;
+  p?: KeyProfile | string; // Can be profile or KRK row position like "K1"
   c?: string;
   t?: string | string[];
   a?: number;
@@ -110,6 +111,7 @@ export interface EditorSettings {
   keySpacing: number;
   showStabilizerPositions: boolean;
   selectionMode: 'touch' | 'enclose'; // touch = partial overlap, enclose = fully contained
+  krkMode?: boolean; // Enable KRK row position export format
 }
 
 export interface ColorSwatch {

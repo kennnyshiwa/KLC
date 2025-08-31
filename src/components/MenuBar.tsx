@@ -32,6 +32,7 @@ const MenuBar: React.FC = () => {
   const currentLayoutId = useKeyboardStore((state) => state.currentLayoutId);
   const setCurrentLayoutId = useKeyboardStore((state) => state.setCurrentLayoutId);
   const selectAll = useKeyboardStore((state) => state.selectAll);
+  const editorSettings = useKeyboardStore((state) => state.editorSettings);
   
   const { user } = useAuth();
 
@@ -71,7 +72,7 @@ const MenuBar: React.FC = () => {
 
   const handleExportOriginalKLE = () => {
     try {
-      const jsonString = exportToKLEString(keyboard);
+      const jsonString = exportToKLEString(keyboard, editorSettings.krkMode || false);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const filename = `${keyboard.meta.name || 'keyboard'}.json`;
       saveAs(blob, filename);

@@ -6,23 +6,24 @@ import { AlertCircle, Check } from 'lucide-react';
 const RawDataEditor: React.FC = () => {
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const setKeyboard = useKeyboardStore((state) => state.setKeyboard);
+  const editorSettings = useKeyboardStore((state) => state.editorSettings);
   
   const [rawData, setRawData] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
-  // Update raw data when keyboard changes
+  // Update raw data when keyboard changes or KRK mode changes
   useEffect(() => {
     if (!isDirty) {
       try {
-        const serialized = serializeToKLE(keyboard);
+        const serialized = serializeToKLE(keyboard, editorSettings.krkMode || false);
         setRawData(JSON.stringify(serialized, null, 2));
       } catch (err) {
         console.error('Failed to serialize keyboard:', err);
       }
     }
-  }, [keyboard, isDirty]);
+  }, [keyboard, isDirty, editorSettings.krkMode]);
 
   const handleDataChange = (value: string) => {
     setRawData(value);
