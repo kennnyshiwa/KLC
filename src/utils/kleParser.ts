@@ -413,12 +413,14 @@ export function serializeToKLE(keyboard: Keyboard, krkMode: boolean = false): an
 
   let lastState = { ...defaultState };
 
-  for (const [rowIndex, rowKeys] of sortedRows) {
+  let rowCount = 0;
+  for (const [rowY, rowKeys] of sortedRows) {
+    rowCount++;
     const row: any[] = [];
     const sortedKeys = rowKeys.sort((a, b) => a.x - b.x);
     
-    // Track if we've set KRK position for this row
-    let krkPositionSetForRow = false;
+    // Track the last row position to detect changes
+    let lastRowPosition: string | undefined = undefined;
     
     for (const key of sortedKeys) {
       const props: any = {};
@@ -451,19 +453,17 @@ export function serializeToKLE(keyboard: Keyboard, krkMode: boolean = false): an
       if (key.textColor && key.textColor.length > 0) props.t = key.textColor;
       if (key.textSize && key.textSize.length > 0) props.f = key.textSize;
       
-      // KRK mode: add row position (only for first key in row)
-      // Only output p value when KRK mode is enabled
-      if (krkMode && !krkPositionSetForRow) {
-        // Use the key's rowPosition if it exists, otherwise calculate based on row index
-        const rowPos = key.rowPosition || `K${rowIndex + 1}`;
-        props.p = rowPos;
-        krkPositionSetForRow = true;
+      // KRK mode: add row position whenever it changes
+      if (krkMode && key.rowPosition && key.rowPosition !== lastRowPosition) {
+        props.p = key.rowPosition;
+        lastRowPosition = key.rowPosition;
       }
       // No profile output when KRK is off - p is only for KRK
       
       // Flags
       if (key.ghost) props.g = true;
       if (key.nub) props.n = true;
+      // Always output stepped property for stepped keys
       if (key.stepped) props.l = true;
       if (key.decal) props.d = true;
       

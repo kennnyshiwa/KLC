@@ -142,8 +142,8 @@ export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[]
     
     lastY = rowY;
     
-    // Track if we've set KRK position for this row
-    let krkPositionSetForRow = false;
+    // Track the last row position to detect changes
+    let lastRowPosition: string | undefined = undefined;
     
     rowKeys.forEach((key, keyIndex) => {
       const props: KLEKeyData = {};
@@ -243,13 +243,10 @@ export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[]
           current.textSize = key.default.size[0];
         }
         
-        // KRK row position - only output p value when KRK mode is enabled
-        if (krkMode && !krkPositionSetForRow) {
-          // Only set row position for the first key in the row
-          const rowNum = Math.floor(key.y) + 1;
-          const rowPos = key.rowPosition || `K${rowNum}`;
-          props.p = rowPos;
-          krkPositionSetForRow = true;
+        // KRK row position - output p value whenever it changes
+        if (krkMode && key.rowPosition && key.rowPosition !== lastRowPosition) {
+          props.p = key.rowPosition;
+          lastRowPosition = key.rowPosition;
         }
         // No profile output when KRK is off - p is only for KRK
         
@@ -269,14 +266,20 @@ export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[]
           current.decal = false;
         }
         
+        // For stepped keys, ALWAYS output l:true (similar to decal)
+        if (isStepped) {
+          props.l = true;
+          current.stepped = true;
+        } else if (current.stepped) {
+          // Only output l:false if previous key was stepped
+          props.l = false;
+          current.stepped = false;
+        }
+        
         // Other boolean properties work normally (only output on change)
         if (isGhost !== current.ghost) {
           props.g = isGhost;
           current.ghost = isGhost;
-        }
-        if (isStepped !== current.stepped) {
-          props.l = isStepped;
-          current.stepped = isStepped;
         }
         if (isNub !== current.nub) {
           props.n = isNub;

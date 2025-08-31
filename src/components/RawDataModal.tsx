@@ -12,6 +12,7 @@ const RawDataModal: React.FC<RawDataModalProps> = ({ isOpen, onClose }) => {
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const setKeyboard = useKeyboardStore((state) => state.setKeyboard);
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
+  const editorSettings = useKeyboardStore((state) => state.editorSettings);
   
   const [rawData, setRawData] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -21,12 +22,12 @@ const RawDataModal: React.FC<RawDataModalProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
-      const serialized = serializeToKLEString(keyboard);
+      const serialized = serializeToKLEString(keyboard, editorSettings.krkMode || false);
       setRawData(serialized);
       setHasChanges(false);
       setError(null);
     }
-  }, [isOpen, keyboard]);
+  }, [isOpen, keyboard, editorSettings.krkMode]);
 
   const handleApply = () => {
     try {

@@ -41,6 +41,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
   const updateKeys = useKeyboardStore((state) => state.updateKeys);
   const updateMetadata = useKeyboardStore((state) => state.updateMetadata);
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
+  const editorSettings = useKeyboardStore((state) => state.editorSettings);
   
   const [expandedSections, setExpandedSections] = useState({
     keyboard: true,
@@ -976,15 +977,24 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                   onChange={(color) => handleKeyUpdate('color', color)}
                 />
                 <div className="property-row">
-                  <label>Profile</label>
-                  <select
-                    value={firstKey.profile || 'DCS'}
-                    onChange={(e) => handleKeyUpdate('profile', e.target.value as KeyProfile)}
-                  >
-                    {PROFILES.map(profile => (
-                      <option key={profile} value={profile}>{profile}</option>
-                    ))}
-                  </select>
+                  <label>{editorSettings.krkMode ? 'Row Position' : 'Profile'}</label>
+                  {editorSettings.krkMode ? (
+                    <input
+                      type="text"
+                      value={firstKey.rowPosition || ''}
+                      onChange={(e) => handleKeyUpdate('rowPosition', e.target.value)}
+                      placeholder="e.g., K1, K2, K3..."
+                    />
+                  ) : (
+                    <select
+                      value={firstKey.profile || 'DCS'}
+                      onChange={(e) => handleKeyUpdate('profile', e.target.value as KeyProfile)}
+                    >
+                      {PROFILES.map(profile => (
+                        <option key={profile} value={profile}>{profile}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <div className="property-row">
                   <label>Front Legends</label>
