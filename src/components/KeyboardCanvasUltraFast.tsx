@@ -515,13 +515,41 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       
         // Draw stepped key indicator
         if (key.stepped) {
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-          ctx.fillRect(
-            renderX + keyWidth * 0.6, 
-            renderY + edgeHeight, 
-            keyWidth * 0.4 - edgeHeight, 
-            keyHeight - edgeHeight * 2 - topOffset
-          );
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Darker shade
+          
+          // Check if key has secondary dimensions (like stepped Caps Lock)
+          if (key.x2 !== undefined || key.y2 !== undefined || key.width2 || key.height2) {
+            const x2 = (key.x2 || 0) * unitSize;
+            const y2 = (key.y2 || 0) * unitSize;
+            const width2 = (key.width2 || key.width) * unitSize;
+            const height2 = (key.height2 || key.height) * unitSize;
+            
+            // Only shade the primary rectangle if y2 > 0 (there's a gap between them)
+            if (y2 > 0) {
+              ctx.fillRect(
+                renderX + keyWidth * 0.5, // Start at middle
+                renderY + edgeHeight, 
+                keyWidth * 0.5 - edgeHeight, // Extend to right edge
+                keyHeight - edgeHeight * 2 - topOffset
+              );
+            }
+            
+            // Always shade the secondary rectangle's right half
+            ctx.fillRect(
+              renderX + x2 + width2 * 0.5, // Start at middle of secondary
+              renderY + y2 + edgeHeight,
+              width2 * 0.5 - edgeHeight, // Extend to right edge
+              height2 - edgeHeight * 2 - topOffset
+            );
+          } else {
+            // For regular keys, shade from middle to right
+            ctx.fillRect(
+              renderX + keyWidth * 0.5, // Start at middle
+              renderY + edgeHeight, 
+              keyWidth * 0.5 - edgeHeight, // Extend to right edge minus the edge border
+              keyHeight - edgeHeight * 2 - topOffset
+            );
+          }
         }
         
         // Draw homing nub indicator
@@ -689,10 +717,20 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
               ctx.closePath();
             }
           } else {
-            // For stepped keys or other special cases, just draw rounded rectangles
-            ctx.roundRect(renderX - outlineOffset, renderY - outlineOffset, keyWidth + outlineOffset * 2, keyHeight + outlineOffset * 2, radius);
-            if (width2 > 0 || height2 > 0) {
-              ctx.roundRect(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, width2 + outlineOffset * 2, height2 + outlineOffset * 2, radius);
+            // For stepped keys or other special cases
+            // Check if this is a stepped caps lock with overlapping rectangles
+            if (key.stepped && y2 === 0 && x2 === 0) {
+              // Stepped caps lock - draw as one continuous outline
+              // Combine both rectangles into one path
+              const combinedWidth = Math.max(keyWidth, width2);
+              const combinedHeight = Math.max(keyHeight, y2 + height2);
+              ctx.roundRect(renderX - outlineOffset, renderY - outlineOffset, combinedWidth + outlineOffset * 2, combinedHeight + outlineOffset * 2, radius);
+            } else {
+              // Other special keys - draw separate rectangles
+              ctx.roundRect(renderX - outlineOffset, renderY - outlineOffset, keyWidth + outlineOffset * 2, keyHeight + outlineOffset * 2, radius);
+              if (width2 > 0 || height2 > 0) {
+                ctx.roundRect(renderX + x2 - outlineOffset, renderY + y2 - outlineOffset, width2 + outlineOffset * 2, height2 + outlineOffset * 2, radius);
+              }
             }
           }
           
@@ -783,9 +821,19 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             }
           } else {
             // For stepped keys or other special cases
-            ctx.roundRect(renderX - innerOffset, renderY - innerOffset, keyWidth + innerOffset * 2, keyHeight + innerOffset * 2, radius);
-            if (width2 > 0 || height2 > 0) {
-              ctx.roundRect(renderX + x2 - innerOffset, renderY + y2 - innerOffset, width2 + innerOffset * 2, height2 + innerOffset * 2, radius);
+            // Check if this is a stepped caps lock with overlapping rectangles
+            if (key.stepped && y2 === 0 && x2 === 0) {
+              // Stepped caps lock - draw as one continuous outline
+              // Combine both rectangles into one path
+              const combinedWidth = Math.max(keyWidth, width2);
+              const combinedHeight = Math.max(keyHeight, y2 + height2);
+              ctx.roundRect(renderX - innerOffset, renderY - innerOffset, combinedWidth + innerOffset * 2, combinedHeight + innerOffset * 2, radius);
+            } else {
+              // Other special keys - draw separate rectangles
+              ctx.roundRect(renderX - innerOffset, renderY - innerOffset, keyWidth + innerOffset * 2, keyHeight + innerOffset * 2, radius);
+              if (width2 > 0 || height2 > 0) {
+                ctx.roundRect(renderX + x2 - innerOffset, renderY + y2 - innerOffset, width2 + innerOffset * 2, height2 + innerOffset * 2, radius);
+              }
             }
           }
           ctx.stroke();
