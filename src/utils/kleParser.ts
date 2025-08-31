@@ -260,7 +260,7 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard & { has
               // Keep default profile or existing profile
             } else {
               // It's a regular profile
-              current.profile = props.p;
+              current.profile = props.p as KeyProfile;
               // Clear any row position
               delete (current as any).rowPosition;
             }
@@ -438,7 +438,7 @@ export function serializeToKLE(keyboard: Keyboard, krkMode: boolean = false): an
   let lastState = { ...defaultState };
 
   let rowCount = 0;
-  for (const [rowY, rowKeys] of sortedRows) {
+  for (const [, rowKeys] of sortedRows) {
     rowCount++;
     const row: any[] = [];
     const sortedKeys = rowKeys.sort((a, b) => a.x - b.x);

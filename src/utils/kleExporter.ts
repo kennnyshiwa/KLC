@@ -115,7 +115,7 @@ export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[]
   let lastY = 0;
   
   // Process each row
-  rows.forEach((rowKeys, rowIndex) => {
+  rows.forEach((rowKeys) => {
     if (rowKeys.length === 0) return;
     
     const row: any[] = [];

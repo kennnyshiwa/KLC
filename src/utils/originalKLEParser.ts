@@ -273,7 +273,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
             // Keep default profile or existing profile
           } else {
             // It's a regular profile
-            current.profile = props.p;
+            current.profile = props.p as KeyProfile;
             // Clear any row position
             delete (current as any).rowPosition;
           }
