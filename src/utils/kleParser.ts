@@ -125,11 +125,12 @@ export function parseKLEString(kleString: string): any {
   }
 }
 
-export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
+export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard & { hasKrkData?: boolean } {
   const keyboard: Keyboard = {
     meta: {},
     keys: []
   };
+  let hasKrkRowPositions = false;
 
   // Handle full KLE JSON format with metadata
   let keyboardData = json;
@@ -250,7 +251,20 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
             }
           }
           if (props.g !== undefined) current.ghost = props.g;
-          if (props.p !== undefined) current.profile = props.p;
+          if (props.p !== undefined) {
+            // Check if it's a KRK row position (starts with K followed by a number)
+            if (typeof props.p === 'string' && /^K\d+$/.test(props.p)) {
+              // Store as row position
+              (current as any).rowPosition = props.p;
+              hasKrkRowPositions = true; // Flag that we found KRK data
+              // Keep default profile or existing profile
+            } else {
+              // It's a regular profile
+              current.profile = props.p;
+              // Clear any row position
+              delete (current as any).rowPosition;
+            }
+          }
           if (props.n !== undefined) current.nub = props.n;
           if (props.l !== undefined) current.stepped = props.l;
           if (props.d !== undefined) current.decal = props.d;
@@ -283,6 +297,10 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
           
 
           // Add optional properties
+          if ((current as any).rowPosition) {
+            key.rowPosition = (current as any).rowPosition;
+            console.log('Assigning rowPosition to key:', key.rowPosition);
+          }
           if (current.x2) key.x2 = current.x2;
           if (current.y2) key.y2 = current.y2;
           if (current.width2) key.width2 = current.width2;
@@ -355,7 +373,7 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
           current.textSize = [];
           current.align = undefined;
           
-          // Don't reset Y position - it should maintain its value from property changes
+          // Don't reset Y position or rowPosition - they should maintain their values
         }
       }
       
@@ -387,6 +405,12 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard {
     }
   }
 
+  // Add the flag to the keyboard object if KRK data was found
+  if (hasKrkRowPositions) {
+    (keyboard as any).hasKrkData = true;
+    console.log('KRK data detected, setting hasKrkData flag');
+  }
+  
   return keyboard;
 }
 

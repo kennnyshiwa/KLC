@@ -36,6 +36,16 @@ const RawDataEditor: React.FC = () => {
     try {
       const parsed = JSON.parse(rawData);
       const newKeyboard = parseKLE(parsed);
+      
+      // Check if KRK data was detected and enable KRK mode
+      if ((newKeyboard as any).hasKrkData) {
+        console.log('KRK data detected in RawDataEditor, enabling KRK mode');
+        const updateEditorSettings = useKeyboardStore.getState().updateEditorSettings;
+        updateEditorSettings({ krkMode: true });
+      } else {
+        console.log('No KRK data flag found');
+      }
+      
       setKeyboard(newKeyboard);
       setError(null);
       setSuccess(true);

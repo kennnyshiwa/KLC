@@ -218,41 +218,47 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
               
               // Auto-populate row positions when enabling KRK mode
               if (newKrkMode && keyboard.keys.length > 0) {
-                // Group keys by Y position
-                const rows = new Map<number, typeof keyboard.keys>();
-                keyboard.keys.forEach(key => {
-                  const row = Math.floor(key.y);
-                  if (!rows.has(row)) {
-                    rows.set(row, []);
+                // Check if any keys already have row positions (imported KRK data)
+                const hasExistingRowPositions = keyboard.keys.some(key => key.rowPosition);
+                
+                if (!hasExistingRowPositions) {
+                  // Only auto-populate if no row positions exist
+                  // Group keys by Y position
+                  const rows = new Map<number, typeof keyboard.keys>();
+                  keyboard.keys.forEach(key => {
+                    const row = Math.floor(key.y);
+                    if (!rows.has(row)) {
+                      rows.set(row, []);
+                    }
+                    rows.get(row)!.push(key);
+                  });
+                  
+                  // Sort rows and assign row positions
+                  const sortedRows = Array.from(rows.entries()).sort((a, b) => a[0] - b[0]);
+                  const updates: Array<{ id: string; changes: Partial<Key> }> = [];
+                  
+                  sortedRows.forEach(([, rowKeys], index) => {
+                    // Only assign K1-K6, leave anything beyond row 6 blank
+                    if (index < 6) {
+                      const rowPosition = `K${index + 1}`;
+                      rowKeys.forEach(key => {
+                        // Only set if not already set
+                        if (!key.rowPosition) {
+                          updates.push({
+                            id: key.id,
+                            changes: { rowPosition }
+                          });
+                        }
+                      });
+                    }
+                    // Keys in row 7+ are left blank for user to decide (alternative keys)
+                  });
+                  
+                  if (updates.length > 0) {
+                    const updateKeys = useKeyboardStore.getState().updateKeys;
+                    updateKeys(updates);
+                    saveToHistory();
                   }
-                  rows.get(row)!.push(key);
-                });
-                
-                // Sort rows and assign row positions
-                const sortedRows = Array.from(rows.entries()).sort((a, b) => a[0] - b[0]);
-                const updates: Array<{ id: string; changes: Partial<Key> }> = [];
-                
-                sortedRows.forEach(([, rowKeys], index) => {
-                  // Only assign K1-K6, leave anything beyond row 6 blank
-                  if (index < 6) {
-                    const rowPosition = `K${index + 1}`;
-                    rowKeys.forEach(key => {
-                      // Only set if not already set
-                      if (!key.rowPosition) {
-                        updates.push({
-                          id: key.id,
-                          changes: { rowPosition }
-                        });
-                      }
-                    });
-                  }
-                  // Keys in row 7+ are left blank for user to decide (alternative keys)
-                });
-                
-                if (updates.length > 0) {
-                  const updateKeys = useKeyboardStore.getState().updateKeys;
-                  updateKeys(updates);
-                  saveToHistory();
                 }
               }
             }} 

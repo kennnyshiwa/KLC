@@ -117,11 +117,12 @@ export function parseOriginalKLEString(kleString: string): any {
   }
 }
 
-export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): Keyboard {
+export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): Keyboard & { hasKrkData?: boolean } {
   const keyboard: Keyboard = {
     meta: {},
     keys: []
   };
+  let hasKrkRowPositions = false;
   
   let data: any[] = [];
   
@@ -262,7 +263,21 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         
         // Key properties
         if (props.g !== undefined) current.ghost = props.g;
-        if (props.p !== undefined) current.profile = props.p;
+        if (props.p !== undefined) {
+          // Check if it's a KRK row position (starts with K followed by a number)
+          if (typeof props.p === 'string' && /^K\d+$/.test(props.p)) {
+            console.log('Found KRK row position:', props.p);
+            // Store as row position
+            (current as any).rowPosition = props.p;
+            hasKrkRowPositions = true; // Flag that we found KRK data
+            // Keep default profile or existing profile
+          } else {
+            // It's a regular profile
+            current.profile = props.p;
+            // Clear any row position
+            delete (current as any).rowPosition;
+          }
+        }
         if (props.n !== undefined) current.nub = props.n;
         if (props.l !== undefined) current.stepped = props.l;
         if (props.d !== undefined) current.decal = props.d;
@@ -461,6 +476,10 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         
         
         // Add optional properties
+        if ((current as any).rowPosition) {
+          console.log('Adding rowPosition to key:', (current as any).rowPosition);
+          key.rowPosition = (current as any).rowPosition;
+        }
         if (current.x2) key.x2 = current.x2;
         if (current.y2) key.y2 = current.y2;
         if (current.width2) key.width2 = current.width2;
@@ -524,13 +543,19 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
     }
   }
   
+  // Add the flag to the keyboard object if KRK data was found
+  if (hasKrkRowPositions) {
+    console.log('Setting hasKrkData flag on keyboard');
+    (keyboard as any).hasKrkData = true;
+  }
+  
   return keyboard;
 }
 
 /**
  * Import from original KLE file
  */
-export async function importOriginalKLEFile(file: File, options?: OriginalKLEParseOptions): Promise<Keyboard> {
+export async function importOriginalKLEFile(file: File, options?: OriginalKLEParseOptions): Promise<Keyboard & { hasKrkData?: boolean }> {
   const text = await file.text();
   const parsed = parseOriginalKLEString(text);
   return parseOriginalKLE(parsed, options);

@@ -140,6 +140,15 @@ const MenuBar: React.FC = () => {
       
       try {
         const imported = await importOriginalKLEFile(file);
+        console.log('Imported keyboard:', imported);
+        console.log('Has KRK data?', (imported as any).hasKrkData);
+        
+        // Check if KRK data was detected and enable KRK mode
+        if ((imported as any).hasKrkData) {
+          console.log('Enabling KRK mode');
+          const { updateEditorSettings } = useKeyboardStore.getState();
+          updateEditorSettings({ krkMode: true });
+        }
         
         // Mark as saved since this is a fresh import
         const { markAsSaved } = useKeyboardStore.getState();

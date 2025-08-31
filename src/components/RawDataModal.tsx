@@ -42,6 +42,12 @@ const RawDataModal: React.FC<RawDataModalProps> = ({ isOpen, onClose }) => {
         throw new Error('No keys were parsed from the input data');
       }
       
+      // Check if KRK data was detected and enable KRK mode
+      if ((newKeyboard as any).hasKrkData) {
+        const updateEditorSettings = useKeyboardStore.getState().updateEditorSettings;
+        updateEditorSettings({ krkMode: true });
+      }
+      
       setKeyboard(newKeyboard);
       saveToHistory();
       setError(null);
