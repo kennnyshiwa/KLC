@@ -15,7 +15,63 @@ router.get('/count', async (req, res) => {
   }
 });
 
-// Get a public layout (no auth required)
+// Get all public layouts (no auth required)
+router.get('/public', async (req, res) => {
+  console.log('Public layouts endpoint hit');
+  console.log('Query params:', req.query);
+  
+  try {
+    const { page = 1, limit = 20, search = '' } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Simplified where clause without case-insensitive mode
+    const where = {
+      isPublic: true
+    };
+    
+    // Add search conditions if search query exists
+    if (search && search.trim()) {
+      where.OR = [
+        { name: { contains: search } },
+        { description: { contains: search } }
+      ];
+    }
+    
+    console.log('Where clause:', JSON.stringify(where, null, 2));
+    
+    const [layouts, total] = await Promise.all([
+      prisma.layout.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        skip,
+        take: parseInt(limit),
+        include: {
+          owner: {
+            select: {
+              username: true,
+              discriminator: true
+            }
+          }
+        }
+      }),
+      prisma.layout.count({ where })
+    ]);
+    
+    console.log(`Found ${layouts.length} layouts out of ${total} total`);
+    
+    res.json({
+      layouts,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (error) {
+    console.error('Error fetching public layouts:', error);
+    res.status(500).json({ error: 'Failed to fetch public layouts' });
+  }
+});
+
+// Get a specific public layout (no auth required)
 router.get('/public/:id', async (req, res) => {
   try {
     const layout = await prisma.layout.findUnique({

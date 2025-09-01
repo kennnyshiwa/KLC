@@ -1484,6 +1484,39 @@ body {
 }
 
 /* User Menu Styles */
+.user-menu-guest {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.browse-button {
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.browse-button:hover {
+  background-color: #f5f5f5;
+  border-color: #bbb;
+}
+
+.dark-mode .browse-button {
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+.dark-mode .browse-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #777;
+}
+
 .login-button {
   display: flex;
   align-items: center;
@@ -2882,4 +2915,335 @@ html.dark-mode body {
     -webkit-appearance: none;
     appearance: none;
   }
+}
+
+/* Public Layouts Gallery Styles */
+.public-layouts-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 2rem;
+}
+
+.public-layouts-page .page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.public-layouts-page .page-header h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin: 1rem 0 0.5rem;
+}
+
+.public-layouts-page .subtitle {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.search-bar {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.search-results-count {
+  text-align: center;
+  margin-top: 1rem;
+  color: #666;
+}
+
+.layouts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.layout-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.layout-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.layout-preview {
+  position: relative;
+  background: #1a1a1a;
+  padding: 10px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.layout-preview-canvas {
+  display: block;
+}
+
+.layout-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.layout-card:hover .layout-overlay {
+  opacity: 1;
+}
+
+.btn-view {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.layout-info {
+  padding: 1rem;
+}
+
+.layout-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.layout-description {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.layout-meta {
+  display: flex;
+  gap: 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.layout-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.layout-owner,
+.layout-date {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.layout-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #e0e0e0;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.more-tags {
+  background: #f0f0f0;
+  font-weight: 600;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 3rem 0 2rem;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-weight: 500;
+  color: #666;
+}
+
+.loading-container,
+.error-container,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 1.1rem;
+}
+
+/* Layout Detail Modal */
+.layout-detail-modal {
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.layout-preview-large {
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.layout-detail-section {
+  margin: 1.5rem 0;
+}
+
+.layout-detail-section h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.layout-detail-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.meta-item strong {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Dark mode for public layouts */
+.dark-mode .public-layouts-page {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .public-layouts-page h1 {
+  color: #e0e0e0;
+}
+
+.dark-mode .public-layouts-page .subtitle {
+  color: #999;
+}
+
+.dark-mode .search-input-wrapper {
+  background: #2a2a2a;
+}
+
+.dark-mode .search-input {
+  background: transparent;
+  color: #e0e0e0;
+}
+
+.dark-mode .layout-card {
+  background: #2a2a2a;
+}
+
+.dark-mode .layout-name {
+  color: #e0e0e0;
+}
+
+.dark-mode .layout-description {
+  color: #999;
+}
+
+.dark-mode .tag {
+  background: #333;
+  color: #bbb;
+}
+
+.dark-mode .layout-detail-modal {
+  background: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.dark-mode .layout-detail-section h3 {
+  color: #e0e0e0;
+}
+
+.dark-mode .layout-detail-meta {
+  background: #1a1a1a;
 }

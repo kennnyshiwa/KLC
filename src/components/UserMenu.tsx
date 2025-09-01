@@ -28,10 +28,19 @@ const UserMenu: React.FC = () => {
 
   if (!user) {
     return (
-      <button className="login-button" onClick={login}>
-        <LogIn size={16} />
-        <span>Login with Discord</span>
-      </button>
+      <div className="user-menu-guest">
+        <button 
+          className="browse-button" 
+          onClick={() => navigate('/public-layouts')}
+          title="Browse Public Layouts"
+        >
+          Browse Layouts
+        </button>
+        <button className="login-button" onClick={login}>
+          <LogIn size={16} />
+          <span>Login with Discord</span>
+        </button>
+      </div>
     );
   }
 
@@ -66,6 +75,12 @@ const UserMenu: React.FC = () => {
             navigate('/my-layouts');
           }}>
             My Layouts
+          </button>
+          <button className="user-dropdown-item" onClick={() => {
+            setShowDropdown(false);
+            navigate('/public-layouts');
+          }}>
+            Browse Layouts
           </button>
           <button className="user-dropdown-item" onClick={() => {
             setShowDropdown(false);

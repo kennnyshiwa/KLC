@@ -297,6 +297,10 @@ const MenuBar: React.FC = () => {
               Raw Data Editor
             </button>
             <div className="menu-dropdown-separator" />
+            <button className="menu-dropdown-item" onClick={() => { navigate('/public-layouts'); setActiveMenu(null); }}>
+              Browse Public Layouts
+            </button>
+            <div className="menu-dropdown-separator" />
             <button className="menu-dropdown-item" onClick={() => {/* TODO: Zoom In */}}>
               Zoom In
             </button>

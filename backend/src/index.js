@@ -43,8 +43,27 @@ const pgPool = new pg.Pool({
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow the configured frontend URL
+    const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+    if (origin === allowedOrigin) {
+      return callback(null, true);
+    }
+    
+    // In production, be more restrictive
+    if (process.env.NODE_ENV === 'production') {
+      return callback(new Error('Not allowed by CORS'));
+    }
+    
+    // In development, allow all origins
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -58,7 +77,7 @@ const sessionConfig = {
   }),
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
-  saveUninitialized: true, // Changed to true to ensure cookie is set
+  saveUninitialized: false, // Don't save empty sessions for public endpoints
   name: 'kle.sid', // Custom session cookie name
   cookie: {
     secure: false, // Temporarily disabled to test - nginx handles HTTPS
