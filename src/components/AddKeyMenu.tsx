@@ -95,6 +95,10 @@ const AddKeyMenu: React.FC = () => {
     let newX = 0;
     let newY = 0;
     
+    // For special keys with negative y2, ensure they have enough space at the top
+    const needsTopSpace = template.y2 && template.y2 < 0;
+    const minRequiredY = needsTopSpace ? Math.abs(template.y2!) : 0;
+    
     if (keyboard.keys.length > 0) {
       // Special positioning for row labels - place them at the far left and shift all keys
       if (template.isLabel) {
@@ -163,6 +167,16 @@ const AddKeyMenu: React.FC = () => {
         // Place new key to the right of the reference key
         newX = referenceKey.x + referenceKey.width;
         newY = referenceKey.y;
+        
+        // Ensure special keys with negative y2 have enough room at the top
+        if (needsTopSpace) {
+          newY = Math.max(newY, minRequiredY);
+        }
+      }
+    } else {
+      // First key - ensure it has enough space from top if needed
+      if (needsTopSpace) {
+        newY = minRequiredY;
       }
     }
 
@@ -177,6 +191,11 @@ const AddKeyMenu: React.FC = () => {
           (prev.y + prev.height > current.y + current.height) ? prev : current
         );
         newY = bottomKey.y + bottomKey.height + 0.25;
+        
+        // Ensure special keys with negative y2 have enough room at the top
+        if (needsTopSpace) {
+          newY = Math.max(newY, minRequiredY);
+        }
       }
 
       const newKey: Key = {

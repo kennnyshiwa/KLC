@@ -44,6 +44,20 @@ const CanvasContainer = forwardRef<KeyboardCanvasRef>((_, ref) => {
         minY = Math.min(minY, key.y);
         maxX = Math.max(maxX, key.x + key.width);
         maxY = Math.max(maxY, key.y + key.height);
+        
+        // Account for secondary rectangle (like ISO Enter with negative y2)
+        if (key.y2 !== undefined && key.height2 !== undefined) {
+          const y2 = key.y2 || 0;
+          const height2 = key.height2 || 0;
+          minY = Math.min(minY, key.y + y2);
+          maxY = Math.max(maxY, key.y + y2 + height2);
+        }
+        if (key.x2 !== undefined && key.width2 !== undefined) {
+          const x2 = key.x2 || 0;
+          const width2 = key.width2 || 0;
+          minX = Math.min(minX, key.x + x2);
+          maxX = Math.max(maxX, key.x + x2 + width2);
+        }
       }
     });
     
