@@ -61,6 +61,7 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
     { name: 'R3 Label', width: 1, height: 1, isLabel: true, label: 'R3' },
     { name: 'R4 Label', width: 1, height: 1, isLabel: true, label: 'R4' },
     { name: 'R5 Label', width: 1, height: 1, isLabel: true, label: 'R5' },
+    { name: 'SP Label', width: 1, height: 1, isLabel: true, label: 'SP' },
   ],
 };
 
