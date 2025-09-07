@@ -933,13 +933,30 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         // Draw the text if there's a label
         if (key.labels && key.labels.length > 0 && key.labels[0]) {
           const label = key.labels[0];
+          const centerX = renderX + keyWidth / 2;
+          
+          // Draw main label
           ctx.font = 'bold 16px system-ui';
           ctx.fillStyle = isDarkMode ? '#888888' : '#666666';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          const centerX = renderX + keyWidth / 2;
-          const centerY = renderY + keyHeight / 2;
+          
+          // Adjust vertical position based on whether we have shape text
+          const centerY = key.rowLabelShape 
+            ? renderY + keyHeight / 2 - 8  // Move up if shape text present
+            : renderY + keyHeight / 2;      // Center if no shape text
           ctx.fillText(label, centerX, centerY);
+          
+          // Draw shape text if specified
+          if (key.rowLabelShape) {
+            ctx.font = '11px system-ui';
+            ctx.fillStyle = isDarkMode ? '#666666' : '#888888';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const shapeText = key.rowLabelShape === 'convex' ? 'convex' : 'concave';
+            const shapeCenterY = renderY + keyHeight / 2 + 12; // Position below main label
+            ctx.fillText(shapeText, centerX, shapeCenterY);
+          }
         }
         ctx.restore();
       } else {

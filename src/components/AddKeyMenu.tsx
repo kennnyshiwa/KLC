@@ -121,7 +121,7 @@ const AddKeyMenu: React.FC = () => {
         
         // Only shift keys if this is the FIRST row label being added
         if (!anyRowLabelsExist) {
-          const shiftAmount = 2;
+          const shiftAmount = 1.25; // Reduced from 2 to 1.25 for tighter spacing
           const updates = keyboard.keys
             .filter(key => !(key.decal && key.ghost && key.color === 'transparent')) // Don't shift other row labels
             .map(key => ({
@@ -141,11 +141,16 @@ const AddKeyMenu: React.FC = () => {
         newX = 0;
         
         // Find the appropriate Y position based on the row number
-        const rowNumber = parseInt(template.label?.replace('R', '') || '1');
-        // Y positions for typical keyboard rows (R1-R5)
-        // R1: Function row, R2: Number row, R3: QWERTY row, R4: ASDF row, R5: ZXCV row
-        const rowYPositions = [0, 1, 2, 3, 4];
-        newY = rowYPositions[rowNumber - 1] || 0;
+        if (template.label === 'SP') {
+          // Spacebar row is typically at y=5
+          newY = 5;
+        } else {
+          const rowNumber = parseInt(template.label?.replace('R', '') || '1');
+          // Y positions for typical keyboard rows (R1-R5)
+          // R1: Function row, R2: Number row, R3: QWERTY row, R4: ASDF row, R5: ZXCV row
+          const rowYPositions = [0, 1, 2, 3, 4];
+          newY = rowYPositions[rowNumber - 1] || 0;
+        }
       } else {
         // Find the reference key - prioritize selected key, then last modified, then rightmost key
         let referenceKey = null;
@@ -215,6 +220,7 @@ const AddKeyMenu: React.FC = () => {
         stepped: template.stepped,
         decal: template.isLabel || template.isLED || template.isEncoder, // Row labels, LEDs, and encoders are decal keys
         ghost: template.isLabel, // Only row labels are ghost
+        // Don't set a default rowLabelShape - let user choose
       } as Key;
       
       addKey(newKey);

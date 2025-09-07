@@ -38,6 +38,7 @@ export interface Key {
   font?: string;
   legendRotation?: number[];
   rowPosition?: string; // KRK row position (e.g., "K1", "K2", etc.)
+  rowLabelShape?: 'convex' | 'concave'; // For row labels to indicate profile shape
 }
 
 export interface KeyboardMetadata {

@@ -53,6 +53,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
     legendStyle: true,
     appearance: true,
     advanced: false,
+    rowLabel: true,
   });
   const [showCharPicker, setShowCharPicker] = useState(false);
   const [charPickerTarget, setCharPickerTarget] = useState<number | null>(null);
@@ -1103,6 +1104,31 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     />
                     Decal
                   </label>
+                </div>
+              </div>
+            )}
+          </div>
+          )}
+
+          {/* Row Label Properties - Only shown for row labels */}
+          {isRowLabel && (
+          <div className="property-section">
+            <div className="section-header" onClick={() => toggleSection('rowLabel')}>
+              {expandedSections.rowLabel ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              <span>Row Label</span>
+            </div>
+            {expandedSections.rowLabel && firstKey && (
+              <div className="section-content">
+                <div className="property-row">
+                  <label>Shape</label>
+                  <select
+                    value={firstKey.rowLabelShape || ''}
+                    onChange={(e) => handleKeyUpdate('rowLabelShape', e.target.value || undefined)}
+                  >
+                    <option value="">None</option>
+                    <option value="convex">Convex</option>
+                    <option value="concave">Concave</option>
+                  </select>
                 </div>
               </div>
             )}
