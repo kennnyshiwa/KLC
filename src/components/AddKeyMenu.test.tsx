@@ -166,8 +166,8 @@ describe('AddKeyMenu', () => {
       await user.click(spButton);
       
       expect(mockUpdateKeys).toHaveBeenCalledWith([
-        { id: 'key1', changes: { x: 2 } },
-        { id: 'key2', changes: { x: 3 } }
+        { id: 'key1', changes: { x: 1.25 } },
+        { id: 'key2', changes: { x: 2.25 } }
       ]);
       
       expect(mockAddKey).toHaveBeenCalledWith(
