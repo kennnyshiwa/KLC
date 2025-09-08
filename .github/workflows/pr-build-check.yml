@@ -1,0 +1,54 @@
+name: PR Build Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend type check
+        run: npm run typecheck
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run backend type check
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Test Docker build - Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          platforms: linux/amd64
+
+      - name: Test Docker build - Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          platforms: linux/amd64
