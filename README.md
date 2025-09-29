@@ -96,8 +96,8 @@ Visit [KLC Website URL] to start designing immediately - no installation require
 #### Installation
 1. Clone the repository:
 ```bash
-git clone https://github.com/kennnyshiwa/KLE2.0.git
-cd KLE2.0
+git clone https://github.com/kennnyshiwa/KLC.git
+cd KLC
 ```
 
 2. Install dependencies:
