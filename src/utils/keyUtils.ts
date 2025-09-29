@@ -84,24 +84,98 @@ export function getLegendPosition(index: number): { x: number; y: number; align:
   return positions[index] || positions[0];
 }
 
-export function getStabilizerPositions(keyWidth: number): { x: number; y: number }[] {
+export function getStabilizerPositions(keyWidth: number, keyHeight: number = 1, isISOEnter: boolean = false, isBAE: boolean = false): { x: number; y: number }[] {
   // Stabilizer positions are relative to the key (0-1 range)
   // Standard stabilizer spacing for different key sizes
-  
-  if (keyWidth >= 2) {
+
+  // Check for Big Ass Enter (BAE) - has horizontal stabilizers plus one in the taller portion
+  if (isBAE) {
     const positions: { x: number; y: number }[] = [];
-    
+
+    // For BAE, we need to consider that the main key is at the bottom
+    // and there's an extended portion (x2, y2, width2, height2) that goes up and right
+
+    // Main horizontal stabilizers in the lower/main portion
+    // These should be in the main key area (not the extended portion)
+    const mainKeyY = 0.45; // Position in the lower part since BAE extends upward
+
+    // Center stabilizer for the main horizontal part
+    positions.push({ x: 0.5, y: mainKeyY });
+
+    // Horizontal stabilizers (BAE is typically 2.25u wide)
+    const stabSpan = 1.25; // Total span between stabilizers in units
+    const offset = stabSpan / 2 / keyWidth; // Distance from center, normalized to key width
+    positions.push({ x: 0.5 - offset, y: mainKeyY });
+    positions.push({ x: 0.5 + offset, y: mainKeyY });
+
+    // Additional stabilizer in the extended/taller portion
+    // This should be positioned in the secondary rectangle area
+    // BAE secondary rectangle typically starts at x2 (positive) and y2 (typically 0 or negative)
+    // Place it centered in the extended portion
+    positions.push({ x: 0.65, y: -0.45 }); // Positioned in the upper-right extended portion
+
+    return positions;
+  }
+
+  // Check for ISO Enter (special L-shaped key with vertical orientation)
+  if (isISOEnter) {
+    // ISO Enter is a vertical 2.25u tall key, so it needs vertical stabilizers
+    const positions: { x: number; y: number }[] = [];
+
     // Center stabilizer
     positions.push({ x: 0.5, y: 0.5 });
-    
+
+    // ISO Enter is typically 2.25u tall, use vertical stabilizer positioning
+    // Standard 2u stabilizer spacing, but vertical
+    const stabSpan = 1.25; // Total span between stabilizers in units
+    const effectiveHeight = 2.25; // ISO Enter is typically 2.25u tall
+    const offset = stabSpan / 2; // Distance from center to each stabilizer
+    positions.push({ x: 0.5, y: 0.5 - offset / effectiveHeight });
+    positions.push({ x: 0.5, y: 0.5 + offset / effectiveHeight });
+
+    return positions;
+  }
+
+  // Check for vertical keys (height >= 2)
+  if (keyHeight >= 2) {
+    const positions: { x: number; y: number }[] = [];
+
+    // Center stabilizer
+    positions.push({ x: 0.5, y: 0.5 });
+
+    // Vertical stabilizers positioned based on key height
+    if (keyHeight === 2) {
+      // 2u vertical key (like numpad +, Enter)
+      // Standard 2u stabilizer spacing, but vertical
+      const stabSpan = 1.25; // Total span between stabilizers in units
+      const offset = stabSpan / 2; // Distance from center to each stabilizer
+      positions.push({ x: 0.5, y: 0.5 - offset / keyHeight });
+      positions.push({ x: 0.5, y: 0.5 + offset / keyHeight });
+    } else if (keyHeight > 2) {
+      // Larger vertical keys - place stabilizers with appropriate spacing
+      const edgeOffset = 0.5 / keyHeight; // ~0.5u from each edge
+      positions.push({ x: 0.5, y: edgeOffset });
+      positions.push({ x: 0.5, y: 1 - edgeOffset });
+    }
+
+    return positions;
+  }
+
+  // Horizontal keys (original logic)
+  if (keyWidth >= 2) {
+    const positions: { x: number; y: number }[] = [];
+
+    // Center stabilizer
+    positions.push({ x: 0.5, y: 0.5 });
+
     // Standard stabilizer positions based on key width
     // The outer stabilizers should be positioned based on standard spacing:
     // - 2u: 23.8mm total span (11.9mm from center each side)
-    // - 2.25u-2.75u: 23.8mm total span 
+    // - 2.25u-2.75u: 23.8mm total span
     // - 3u+: Wider spacing
     // - 6.25u: 100mm total span (50mm from center each side)
     // - 7u: 114.3mm total span (57.15mm from center each side)
-    
+
     if (keyWidth >= 7) {
       // 7u spacebar - stabilizers near the edges
       const edgeOffset = 0.5 / keyWidth; // ~0.5u from each edge
@@ -138,10 +212,10 @@ export function getStabilizerPositions(keyWidth: number): { x: number; y: number
         positions.push({ x: 1 - edgeOffset, y: 0.5 });
       }
     }
-    
+
     return positions;
   }
-  
-  // No stabilizers for keys smaller than 2u
+
+  // No stabilizers for keys smaller than 2u in any dimension
   return [];
 }
