@@ -375,6 +375,21 @@ body {
   gap: 0.5rem;
 }
 
+.mass-move-legends {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.mass-move-header {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
 .legend-help {
   margin-top: 10px;
   padding: 8px;
@@ -2551,6 +2566,16 @@ body {
   background-color: #1a1a1a;
   color: #e0e0e0;
   border-color: #444;
+}
+
+/* Mass move legends */
+.dark-mode .mass-move-legends {
+  background-color: #1a1a1a;
+  border-color: #444;
+}
+
+.dark-mode .mass-move-header {
+  color: #e0e0e0;
 }
 
 /* Property field inputs */

@@ -58,6 +58,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
   const [showCharPicker, setShowCharPicker] = useState(false);
   const [charPickerTarget, setCharPickerTarget] = useState<number | null>(null);
   const [activeLegendField, setActiveLegendField] = useState<number | null>(null);
+  const [legendMoveTo, setLegendMoveTo] = useState<number>(10);
   const setIsSettingRotationPoint = useKeyboardStore((state) => state.setIsSettingRotationPoint);
   const isRotationSectionExpanded = useKeyboardStore((state) => state.isRotationSectionExpanded);
   const setIsRotationSectionExpanded = useKeyboardStore((state) => state.setIsRotationSectionExpanded);
@@ -200,6 +201,85 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
       };
     });
     updateKeys(updates);
+  };
+
+  const handleMoveLegends = () => {
+    const updates = selectedKeysList.map(key => {
+      const newLabels = [...key.labels];
+      const newTextSize = key.textSize ? [...key.textSize] : [];
+      const newTextColor = key.textColor ? [...key.textColor] : [];
+      const newLegendRotation = key.legendRotation ? [...key.legendRotation] : [];
+
+      // Find the first legend that exists on this key (excluding the target position)
+      let firstLegendIndex = -1;
+      for (let i = 0; i < key.labels.length; i++) {
+        if (key.labels[i] && i !== legendMoveTo) {
+          firstLegendIndex = i;
+          break;
+        }
+      }
+
+      // If no legend was found, return empty changes
+      if (firstLegendIndex === -1) {
+        return { id: key.id, changes: {} };
+      }
+
+      // Move the first legend to the target position
+      newLabels[legendMoveTo] = key.labels[firstLegendIndex];
+
+      // Clear all other legend positions
+      for (let i = 0; i < newLabels.length; i++) {
+        if (i !== legendMoveTo) {
+          newLabels[i] = '';
+        }
+      }
+
+      // Move the text size if it exists
+      if (key.textSize && key.textSize[firstLegendIndex] !== undefined) {
+        newTextSize[legendMoveTo] = key.textSize[firstLegendIndex];
+        // Reset all other positions to default
+        for (let i = 0; i < newTextSize.length; i++) {
+          if (i !== legendMoveTo) {
+            newTextSize[i] = key.default?.size?.[0] || 3;
+          }
+        }
+      }
+
+      // Move the text color if it exists at that specific index
+      if (key.textColor && key.textColor[firstLegendIndex] !== undefined && firstLegendIndex > 0) {
+        newTextColor[legendMoveTo] = key.textColor[firstLegendIndex];
+        // Reset all other positions to default color
+        for (let i = 1; i < newTextColor.length; i++) {
+          if (i !== legendMoveTo) {
+            newTextColor[i] = key.textColor[0] || '#000000';
+          }
+        }
+      }
+
+      // Move the legend rotation if it exists
+      if (key.legendRotation && key.legendRotation[firstLegendIndex] !== undefined) {
+        newLegendRotation[legendMoveTo] = key.legendRotation[firstLegendIndex];
+        // Reset all other positions to 0
+        for (let i = 0; i < newLegendRotation.length; i++) {
+          if (i !== legendMoveTo) {
+            newLegendRotation[i] = 0;
+          }
+        }
+      }
+
+      return {
+        id: key.id,
+        changes: {
+          labels: newLabels,
+          textSize: newTextSize.length > 0 ? newTextSize : undefined,
+          textColor: newTextColor.length > 0 ? newTextColor : undefined,
+          legendRotation: newLegendRotation.length > 0 ? newLegendRotation : undefined,
+        }
+      };
+    });
+
+    updateKeys(updates);
+    saveToHistory();
   };
 
 
@@ -722,7 +802,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                 }
               }}>
                 <div className="legends-controls">
-                  <button 
+                  <button
                     className="btn btn-sm"
                     onClick={() => setShowCharPicker(true)}
                   >
@@ -730,6 +810,45 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     <span>Character Picker</span>
                   </button>
                 </div>
+
+                {/* Mass Move Legends - Only show when multiple keys are selected */}
+                {selectedKeysList.length > 1 && (
+                  <div className="mass-move-legends">
+                    <div className="mass-move-header">
+                      Mass Move Legends ({selectedKeysList.length} keys selected)
+                    </div>
+                    <p className="hint">
+                      Move all existing legends to a single position across all selected keys
+                    </p>
+                    <div className="property-row">
+                      <label>Move All Legends To</label>
+                      <select
+                        value={legendMoveTo}
+                        onChange={(e) => setLegendMoveTo(parseInt(e.target.value))}
+                      >
+                        <option value={0}>TL (Top Left)</option>
+                        <option value={10}>TC (Top Center)</option>
+                        <option value={2}>TR (Top Right)</option>
+                        <option value={7}>ML (Middle Left)</option>
+                        <option value={8}>MC (Middle Center)</option>
+                        <option value={9}>MR (Middle Right)</option>
+                        <option value={1}>BL (Bottom Left)</option>
+                        <option value={11}>BC (Bottom Center)</option>
+                        <option value={3}>BR (Bottom Right)</option>
+                      </select>
+                    </div>
+                    <div className="property-row">
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={handleMoveLegends}
+                      >
+                        Move Legends
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+
                 <div className="legends-grid">
                   {[
                     { index: 0, label: 'TL' },  // Top Left
