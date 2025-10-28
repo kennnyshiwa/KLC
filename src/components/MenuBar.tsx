@@ -62,7 +62,7 @@ const MenuBar: React.FC = () => {
     try {
       const jsonString = exportToKLE2String(keyboard);
       const blob = new Blob([jsonString], { type: 'application/json' });
-      const filename = `${keyboard.meta.name || 'keyboard'}_kle2.json`;
+      const filename = `${keyboard.meta.name || 'keyboard'}_klc.json`;
       saveAs(blob, filename);
       setActiveMenu(null);
     } catch (error) {
