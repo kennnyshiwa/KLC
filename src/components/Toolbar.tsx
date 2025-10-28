@@ -1,18 +1,20 @@
 import React from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
-import { 
-  Undo2, 
-  Redo2, 
-  Copy, 
-  Clipboard, 
+import {
+  Undo2,
+  Redo2,
+  Copy,
+  Clipboard,
   Trash2,
   Maximize2,
-  MousePointer2
+  MousePointer2,
+  FlipVertical
 } from 'lucide-react';
 import { duplicateKey } from '../utils/keyUtils';
 import ExportMenu from './ExportMenu';
 import AddKeyMenu from './AddKeyMenu';
 import ColorMenuBar, { ColorMenuGrid } from './ColorMenuBar';
+import MirrorModal from './MirrorModal';
 import { Key } from '../types';
 
 interface ToolbarProps {
@@ -46,6 +48,7 @@ const SelectionModeIcon: React.FC<{ mode: 'touch' | 'enclose' }> = ({ mode }) =>
 
 const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const [activeColorMenu, setActiveColorMenu] = React.useState<'GMK' | 'ABS' | 'PBT' | null>(null);
+  const [showMirrorModal, setShowMirrorModal] = React.useState(false);
   const toolbarContainerRef = React.useRef<HTMLDivElement>(null);
   const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
   const keyboard = useKeyboardStore((state) => state.keyboard);
@@ -211,16 +214,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
           >
             Stabs
           </button>
-          <button 
+          <button
             onClick={() => {
               const newKrkMode = !editorSettings.krkMode;
               updateEditorSettings({ krkMode: newKrkMode });
-              
+
               // Auto-populate row positions when enabling KRK mode
               if (newKrkMode && keyboard.keys.length > 0) {
                 // Check if any keys already have row positions (imported KRK data)
                 const hasExistingRowPositions = keyboard.keys.some(key => key.rowPosition);
-                
+
                 if (!hasExistingRowPositions) {
                   // Only auto-populate if no row positions exist
                   // Group keys by Y position
@@ -232,11 +235,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
                     }
                     rows.get(row)!.push(key);
                   });
-                  
+
                   // Sort rows and assign row positions
                   const sortedRows = Array.from(rows.entries()).sort((a, b) => a[0] - b[0]);
                   const updates: Array<{ id: string; changes: Partial<Key> }> = [];
-                  
+
                   sortedRows.forEach(([, rowKeys], index) => {
                     // Only assign K1-K6, leave anything beyond row 6 blank
                     if (index < 6) {
@@ -253,7 +256,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
                     }
                     // Keys in row 7+ are left blank for user to decide (alternative keys)
                   });
-                  
+
                   if (updates.length > 0) {
                     const updateKeys = useKeyboardStore.getState().updateKeys;
                     updateKeys(updates);
@@ -261,11 +264,19 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
                   }
                 }
               }
-            }} 
+            }}
             className={`toolbar-btn ${editorSettings.krkMode ? 'active' : ''}`}
             title="Enable KRK mode (adds row position data)"
           >
             KRK
+          </button>
+          <button
+            onClick={() => setShowMirrorModal(true)}
+            className="toolbar-btn"
+            disabled={selectedKeys.size === 0}
+            title="Mirror Selected Keys"
+          >
+            <FlipVertical size={18} />
           </button>
         </div>
         
@@ -285,6 +296,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
         </div>
       </div>
       <ColorMenuGrid activeMenu={activeColorMenu} />
+      {showMirrorModal && <MirrorModal onClose={() => setShowMirrorModal(false)} />}
     </div>
   );
 };
