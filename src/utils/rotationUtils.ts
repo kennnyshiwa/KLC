@@ -1,3 +1,66 @@
+import { Key } from '../types/keyboard';
+
+/**
+ * Calculates the new position for a key when changing its rotation center,
+ * maintaining its visual appearance in the same location
+ * @param key - The key to adjust
+ * @param newRotationX - New rotation center X coordinate
+ * @param newRotationY - New rotation center Y coordinate
+ * @returns New x and y position for the key
+ */
+export function calculateNewPositionForRotationCenter(
+  key: Key,
+  newRotationX: number,
+  newRotationY: number
+): { x: number; y: number } {
+  // If key has no rotation angle, position doesn't need to change
+  if (!key.rotation_angle || key.rotation_angle === 0) {
+    return { x: key.x, y: key.y };
+  }
+
+  // Get current rotation center (default to key center if not set)
+  const oldRotationX = key.rotation_x !== undefined ? key.rotation_x : key.x + key.width / 2;
+  const oldRotationY = key.rotation_y !== undefined ? key.rotation_y : key.y + key.height / 2;
+
+  // If rotation center hasn't actually changed, no position adjustment needed
+  if (Math.abs(oldRotationX - newRotationX) < 0.001 && Math.abs(oldRotationY - newRotationY) < 0.001) {
+    return { x: key.x, y: key.y };
+  }
+
+  // Calculate the key's center point
+  const keyCenterX = key.x + key.width / 2;
+  const keyCenterY = key.y + key.height / 2;
+
+  // Calculate where the key's center is visually after rotation around old center
+  const angleRad = (key.rotation_angle * Math.PI) / 180;
+  const cos = Math.cos(angleRad);
+  const sin = Math.sin(angleRad);
+
+  // Vector from old rotation center to key center
+  const dx = keyCenterX - oldRotationX;
+  const dy = keyCenterY - oldRotationY;
+
+  // Rotate this vector by the rotation angle to get visual position
+  const visualCenterX = oldRotationX + (dx * cos - dy * sin);
+  const visualCenterY = oldRotationY + (dx * sin + dy * cos);
+
+  // Now calculate what position (before rotation) would place the key
+  // at the same visual position when rotated around the new center
+  // We need to reverse the rotation around the new center
+  const dx2 = visualCenterX - newRotationX;
+  const dy2 = visualCenterY - newRotationY;
+
+  // Rotate back by negative angle
+  const unrotatedCenterX = newRotationX + (dx2 * cos + dy2 * sin);
+  const unrotatedCenterY = newRotationY + (-dx2 * sin + dy2 * cos);
+
+  // Convert from center back to top-left position
+  const newX = unrotatedCenterX - key.width / 2;
+  const newY = unrotatedCenterY - key.height / 2;
+
+  return { x: newX, y: newY };
+}
+
 /**
  * Check if a point is inside a rotated rectangle
  * @param px - Point X coordinate

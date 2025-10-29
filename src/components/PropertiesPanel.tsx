@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { Key, KeyProfile } from '../types';
 import { ChevronDown, ChevronRight, ChevronLeft, Type } from 'lucide-react';
+import { calculateNewPositionForRotationCenter } from '../utils/rotationUtils';
 import ColorPicker from './ColorPicker';
 import CharacterPicker from './CharacterPicker';
 import IconDropdown from './IconDropdown';
@@ -104,19 +105,59 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
     if (!allowEmpty && (value === '' || (typeof value === 'number' && isNaN(value)))) {
       return;
     }
-    
+
     // Special handling for position changes when multiple keys are selected
     if ((field === 'x' || field === 'y') && typeof value === 'number' && selectedKeysList.length > 1) {
       // Calculate the offset from the first selected key
       const referenceKey = selectedKeysList[0];
       const offset = value - referenceKey[field];
-      
+
       // Apply the same offset to all selected keys to maintain relative positions
       const updates = selectedKeysList.map(key => ({
         id: key.id,
         changes: { [field]: key[field] + offset }
       }));
-      
+
+      updateKeys(updates);
+      saveToHistory();
+    }
+    // Special handling for rotation_angle when multiple keys are selected
+    else if (field === 'rotation_angle' && typeof value === 'number' && selectedKeysList.length > 1) {
+      // Calculate the offset from the first selected key's rotation
+      const referenceKey = selectedKeysList[0];
+      const currentRotation = referenceKey.rotation_angle || 0;
+      const rotationOffset = value - currentRotation;
+
+      // Apply the same rotation offset to all selected keys to preserve individual angles
+      const updates = selectedKeysList.map(key => ({
+        id: key.id,
+        changes: { rotation_angle: (key.rotation_angle || 0) + rotationOffset }
+      }));
+
+      updateKeys(updates);
+      saveToHistory();
+    }
+    // Special handling for rotation center changes (rotation_x or rotation_y)
+    else if ((field === 'rotation_x' || field === 'rotation_y') && typeof value === 'number') {
+      const updates = selectedKeysList.map(key => {
+        // Determine new rotation center
+        const newRotationX = field === 'rotation_x' ? value : (key.rotation_x !== undefined ? key.rotation_x : key.x + key.width / 2);
+        const newRotationY = field === 'rotation_y' ? value : (key.rotation_y !== undefined ? key.rotation_y : key.y + key.height / 2);
+
+        // Calculate new position to maintain visual location
+        const newPos = calculateNewPositionForRotationCenter(key, newRotationX, newRotationY);
+
+        return {
+          id: key.id,
+          changes: {
+            x: newPos.x,
+            y: newPos.y,
+            rotation_x: newRotationX,
+            rotation_y: newRotationY
+          }
+        };
+      });
+
       updateKeys(updates);
       saveToHistory();
     }
@@ -330,40 +371,63 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
 
   const handleRotationModeChange = (mode: string) => {
     let updates: { id: string; changes: Partial<Key> }[] = [];
-    
+
     if (mode === 'key-center') {
       // Clear rotation center to use key center by default
-      updates = selectedKeysList.map(key => ({
-        id: key.id,
-        changes: {
-          rotation_x: undefined,
-          rotation_y: undefined
-        }
-      }));
+      // When switching to key-center, we need to adjust positions to maintain visual appearance
+      updates = selectedKeysList.map(key => {
+        const keyCenterX = key.x + key.width / 2;
+        const keyCenterY = key.y + key.height / 2;
+        const newPos = calculateNewPositionForRotationCenter(key, keyCenterX, keyCenterY);
+
+        return {
+          id: key.id,
+          changes: {
+            x: newPos.x,
+            y: newPos.y,
+            rotation_x: undefined,
+            rotation_y: undefined
+          }
+        };
+      });
     } else if (mode === 'group-center') {
       // Set rotation center to group center
       const bounds = getSelectionBounds(selectedKeysList);
       const centerX = bounds.x + bounds.width / 2;
       const centerY = bounds.y + bounds.height / 2;
-      
-      updates = selectedKeysList.map(key => ({
-        id: key.id,
-        changes: {
-          rotation_x: centerX,
-          rotation_y: centerY
-        }
-      }));
+
+      updates = selectedKeysList.map(key => {
+        const newPos = calculateNewPositionForRotationCenter(key, centerX, centerY);
+
+        return {
+          id: key.id,
+          changes: {
+            x: newPos.x,
+            y: newPos.y,
+            rotation_x: centerX,
+            rotation_y: centerY
+          }
+        };
+      });
     } else if (mode === 'custom') {
       // For custom mode, set the rotation point to current key center if not already set
-      updates = selectedKeysList.map(key => ({
-        id: key.id,
-        changes: {
-          rotation_x: key.rotation_x !== undefined ? key.rotation_x : key.x + key.width / 2,
-          rotation_y: key.rotation_y !== undefined ? key.rotation_y : key.y + key.height / 2
-        }
-      }));
+      updates = selectedKeysList.map(key => {
+        const customX = key.rotation_x !== undefined ? key.rotation_x : key.x + key.width / 2;
+        const customY = key.rotation_y !== undefined ? key.rotation_y : key.y + key.height / 2;
+        const newPos = calculateNewPositionForRotationCenter(key, customX, customY);
+
+        return {
+          id: key.id,
+          changes: {
+            x: newPos.x,
+            y: newPos.y,
+            rotation_x: customX,
+            rotation_y: customY
+          }
+        };
+      });
     }
-    
+
     if (updates.length > 0) {
       updateKeys(updates);
       saveToHistory();

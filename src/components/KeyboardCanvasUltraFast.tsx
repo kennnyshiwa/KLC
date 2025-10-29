@@ -4,7 +4,7 @@ import { Key } from '../types';
 import { getLegendPosition, getStabilizerPositions } from '../utils/keyUtils';
 import { parseIconLegend } from '../utils/iconParser';
 import { fontManager } from '../utils/fontManager';
-import { isPointInRotatedRect } from '../utils/rotationUtils';
+import { isPointInRotatedRect, calculateNewPositionForRotationCenter } from '../utils/rotationUtils';
 
 interface KeyboardCanvasProps {
   width: number;
@@ -1562,33 +1562,44 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     const y = e.clientY - rect.top;
     
     const store = useKeyboardStore.getState();
-    
+
     // Handle rotation point setting mode
     if (store.isSettingRotationPoint) {
-      const selectedKeys = Array.from(store.selectedKeys);
-      if (selectedKeys.length > 0) {
+      const selectedKeyIds = Array.from(store.selectedKeys);
+      if (selectedKeyIds.length > 0) {
         // Convert canvas coordinates to keyboard units (accounting for padding)
         const unitSize = store.editorSettings.unitSize;
         let rotationX = (x - CANVAS_PADDING_LEFT) / unitSize;
         let rotationY = (y - CANVAS_PADDING_TOP) / unitSize;
-        
-        // Snap to 0.25 grid
-        rotationX = Math.round(rotationX * 4) / 4;
-        rotationY = Math.round(rotationY * 4) / 4;
-        
-        // Update all selected keys with the new rotation point
-        const updates = selectedKeys.map(keyId => ({
-          id: keyId,
-          changes: {
-            rotation_x: rotationX,
-            rotation_y: rotationY
-          }
-        }));
-        
+
+        // Don't snap to grid for rotation points - we want precise positioning
+        // to avoid shifting rotated keys. Round to 2 decimal places for cleaner values.
+        rotationX = Math.round(rotationX * 100) / 100;
+        rotationY = Math.round(rotationY * 100) / 100;
+
+        // Get actual key objects
+        const selectedKeys = selectedKeyIds
+          .map(id => store.keyboard.keys.find(k => k.id === id))
+          .filter(Boolean) as Key[];
+
+        // Update all selected keys with the new rotation point, maintaining visual position
+        const updates = selectedKeys.map(key => {
+          const newPos = calculateNewPositionForRotationCenter(key, rotationX, rotationY);
+          return {
+            id: key.id,
+            changes: {
+              x: newPos.x,
+              y: newPos.y,
+              rotation_x: rotationX,
+              rotation_y: rotationY
+            }
+          };
+        });
+
         store.updateKeys(updates);
         store.saveToHistory();
         store.setIsSettingRotationPoint(false);
-        
+
         // Update canvas cursor
         canvas.style.cursor = 'default';
       }
