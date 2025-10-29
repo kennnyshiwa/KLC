@@ -1,0 +1,15 @@
+# robots.txt for KLC - Keyboard Layout Creator
+# Allow all crawlers to index the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://keyboard-layout-creator.com/sitemap.xml
+
+# Crawl delay (optional, adjust if needed)
+Crawl-delay: 1
+
+# Disallow specific paths (if any)
+# Disallow: /api/
+# Disallow: /admin/
