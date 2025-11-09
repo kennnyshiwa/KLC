@@ -84,9 +84,14 @@ export function getLegendPosition(index: number): { x: number; y: number; align:
   return positions[index] || positions[0];
 }
 
-export function getStabilizerPositions(keyWidth: number, keyHeight: number = 1, isISOEnter: boolean = false, isBAE: boolean = false): { x: number; y: number }[] {
+export function getStabilizerPositions(keyWidth: number, keyHeight: number = 1, isISOEnter: boolean = false, isBAE: boolean = false, isMiniISO: boolean = false): { x: number; y: number }[] {
   // Stabilizer positions are relative to the key (0-1 range)
   // Standard stabilizer spacing for different key sizes
+
+  // Check for MiniISO - no stabilizers, just a single stem hole on the top portion
+  if (isMiniISO) {
+    return [];
+  }
 
   // Check for Big Ass Enter (BAE) - has horizontal stabilizers plus one in the taller portion
   if (isBAE) {

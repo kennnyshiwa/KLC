@@ -1283,13 +1283,14 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       
       // Draw stabilizer positions if enabled (while rotation is still active)
       // Skip decal keys as they're just labels, not physical keys
-      const needsStabilizers = (key.width >= 2 || key.height >= 2) && !key.decal;
-      const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height) ||
+      const isMiniISO = key.width === 0.75 && key.height === 2 && key.x2 !== undefined && Math.abs(key.x2 + 0.25) < 0.01;
+      const needsStabilizers = (key.width >= 2 || key.height >= 2) && !key.decal && !isMiniISO;
+      const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height && !isMiniISO) ||
                          (key.y2 !== undefined && key.y2 < 0);
       const isBAE = key.x2 !== undefined && key.x2 > 0 && key.height2 !== undefined; // Big Ass Enter extends to the right
 
       if (editorSettings.showStabilizerPositions && needsStabilizers) {
-        const stabPositions = getStabilizerPositions(key.width, key.height, isISOEnter, isBAE);
+        const stabPositions = getStabilizerPositions(key.width, key.height, isISOEnter, isBAE, isMiniISO);
         
         ctx.save();
         ctx.strokeStyle = isDarkMode ? 'rgba(128, 128, 128, 0.7)' : 'rgba(0, 0, 0, 0.4)';
@@ -1411,7 +1412,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       if (key) {
         // Determine stabilizer type based on key orientation
         const isVertical = key.height >= 2 && key.width < 2;
-        const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height) ||
+        const isMiniISO = key.width === 0.75 && key.height === 2 && key.x2 !== undefined && Math.abs(key.x2 + 0.25) < 0.01;
+        const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height && !isMiniISO) ||
                            (key.y2 !== undefined && key.y2 < 0);
         const isBAE = key.x2 !== undefined && key.x2 > 0 && key.height2 !== undefined;
 
@@ -1431,7 +1433,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         }
 
         // Calculate coordinates in units (relative to key position)
-        const stabPositions = getStabilizerPositions(keyWidth, key.height, isISOEnter, isBAE);
+        const stabPositions = getStabilizerPositions(keyWidth, key.height, isISOEnter, isBAE, isMiniISO);
         const relativeX = stabPositions[stabIndex].x * keyWidth;
         const relativeY = stabPositions[stabIndex].y * key.height;
         
@@ -1777,10 +1779,12 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           const key = stateRef.current.keyboard.keys.find(k => k.id === keyRect.id);
           if (!key || (key.width < 2 && key.height < 2)) continue;
 
-          const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height) ||
+          const isMiniISO = key.width === 0.75 && key.height === 2 && key.x2 !== undefined && Math.abs(key.x2 + 0.25) < 0.01;
+          if (isMiniISO) continue;
+          const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height && !isMiniISO) ||
                              (key.y2 !== undefined && key.y2 < 0);
           const isBAE = key.x2 !== undefined && key.x2 > 0 && key.height2 !== undefined;
-          const stabPositions = getStabilizerPositions(key.width, key.height, isISOEnter, isBAE);
+          const stabPositions = getStabilizerPositions(key.width, key.height, isISOEnter, isBAE, isMiniISO);
           const keyInset = 1;
           const renderX = Math.round(key.x * unitSize + keyInset);
           const renderY = Math.round(key.y * unitSize + keyInset);
