@@ -64,7 +64,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
   const addKey = useKeyboardStore((state) => state.addKey);
   const setMultiSelectMode = useKeyboardStore((state) => state.setMultiSelectMode);
-  
+  const updateKeys = useKeyboardStore((state) => state.updateKeys);
+
   const handleDelete = () => {
     if (selectedKeys.size > 0) {
       deleteKeys(Array.from(selectedKeys));
@@ -110,8 +111,67 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
     
     saveToHistory();
   };
-  
-  
+
+  const handleToggleKeySize = () => {
+    const newShowKeySize = !editorSettings.showKeySize;
+    updateEditorSettings({ showKeySize: newShowKeySize });
+
+    const updates: Array<{ id: string; changes: Partial<Key> }> = [];
+
+    keyboard.keys.forEach(key => {
+      // Skip decal keys (LEDs, encoders, row labels)
+      if (key.decal) return;
+
+      // Check if key is longer than 1u in either dimension
+      if (key.width > 1 || key.height > 1) {
+        if (newShowKeySize) {
+          // Add size label
+          let sizeLabel = '';
+
+          // Determine the label based on key dimensions
+          if (key.height > 1 && key.width === 1) {
+            // Vertical key (e.g., 1x2)
+            sizeLabel = `${key.width}×${key.height}`;
+          } else if (key.width > 1 && key.height === 1) {
+            // Horizontal key (e.g., 2u, 2.25u)
+            sizeLabel = `${key.width}u`;
+          } else if (key.width > 1 && key.height > 1) {
+            // Both dimensions > 1
+            sizeLabel = `${key.width}×${key.height}`;
+          }
+
+          if (sizeLabel) {
+            // Update the front-center legend (index 1 in frontLegends array)
+            const newFrontLegends = [...(key.frontLegends || ['', '', ''])];
+            newFrontLegends[1] = sizeLabel;
+
+            updates.push({
+              id: key.id,
+              changes: {
+                frontLegends: newFrontLegends
+              }
+            });
+          }
+        } else {
+          // Remove size label from front-center position
+          if (key.frontLegends?.[1]) {
+            const newFrontLegends = [...(key.frontLegends || ['', '', ''])];
+            newFrontLegends[1] = '';
+            updates.push({
+              id: key.id,
+              changes: { frontLegends: newFrontLegends }
+            });
+          }
+        }
+      }
+    });
+
+    if (updates.length > 0) {
+      updateKeys(updates);
+      saveToHistory();
+    }
+  };
+
   const toggleSnap = () => {
     updateEditorSettings({ snapToGrid: !editorSettings.snapToGrid });
   };
@@ -146,17 +206,17 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
         
         <div className="toolbar-group">
           <AddKeyMenu />
-          <button 
-            onClick={handleDuplicate} 
-            className="toolbar-btn" 
+          <button
+            onClick={handleDuplicate}
+            className="toolbar-btn"
             disabled={selectedKeys.size === 0}
             title="Duplicate Selected"
           >
             <Copy size={18} />
           </button>
-          <button 
-            onClick={handleDelete} 
-            className="toolbar-btn" 
+          <button
+            onClick={handleDelete}
+            className="toolbar-btn"
             disabled={selectedKeys.size === 0}
             title="Delete Selected"
           >
@@ -269,6 +329,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
             title="Enable KRK mode (adds row position data)"
           >
             KRK
+          </button>
+          <button
+            onClick={handleToggleKeySize}
+            className={`toolbar-btn ${editorSettings.showKeySize ? 'active' : ''}`}
+            title="Toggle size labels on keys > 1u (front legend)"
+          >
+            Size
           </button>
           <button
             onClick={() => setShowMirrorModal(true)}

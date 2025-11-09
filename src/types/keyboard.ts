@@ -113,6 +113,7 @@ export interface EditorSettings {
   showStabilizerPositions: boolean;
   selectionMode: 'touch' | 'enclose'; // touch = partial overlap, enclose = fully contained
   krkMode?: boolean; // Enable KRK row position export format
+  showKeySize?: boolean; // Auto-label keys > 1u with their size
 }
 
 export interface ColorSwatch {
