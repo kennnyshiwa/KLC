@@ -1889,21 +1889,28 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         const updates = Array.from(selectedKeys).map(id => {
           const key = stateRef.current.keyboard.keys.find(k => k.id === id);
           if (!key) return null;
-          
+
           const changes: Partial<Key> = {
             x: key.x + deltaX,
             y: key.y + deltaY
           };
-          
-          // Don't update rotation centers - let them remain undefined for key-center
-          // or keep their custom values for custom rotation
-          
+
+          // If this is a duplicated key with custom rotation points, adjust them too
+          if (isDuplicatingRef.current && duplicatedKeysRef.current.has(id)) {
+            if (key.rotation_x !== undefined) {
+              changes.rotation_x = key.rotation_x + deltaX;
+            }
+            if (key.rotation_y !== undefined) {
+              changes.rotation_y = key.rotation_y + deltaY;
+            }
+          }
+
           return {
             id: id,
             changes
           };
         }).filter(Boolean) as Array<{ id: string; changes: Partial<Key> }>;
-        
+
         useKeyboardStore.getState().updateKeys(updates);
         useKeyboardStore.getState().saveToHistory();
       }

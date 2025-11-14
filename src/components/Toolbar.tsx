@@ -88,24 +88,28 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
     // Calculate new Y position (directly below bottom-most key)
     const newY = bottomKey.y + bottomKey.height;
     
-    // Find the leftmost and topmost selected keys to maintain relative positions
-    const leftmostSelected = selectedKeysList.reduce((prev, current) => 
-      (prev.x < current.x) ? prev : current
-    );
-    const topmostSelected = selectedKeysList.reduce((prev, current) => 
+    // Find the topmost selected key to calculate Y offset
+    const topmostSelected = selectedKeysList.reduce((prev, current) =>
       (prev.y < current.y) ? prev : current
     );
-    
+
     selectedKeysList.forEach(key => {
-      // Calculate the exact position where we want the duplicated key
-      const targetX = key.x - leftmostSelected.x;
+      // Maintain original X position and shift Y position to below the layout
+      const targetX = key.x;
       const targetY = key.y - topmostSelected.y + newY;
-      
+      const yOffset = targetY - key.y;
+
       // Since duplicateKey adds offset to key position, we need to subtract key position
-      const duplicated = duplicateKey(key, { 
+      const duplicated = duplicateKey(key, {
         x: targetX - key.x,
-        y: targetY - key.y
+        y: yOffset
       });
+
+      // Adjust rotation point if it exists
+      if (duplicated.rotation_y !== undefined) {
+        duplicated.rotation_y += yOffset;
+      }
+
       addKey(duplicated);
     });
     
