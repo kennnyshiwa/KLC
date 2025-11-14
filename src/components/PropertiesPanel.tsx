@@ -374,17 +374,40 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
 
     if (mode === 'key-center') {
       // Clear rotation center to use key center by default
-      // When switching to key-center, we need to adjust positions to maintain visual appearance
+      // When switching to key-center, maintain the visual center position
       updates = selectedKeysList.map(key => {
-        const keyCenterX = key.x + key.width / 2;
-        const keyCenterY = key.y + key.height / 2;
-        const newPos = calculateNewPositionForRotationCenter(key, keyCenterX, keyCenterY);
+        // Calculate the VISUAL center position (after rotation around custom point)
+        const currentCenterX = key.x + key.width / 2;
+        const currentCenterY = key.y + key.height / 2;
+
+        let visualCenterX = currentCenterX;
+        let visualCenterY = currentCenterY;
+
+        // If key has custom rotation, calculate where center appears visually
+        if (key.rotation_angle && (key.rotation_x !== undefined || key.rotation_y !== undefined)) {
+          const rotX = key.rotation_x !== undefined ? key.rotation_x : currentCenterX;
+          const rotY = key.rotation_y !== undefined ? key.rotation_y : currentCenterY;
+
+          const angleRad = (key.rotation_angle * Math.PI) / 180;
+          const cos = Math.cos(angleRad);
+          const sin = Math.sin(angleRad);
+
+          const dx = currentCenterX - rotX;
+          const dy = currentCenterY - rotY;
+
+          visualCenterX = rotX + (dx * cos - dy * sin);
+          visualCenterY = rotY + (dx * sin + dy * cos);
+        }
+
+        // Set new position so key center is at visual center
+        const newX = visualCenterX - key.width / 2;
+        const newY = visualCenterY - key.height / 2;
 
         return {
           id: key.id,
           changes: {
-            x: newPos.x,
-            y: newPos.y,
+            x: newX,
+            y: newY,
             rotation_x: undefined,
             rotation_y: undefined
           }
