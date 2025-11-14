@@ -185,3 +185,76 @@ export function getSelectionCenter(keys: Key[]): { x: number; y: number } {
     y: (minY + maxY) / 2
   };
 }
+
+/**
+ * Duplicate and mirror keys vertically (creates new keys)
+ * @param keys - Array of keys to duplicate and mirror
+ * @param centerY - Y coordinate of the horizontal mirror axis
+ * @returns Array of new complete Key objects
+ */
+export function duplicateAndMirrorKeysVertically(
+  keys: Key[],
+  centerY: number
+): Key[] {
+  return keys.map(key => {
+    const mirroredChanges = mirrorKeysVertically([key], centerY)[0];
+    return {
+      ...key,
+      ...mirroredChanges,
+      id: `key-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      labels: [...(key.labels || [])],
+      textColor: key.textColor ? [...key.textColor] : undefined,
+      textSize: key.textSize ? [...key.textSize] : undefined,
+    };
+  });
+}
+
+/**
+ * Duplicate and mirror keys horizontally (creates new keys)
+ * @param keys - Array of keys to duplicate and mirror
+ * @param centerX - X coordinate of the vertical mirror axis
+ * @returns Array of new complete Key objects
+ */
+export function duplicateAndMirrorKeysHorizontally(
+  keys: Key[],
+  centerX: number
+): Key[] {
+  return keys.map(key => {
+    const mirroredChanges = mirrorKeysHorizontally([key], centerX)[0];
+    return {
+      ...key,
+      ...mirroredChanges,
+      id: `key-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      labels: [...(key.labels || [])],
+      textColor: key.textColor ? [...key.textColor] : undefined,
+      textSize: key.textSize ? [...key.textSize] : undefined,
+    };
+  });
+}
+
+/**
+ * Duplicate and mirror keys at an angle (creates new keys)
+ * @param keys - Array of keys to duplicate and mirror
+ * @param centerX - X coordinate of the mirror axis center
+ * @param centerY - Y coordinate of the mirror axis center
+ * @param angle - Angle of the mirror axis in degrees
+ * @returns Array of new complete Key objects
+ */
+export function duplicateAndMirrorKeysAtAngle(
+  keys: Key[],
+  centerX: number,
+  centerY: number,
+  angle: number
+): Key[] {
+  return keys.map(key => {
+    const mirroredChanges = mirrorKeysAtAngle([key], centerX, centerY, angle)[0];
+    return {
+      ...key,
+      ...mirroredChanges,
+      id: `key-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      labels: [...(key.labels || [])],
+      textColor: key.textColor ? [...key.textColor] : undefined,
+      textSize: key.textSize ? [...key.textSize] : undefined,
+    };
+  });
+}

@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, FlipVertical, FlipHorizontal } from 'lucide-react';
+import { X, FlipVertical, FlipHorizontal, Copy } from 'lucide-react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
-import { mirrorKeysVertically, mirrorKeysHorizontally, mirrorKeysAtAngle, getSelectionCenter } from '../utils/mirrorUtils';
+import {
+  mirrorKeysVertically,
+  mirrorKeysHorizontally,
+  mirrorKeysAtAngle,
+  getSelectionCenter,
+  duplicateAndMirrorKeysVertically,
+  duplicateAndMirrorKeysHorizontally,
+  duplicateAndMirrorKeysAtAngle
+} from '../utils/mirrorUtils';
 import { Key } from '../types/keyboard';
 
 interface MirrorModalProps {
@@ -14,17 +22,22 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ onClose }) => {
   const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const updateKeys = useKeyboardStore((state) => state.updateKeys);
+  const addKey = useKeyboardStore((state) => state.addKey);
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
 
   const [direction, setDirection] = useState<MirrorDirection>('vertical');
   const [position, setPosition] = useState<string>('');
   const [angle, setAngle] = useState<string>('0');
   const [useCenter, setUseCenter] = useState(false);
+  const [duplicateMode, setDuplicateMode] = useState(false);
 
   // Get selected keys
   const selectedKeysList = Array.from(selectedKeys)
     .map(id => keyboard.keys.find(k => k.id === id))
     .filter(Boolean) as Key[];
+
+  // Parse angle for condition checks
+  const angleValue = parseFloat(angle) || 0;
 
   // Calculate center on mount
   useEffect(() => {
@@ -72,50 +85,85 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ onClose }) => {
       return;
     }
 
-    const posValue = parseFloat(position);
-    if (isNaN(posValue)) {
-      alert('Please enter a valid position value');
-      return;
-    }
-
-    const angleValue = parseFloat(angle);
-    if (isNaN(angleValue)) {
+    const parsedAngle = parseFloat(angle);
+    if (isNaN(parsedAngle)) {
       alert('Please enter a valid angle value');
       return;
     }
 
-    let updates: Array<{ id: string; changes: Partial<Key> }>;
+    // Position is required for non-duplicate mode or custom angles in duplicate mode
+    const needsPosition = !duplicateMode ||
+      !((parsedAngle === 0 && direction === 'vertical') || (parsedAngle === 90 && direction === 'horizontal'));
 
-    // If angle is 0 (vertical) or 90 (horizontal), use simple mirror functions
-    // Otherwise use angle-based mirroring
-    if (angleValue === 0 && direction === 'vertical') {
-      const mirroredKeys = mirrorKeysVertically(selectedKeysList, posValue);
-      updates = selectedKeysList.map((key, index) => ({
-        id: key.id,
-        changes: mirroredKeys[index]
-      }));
-    } else if (angleValue === 90 && direction === 'horizontal') {
-      const mirroredKeys = mirrorKeysHorizontally(selectedKeysList, posValue);
-      updates = selectedKeysList.map((key, index) => ({
-        id: key.id,
-        changes: mirroredKeys[index]
-      }));
-    } else {
-      // Use angle-based mirroring for any custom angle
-      const center = getSelectionCenter(selectedKeysList);
-      const mirroredKeys = mirrorKeysAtAngle(
-        selectedKeysList,
-        center.x,
-        center.y,
-        angleValue
-      );
-      updates = selectedKeysList.map((key, index) => ({
-        id: key.id,
-        changes: mirroredKeys[index]
-      }));
+    const posValue = parseFloat(position);
+    if (needsPosition && isNaN(posValue)) {
+      alert('Please enter a valid position value');
+      return;
     }
 
-    updateKeys(updates);
+    if (duplicateMode) {
+      // Duplicate and mirror mode - creates new keys adjacent to originals
+      let newKeys: Key[];
+
+      // Calculate the bounds of the selection to determine mirror axis
+      let mirrorAxis: number;
+
+      if (parsedAngle === 0 && direction === 'vertical') {
+        // For vertical mirroring, place mirror axis at the bottom edge
+        const maxY = Math.max(...selectedKeysList.map(k => k.y + k.height));
+        mirrorAxis = maxY;
+        newKeys = duplicateAndMirrorKeysVertically(selectedKeysList, mirrorAxis);
+      } else if (parsedAngle === 90 && direction === 'horizontal') {
+        // For horizontal mirroring, place mirror axis at the right edge
+        const maxX = Math.max(...selectedKeysList.map(k => k.x + k.width));
+        mirrorAxis = maxX;
+        newKeys = duplicateAndMirrorKeysHorizontally(selectedKeysList, mirrorAxis);
+      } else {
+        // For custom angles, use the specified position
+        const center = getSelectionCenter(selectedKeysList);
+        newKeys = duplicateAndMirrorKeysAtAngle(
+          selectedKeysList,
+          center.x,
+          center.y,
+          parsedAngle
+        );
+      }
+
+      // Add all new keys
+      newKeys.forEach(key => addKey(key));
+    } else {
+      // Mirror in place mode - updates existing keys
+      let updates: Array<{ id: string; changes: Partial<Key> }>;
+
+      if (parsedAngle === 0 && direction === 'vertical') {
+        const mirroredKeys = mirrorKeysVertically(selectedKeysList, posValue);
+        updates = selectedKeysList.map((key, index) => ({
+          id: key.id,
+          changes: mirroredKeys[index]
+        }));
+      } else if (parsedAngle === 90 && direction === 'horizontal') {
+        const mirroredKeys = mirrorKeysHorizontally(selectedKeysList, posValue);
+        updates = selectedKeysList.map((key, index) => ({
+          id: key.id,
+          changes: mirroredKeys[index]
+        }));
+      } else {
+        const center = getSelectionCenter(selectedKeysList);
+        const mirroredKeys = mirrorKeysAtAngle(
+          selectedKeysList,
+          center.x,
+          center.y,
+          parsedAngle
+        );
+        updates = selectedKeysList.map((key, index) => ({
+          id: key.id,
+          changes: mirroredKeys[index]
+        }));
+      }
+
+      updateKeys(updates);
+    }
+
     saveToHistory();
     onClose();
   };
@@ -159,6 +207,25 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ onClose }) => {
                 </div>
               </div>
 
+              <div className="checkbox-row" style={{ marginTop: '12px', marginBottom: '12px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    checked={duplicateMode}
+                    onChange={(e) => setDuplicateMode(e.target.checked)}
+                  />
+                  <Copy size={16} />
+                  <span>Duplicate & Mirror (create mirrored copies)</span>
+                </label>
+                <small style={{ color: '#666', marginTop: '4px', marginLeft: '24px', display: 'block' }}>
+                  {duplicateMode
+                    ? direction === 'horizontal'
+                      ? 'Mirrored copies will be placed to the right of the selection'
+                      : 'Mirrored copies will be placed below the selection'
+                    : 'Selected keys will be mirrored in place (no copies created)'}
+                </small>
+              </div>
+
               <div className="property-row">
                 <label>Mirror Angle (degrees)</label>
                 <input
@@ -196,10 +263,12 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ onClose }) => {
                   value={position}
                   onChange={(e) => setPosition(e.target.value)}
                   placeholder={`${direction === 'vertical' ? 'Y' : 'X'} coordinate of mirror axis center`}
-                  disabled={useCenter}
+                  disabled={useCenter || (duplicateMode && ((angleValue === 0 && direction === 'vertical') || (angleValue === 90 && direction === 'horizontal')))}
                 />
                 <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>
-                  {direction === 'vertical'
+                  {duplicateMode && ((angleValue === 0 && direction === 'vertical') || (angleValue === 90 && direction === 'horizontal'))
+                    ? 'Auto-calculated: Mirror axis is placed at the edge of the selection'
+                    : direction === 'vertical'
                     ? 'Y position of horizontal mirror axis (keys flip up/down across this line)'
                     : 'X position of vertical mirror axis (keys flip left/right across this line)'}
                 </small>
@@ -213,7 +282,7 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ onClose }) => {
                 fontSize: '13px',
                 color: '#666'
               }}>
-                <strong>{selectedKeysList.length}</strong> key{selectedKeysList.length !== 1 ? 's' : ''} will be mirrored
+                <strong>{selectedKeysList.length}</strong> key{selectedKeysList.length !== 1 ? 's' : ''} will be {duplicateMode ? 'duplicated and mirrored' : 'mirrored in place'}
               </div>
             </>
           )}
@@ -226,9 +295,13 @@ const MirrorModal: React.FC<MirrorModalProps> = ({ onClose }) => {
           <button
             className="btn btn-primary"
             onClick={handleApply}
-            disabled={selectedKeysList.length === 0 || !position}
+            disabled={
+              selectedKeysList.length === 0 ||
+              (!duplicateMode && !position) ||
+              (duplicateMode && !((angleValue === 0 && direction === 'vertical') || (angleValue === 90 && direction === 'horizontal')) && !position)
+            }
           >
-            Apply Mirror
+            {duplicateMode ? 'Duplicate & Mirror' : 'Apply Mirror'}
           </button>
         </div>
       </div>
