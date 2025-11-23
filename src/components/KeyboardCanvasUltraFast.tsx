@@ -2324,15 +2324,28 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
-    
+
     contextRef.current = ctx;
-    
-    // Set canvas size
-    canvas.width = width;
-    canvas.height = height;
+
+    // Support high-DPI displays for crisp rendering
+    const dpr = window.devicePixelRatio || 1;
+
+    // Set canvas resolution (accounting for device pixel ratio)
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+
+    // Set canvas display size (CSS pixels)
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+    // Scale context to match device pixel ratio
+    ctx.scale(dpr, dpr);
+
+    // Disable image smoothing for crisp rendering
+    ctx.imageSmoothingEnabled = false;
     
     // Add event listeners
     canvas.addEventListener('mousedown', handleMouseDown);
