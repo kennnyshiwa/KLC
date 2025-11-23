@@ -2331,21 +2331,28 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     contextRef.current = ctx;
 
     // Support high-DPI displays for crisp rendering
+    // Use a higher resolution multiplier to match original KLE's DOM-based crisp rendering
     const dpr = window.devicePixelRatio || 1;
+    const RESOLUTION_MULTIPLIER = 3; // Render at 3x resolution for crisp output
+    const totalScale = dpr * RESOLUTION_MULTIPLIER;
 
-    // Set canvas resolution (accounting for device pixel ratio)
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
+    // Set canvas resolution (accounting for device pixel ratio + additional quality multiplier)
+    canvas.width = width * totalScale;
+    canvas.height = height * totalScale;
 
     // Set canvas display size (CSS pixels)
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
 
-    // Scale context to match device pixel ratio
-    ctx.scale(dpr, dpr);
+    // Scale context to match total resolution
+    ctx.scale(totalScale, totalScale);
 
-    // Disable image smoothing for crisp rendering
+    // Disable image smoothing for pixel-perfect crisp rendering
     ctx.imageSmoothingEnabled = false;
+
+    // Set high-quality text rendering
+    ctx.textRendering = 'optimizeLegibility' as any;
+    ctx.fontKerning = 'normal' as any;
     
     // Add event listeners
     canvas.addEventListener('mousedown', handleMouseDown);
