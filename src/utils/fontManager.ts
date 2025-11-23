@@ -19,7 +19,7 @@ class FontManager {
       error: null,
       listeners: new Set()
     });
-    
+
     this.fonts.set('GortonPerfected', {
       loaded: false,
       loading: false,
@@ -186,12 +186,12 @@ export const fontManager = new FontManager();
 
 // Load fonts on initialization
 export async function initializeFonts(): Promise<void> {
-  // Load both fonts in parallel
+  // Load custom font files in parallel (kbd-webfont uses CSS fallback, no file to load)
   await Promise.all([
     fontManager.loadFont('trashcons', '/fonts/trashcons.woff'),
     fontManager.loadFont('GortonPerfected', '/fonts/GortonPerfectedVF.woff')
   ]);
-  
+
   // Also wait for document fonts to be ready
   if (document.fonts) {
     await document.fonts.ready;

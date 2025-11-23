@@ -1,0 +1,382 @@
+// Auto-generated list of all kbd SVG icons with categories for search
+export interface IconInfo {
+  name: string;
+  iconName: string;
+  category: string;
+  keywords: string[];
+  value: string;
+}
+
+// Helper function to categorize and generate keywords
+function createIcon(filename: string): IconInfo {
+  const iconName = `icon-kbd-${filename.replace('.svg', '').toLowerCase().replace(/-/g, '_')}`;
+  const displayName = filename.replace('.svg', '').replace(/_kbd-custom$/,'').replace(/^uni[EF][0-9A-F]{3}_/, '').replace(/-/g, ' ');
+  
+  // Auto-categorize based on filename patterns
+  let category = 'Other';
+  const keywords: string[] = [displayName.toLowerCase()];
+  
+  if (filename.match(/^(Arrows|Arrow)/i)) {
+    category = 'Arrows';
+    keywords.push('arrow', 'direction', 'navigation');
+  } else if (filename.match(/^(Tab|Return|Enter|Backspace|Delete|Escape|Insert)/i)) {
+    category = 'Special Keys';
+    keywords.push('key', 'keyboard');
+  } else if (filename.match(/^(Unicode)/i)) {
+    category = 'Unicode Symbols';
+    keywords.push('unicode', 'symbol');
+  } else if (filename.match(/^(Multimedia|Media)/i)) {
+    category = 'Multimedia';
+    keywords.push('media', 'audio', 'video');
+  } else if (filename.match(/^(logo|Logo)/i)) {
+    category = 'Logos';
+    keywords.push('logo', 'brand', 'os');
+  } else if (filename.match(/^([0-9]|[A-Z]-)/)) {
+    category = 'Letters & Numbers';
+    keywords.push('letter', 'number', 'alphanumeric');
+  } else if (filename.match(/^(Line|Home|End|Page)/i)) {
+    category = 'Navigation';
+    keywords.push('navigation', 'page', 'line');
+  } else if (filename.match(/^(Search|Scissors|Undo|Redo)/i)) {
+    category = 'Actions';
+    keywords.push('action', 'edit');
+  } else if (filename.match(/^(Lock|Scroll)/i)) {
+    category = 'Locks & Scrolls';
+    keywords.push('lock', 'security');
+  } else if (filename.match(/^(Symbol|batman|copyleft|community)/i)) {
+    category = 'Symbols';
+    keywords.push('symbol', 'icon');
+  } else if (filename.match(/^logo-linux/i)) {
+    category = 'Linux Logos';
+    keywords.push('linux', 'logo', 'os', 'distro');
+  }
+  
+  return {
+    name: displayName,
+    iconName,
+    category,
+    keywords,
+    value: `<span class="custom-icon ${iconName}"></span>`
+  };
+}
+
+// List of all kbd icon filenames
+const KBD_ICONS_FILES = [
+  "1-Round-Filled-1.svg",
+  "1-Round-Filled-2.svg",
+  "1-Round.svg",
+  "A-Round-Filled-SanSerif.svg",
+  "A-Round-Filled-Serif.svg",
+  "A-Round-SanSerif.svg",
+  "A-Square-Filled-SanSerif.svg",
+  "A-Square-Filled-Serif.svg",
+  "Arrows-Bottom-1.svg",
+  "Arrows-Bottom-2.svg",
+  "Arrows-Bottom-3.svg",
+  "Arrows-Bottom-4.svg",
+  "Arrows-Down-Circle-Filled.svg",
+  "Arrows-Down.svg",
+  "Arrows-Left-Circle-Filled.svg",
+  "Arrows-Left.svg",
+  "Arrows-Right-Circle-Filled.svg",
+  "Arrows-Right.svg",
+  "Arrows-Top-1.svg",
+  "Arrows-Top-2.svg",
+  "Arrows-Top-3.svg",
+  "Arrows-Top-4.svg",
+  "Arrows-Up-Circle-Filled.svg",
+  "Arrows-Up-Left.svg",
+  "Arrows-Up-Right.svg",
+  "Arrows-Up.svg",
+  "Hamburger-Menu.svg",
+  "Line-End.svg",
+  "Line-Start-End.svg",
+  "Line-Start.svg",
+  "Multimedia-Back.svg",
+  "Multimedia-Down.svg",
+  "Multimedia-Eject.svg",
+  "Multimedia-FastForwar.svg",
+  "Multimedia-FastForward-End.svg",
+  "Multimedia-Mute-1.svg",
+  "Multimedia-Mute-2.svg",
+  "Multimedia-Mute-3.svg",
+  "Multimedia-Mute-4.svg",
+  "Multimedia-Pause.svg",
+  "Multimedia-Play-Pause.svg",
+  "Multimedia-Play.svg",
+  "Multimedia-Record.svg",
+  "Multimedia-Rewind-Start.svg",
+  "Multimedia-Rewind.svg",
+  "Multimedia-Stop.svg",
+  "Multimedia-Up.svg",
+  "Multimedia-Volume-Down-1.svg",
+  "Multimedia-Volume-Down-2.svg",
+  "Multimedia-Volume-Up-1.svg",
+  "Multimedia-Volume-Up-2.svg",
+  "Redo-1.svg",
+  "Return-1.svg",
+  "Return-2.svg",
+  "Return-3.svg",
+  "Return-4.svg",
+  "Scissors-1.svg",
+  "Scissors-2.svg",
+  "Scissors-3.svg",
+  "Search-1.svg",
+  "Search-2.svg",
+  "Symbol-Alien.svg",
+  "Symbol-Ankh.svg",
+  "Symbol-Keyboard.svg",
+  "Symbol-Peace.svg",
+  "Symbol-Skull-Bones-1.svg",
+  "Symbol-Skull-Bones-2.svg",
+  "Symbol-YinYang.svg",
+  "Tab-1.svg",
+  "Tab-2.svg",
+  "Undo-1.svg",
+  "Undo-2.svg",
+  "Undo-3.svg",
+  "Unicode-Alternate-1.svg",
+  "Unicode-Alternate-2.svg",
+  "Unicode-BackSpace-DeleteLeft-Big.svg",
+  "Unicode-BackSpace-DeleteLeft-Small.svg",
+  "Unicode-Break-1.svg",
+  "Unicode-Break-2.svg",
+  "Unicode-ClearScreen-1.svg",
+  "Unicode-ClearScreen-2.svg",
+  "Unicode-Clock.svg",
+  "Unicode-Command-1.svg",
+  "Unicode-Command-3.svg",
+  "Unicode-Control-1.svg",
+  "Unicode-Control-2.svg",
+  "Unicode-Control-3.svg",
+  "Unicode-Decimal-Separator-1.svg",
+  "Unicode-Decimal-Separator-2.svg",
+  "Unicode-DeleteRight-Big.svg",
+  "Unicode-DeleteRight-Small.svg",
+  "Unicode-Enter-1.svg",
+  "Unicode-Enter-2.svg",
+  "Unicode-Escape-1.svg",
+  "Unicode-Escape-2.svg",
+  "Unicode-Hourglass-1.svg",
+  "Unicode-Hourglass-2.svg",
+  "Unicode-Insert-1.svg",
+  "Unicode-Insert-2.svg",
+  "Unicode-Lock-Closed-1.svg",
+  "Unicode-Lock-Closed-2.svg",
+  "Unicode-Lock-Open-1.svg",
+  "Unicode-Lock-Open-2.svg",
+  "Unicode-Option-1.svg",
+  "Unicode-Option-2.svg",
+  "Unicode-Page-Down-1.svg",
+  "Unicode-Page-Down-2.svg",
+  "Unicode-Page-Down-3.svg",
+  "Unicode-Page-Up-1.svg",
+  "Unicode-Page-Up-2.svg",
+  "Unicode-Page-Up-3.svg",
+  "Unicode-Pause-1.svg",
+  "Unicode-Pause-2.svg",
+  "Unicode-PrintScreen-1.svg",
+  "Unicode-PrintScreen-2.svg",
+  "Unicode-Screen-Bright.svg",
+  "Unicode-Screen-Dim.svg",
+  "Unicode-Scroll-1.svg",
+  "Unicode-Scroll-2.svg",
+  "Unicode-Stopwatch.svg",
+  "batman.svg",
+  "community-awesome-invert.svg",
+  "community-awesome.svg",
+  "community-hapster.svg",
+  "copyleft.svg",
+  "logo-amiga.svg",
+  "logo-android.svg",
+  "logo-apple-outline.svg",
+  "logo-apple.svg",
+  "logo-atari.svg",
+  "logo-bsd-freebsd.svg",
+  "logo-commodore.svg",
+  "logo-gnu.svg",
+  "logo-linux-archlinux.svg",
+  "logo-linux-centos.svg",
+  "logo-linux-debian.svg",
+  "logo-linux-edubuntu.svg",
+  "logo-linux-fedora.svg",
+  "logo-linux-gentoo.svg",
+  "logo-linux-knoppix.svg",
+  "logo-linux-opensuse.svg",
+  "logo-linux-redhat.svg",
+  "logo-linux-tux-ibm-invert.svg",
+  "logo-linux-tux-ibm.svg",
+  "logo-linux-tux.svg",
+  "logo-ubuntu_cof-circle.svg",
+  "logo-ubuntu_cof.svg",
+  "logo-vim.svg",
+  "logo-windows-7.svg",
+  "logo-windows-8.svg",
+  "logo-winlin-cygwin.svg",
+  "tab-1.svg",
+  "uniE600_kbd-custom.svg",
+  "uniE601_kbd-custom.svg",
+  "uniE602_kbd-custom.svg",
+  "uniE603_kbd-custom.svg",
+  "uniE604_kbd-custom.svg",
+  "uniE605_kbd-custom.svg",
+  "uniE606_kbd-custom.svg",
+  "uniE607_kbd-custom.svg",
+  "uniE608_kbd-custom.svg",
+  "uniE609_kbd-custom.svg",
+  "uniE60A_kbd-custom.svg",
+  "uniE60B_kbd-custom.svg",
+  "uniE60C_kbd-custom.svg",
+  "uniE60D_kbd-custom.svg",
+  "uniE60E_kbd-custom.svg",
+  "uniE60F_kbd-custom.svg",
+  "uniE610_kbd-custom.svg",
+  "uniE611_kbd-custom.svg",
+  "uniE612_kbd-custom.svg",
+  "uniE613_kbd-custom.svg",
+  "uniE614_kbd-custom.svg",
+  "uniE615_kbd-custom.svg",
+  "uniE616_kbd-custom.svg",
+  "uniE617_kbd-custom.svg",
+  "uniE618_kbd-custom.svg",
+  "uniE619_kbd-custom.svg",
+  "uniE700_kbd-custom.svg",
+  "uniE701_kbd-custom.svg",
+  "uniE702_kbd-custom.svg",
+  "uniE703_kbd-custom.svg",
+  "uniE704_kbd-custom.svg",
+  "uniE800_kbd-custom.svg",
+  "uniE801_kbd-custom.svg",
+  "uniE802_kbd-custom.svg",
+  "uniE803_kbd-custom.svg",
+  "uniE804_kbd-custom.svg",
+  "uniE805_kbd-custom.svg",
+  "uniE806_kbd-custom.svg",
+  "uniE807_kbd-custom.svg",
+  "uniE808_kbd-custom.svg",
+  "uniE809_kbd-custom.svg",
+  "uniE80A_kbd-custom.svg",
+  "uniE80B_kbd-custom.svg",
+  "uniE80C_kbd-custom.svg",
+  "uniE80D_kbd-custom.svg",
+  "uniE80E_kbd-custom.svg",
+  "uniE80F_kbd-custom.svg",
+  "uniE810_kbd-custom.svg",
+  "uniE811_kbd-custom.svg",
+  "uniE812_kbd-custom.svg",
+  "uniE813_kbd-custom.svg",
+  "uniE814_kbd-custom.svg",
+  "uniE815_kbd-custom.svg",
+  "uniE816_kbd-custom.svg",
+  "uniE817_kbd-custom.svg",
+  "uniE818_kbd-custom.svg",
+  "uniE819_kbd-custom.svg",
+  "uniE81A_kbd-custom.svg",
+  "uniE81B_kbd-custom.svg",
+  "uniE81C_kbd-custom.svg",
+  "uniE81D_kbd-custom.svg",
+  "uniE81E_kbd-custom.svg",
+  "uniE81F_kbd-custom.svg",
+  "uniE820_kbd-custom.svg",
+  "uniE821_kbd-custom.svg",
+  "uniE822_kbd-custom.svg",
+  "uniE823_kbd-custom.svg",
+  "uniE824_kbd-custom.svg",
+  "uniE825_kbd-custom.svg",
+  "uniE826_kbd-custom.svg",
+  "uniE827_kbd-custom.svg",
+  "uniE828_kbd-custom.svg",
+  "uniE829_kbd-custom.svg",
+  "uniE82A_kbd-custom.svg",
+  "uniE82B_kbd-custom.svg",
+  "uniE82C_kbd-custom.svg",
+  "uniE82D_kbd-custom.svg",
+  "uniE82E_kbd-custom.svg",
+  "uniE82F_kbd-custom.svg",
+  "uniE830_kbd-custom.svg",
+  "uniE831_kbd-custom.svg",
+  "uniE832_kbd-custom.svg",
+  "uniE833_kbd-custom.svg",
+  "uniE834_kbd-custom.svg",
+  "uniE835_kbd-custom.svg",
+  "uniE836_kbd-custom.svg",
+  "uniE837_kbd-custom.svg",
+  "uniE838_kbd-custom.svg",
+  "uniE839_kbd-custom.svg",
+  "uniE83A_kbd-custom.svg",
+  "uniE83B_kbd-custom.svg",
+  "uniE83C_kbd-custom.svg",
+  "uniE83D_kbd-custom.svg",
+  "uniE83E_kbd-custom.svg",
+  "uniE83F_kbd-custom.svg",
+  "uniE840_kbd-custom.svg",
+  "uniE841_kbd-custom.svg",
+  "uniE842_kbd-custom.svg",
+  "uniE843_kbd-custom.svg",
+  "uniE844_kbd-custom.svg",
+  "uniE845_kbd-custom.svg",
+  "uniE846_kbd-custom.svg",
+  "uniE847_kbd-custom.svg",
+  "uniE848_kbd-custom.svg",
+  "uniE849_kbd-custom.svg",
+  "uniE84A_kbd-custom.svg",
+  "uniE84B_kbd-custom.svg",
+  "uniE84C_kbd-custom.svg",
+  "uniE84D_kbd-custom.svg",
+  "uniE84E_kbd-custom.svg",
+  "uniE84F_kbd-custom.svg",
+  "uniE850_kbd-custom.svg",
+  "uniE851_kbd-custom.svg",
+  "uniE852_kbd-custom.svg",
+  "uniE853_kbd-custom.svg",
+  "uniE854_kbd-custom.svg",
+  "uniE855_kbd-custom.svg",
+  "uniE856_kbd-custom.svg",
+  "uniE857_kbd-custom.svg",
+  "uniE858_kbd-custom.svg",
+  "uniE859_kbd-custom.svg",
+  "uniE85A_kbd-custom.svg",
+  "uniE85B_kbd-custom.svg",
+  "uniE85C_kbd-custom.svg",
+  "uniE85D_kbd-custom.svg",
+  "uniE85E_kbd-custom.svg",
+  "uniE85F_kbd-custom.svg",
+  "uniE860_kbd-custom.svg",
+  "uniE861_kbd-custom.svg",
+  "uniE862_kbd-custom.svg",
+  "uniE863_kbd-custom.svg",
+  "uniE864_kbd-custom.svg",
+  "uniE865_kbd-custom.svg",
+  "uniE866_kbd-custom.svg",
+  "uniE867_kbd-custom.svg",
+  "uniE868_kbd-custom.svg",
+  "uniE869_kbd-custom.svg",
+  "uniE86A_kbd-custom.svg",
+  "uniE86B_kbd-custom.svg",
+  "uniE86C_kbd-custom.svg",
+  "uniE86D_kbd-custom.svg",
+  "uniE86E_kbd-custom.svg",
+  "uniE86F_kbd-custom.svg",
+  "uniE870_kbd-custom.svg",
+  "uniE8A0_kbd-custom.svg",
+  "uniE8A1_kbd-custom.svg",
+  "uniE8A2_kbd-custom.svg",
+  "uniE8A3_kbd-custom.svg",
+  "uniE8A4_kbd-custom.svg",
+  "uniE8A5_kbd-custom.svg",
+  "uniE8A6_kbd-custom.svg",
+];
+
+export const KBD_ICONS = KBD_ICONS_FILES.map(createIcon);
+
+// Group icons by category
+export const KBD_ICONS_BY_CATEGORY = KBD_ICONS.reduce((acc, icon) => {
+  if (!acc[icon.category]) {
+    acc[icon.category] = [];
+  }
+  acc[icon.category].push(icon);
+  return acc;
+}, {} as Record<string, IconInfo[]>);
+
+// Get all unique categories
+export const KBD_ICON_CATEGORIES = Object.keys(KBD_ICONS_BY_CATEGORY).sort();

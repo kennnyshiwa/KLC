@@ -1,5 +1,6 @@
 /* Import icon font styles */
 @import './styles/trashcons.css';
+@import './styles/searchable-icon-picker.css';
 
 * {
   box-sizing: border-box;

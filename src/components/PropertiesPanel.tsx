@@ -5,7 +5,7 @@ import { ChevronDown, ChevronRight, ChevronLeft, Type } from 'lucide-react';
 import { calculateNewPositionForRotationCenter } from '../utils/rotationUtils';
 import ColorPicker from './ColorPicker';
 import CharacterPicker from './CharacterPicker';
-import IconDropdown from './IconDropdown';
+import SearchableIconPicker from './SearchableIconPicker';
 
 const PROFILES: KeyProfile[] = ['DCS', 'DSA', 'SA', 'OEM', 'CHICKLET', 'FLAT', 'XDA', 'MA'];
 
@@ -976,7 +976,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                               placeholder={label}
                             />
                             {charPickerTarget === index && (
-                              <IconDropdown 
+                              <SearchableIconPicker
                                 currentValue={topPart}
                                 onChange={(value) => {
                                   const [, bottomPart] = getDualLegendParts(firstKey.labels[0]);
@@ -1043,7 +1043,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                               placeholder={label}
                             />
                             {charPickerTarget === index && (
-                              <IconDropdown 
+                              <SearchableIconPicker
                                 currentValue={bottomPart}
                                 onChange={(value) => {
                                   const [topPart] = getDualLegendParts(firstKey.labels[0]);
@@ -1119,7 +1119,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                       />
                       {charPickerTarget === index && (
                         <>
-                          <IconDropdown 
+                          <SearchableIconPicker
                             currentValue={firstKey.labels[index] || ''}
                             onChange={(value) => handleLegendUpdate(index, value)}
                             onIconAdded={() => handleIconAdded(index)}

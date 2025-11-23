@@ -88,7 +88,310 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     
     // Map icon names to their SVG paths
     const svgPaths: Record<string, string> = {
-      'icon-40s-logo': '/icons/40s-logo.svg'
+      'icon-40s-logo': '/icons/40s-logo.svg',
+      // All kbd SVG icon paths
+      'icon-kbd-1_round_filled_1': '/icons/kbd/1-Round-Filled-1.svg',
+      'icon-kbd-1_round_filled_2': '/icons/kbd/1-Round-Filled-2.svg',
+      'icon-kbd-1_round': '/icons/kbd/1-Round.svg',
+      'icon-kbd-a_round_filled_sanserif': '/icons/kbd/A-Round-Filled-SanSerif.svg',
+      'icon-kbd-a_round_filled_serif': '/icons/kbd/A-Round-Filled-Serif.svg',
+      'icon-kbd-a_round_sanserif': '/icons/kbd/A-Round-SanSerif.svg',
+      'icon-kbd-a_square_filled_sanserif': '/icons/kbd/A-Square-Filled-SanSerif.svg',
+      'icon-kbd-a_square_filled_serif': '/icons/kbd/A-Square-Filled-Serif.svg',
+      'icon-kbd-arrows_bottom_1': '/icons/kbd/Arrows-Bottom-1.svg',
+      'icon-kbd-arrows_bottom_2': '/icons/kbd/Arrows-Bottom-2.svg',
+      'icon-kbd-arrows_bottom_3': '/icons/kbd/Arrows-Bottom-3.svg',
+      'icon-kbd-arrows_bottom_4': '/icons/kbd/Arrows-Bottom-4.svg',
+      'icon-kbd-arrows_down_circle_filled': '/icons/kbd/Arrows-Down-Circle-Filled.svg',
+      'icon-kbd-arrows_down': '/icons/kbd/Arrows-Down.svg',
+      'icon-kbd-arrows_left_circle_filled': '/icons/kbd/Arrows-Left-Circle-Filled.svg',
+      'icon-kbd-arrows_left': '/icons/kbd/Arrows-Left.svg',
+      'icon-kbd-arrows_right_circle_filled': '/icons/kbd/Arrows-Right-Circle-Filled.svg',
+      'icon-kbd-arrows_right': '/icons/kbd/Arrows-Right.svg',
+      'icon-kbd-arrows_top_1': '/icons/kbd/Arrows-Top-1.svg',
+      'icon-kbd-arrows_top_2': '/icons/kbd/Arrows-Top-2.svg',
+      'icon-kbd-arrows_top_3': '/icons/kbd/Arrows-Top-3.svg',
+      'icon-kbd-arrows_top_4': '/icons/kbd/Arrows-Top-4.svg',
+      'icon-kbd-arrows_up_circle_filled': '/icons/kbd/Arrows-Up-Circle-Filled.svg',
+      'icon-kbd-arrows_up_left': '/icons/kbd/Arrows-Up-Left.svg',
+      'icon-kbd-arrows_up_right': '/icons/kbd/Arrows-Up-Right.svg',
+      'icon-kbd-arrows_up': '/icons/kbd/Arrows-Up.svg',
+      'icon-kbd-hamburger_menu': '/icons/kbd/Hamburger-Menu.svg',
+      'icon-kbd-line_end': '/icons/kbd/Line-End.svg',
+      'icon-kbd-line_start_end': '/icons/kbd/Line-Start-End.svg',
+      'icon-kbd-line_start': '/icons/kbd/Line-Start.svg',
+      'icon-kbd-multimedia_back': '/icons/kbd/Multimedia-Back.svg',
+      'icon-kbd-multimedia_down': '/icons/kbd/Multimedia-Down.svg',
+      'icon-kbd-multimedia_eject': '/icons/kbd/Multimedia-Eject.svg',
+      'icon-kbd-multimedia_fastforwar': '/icons/kbd/Multimedia-FastForwar.svg',
+      'icon-kbd-multimedia_fastforward_end': '/icons/kbd/Multimedia-FastForward-End.svg',
+      'icon-kbd-multimedia_mute_1': '/icons/kbd/Multimedia-Mute-1.svg',
+      'icon-kbd-multimedia_mute_2': '/icons/kbd/Multimedia-Mute-2.svg',
+      'icon-kbd-multimedia_mute_3': '/icons/kbd/Multimedia-Mute-3.svg',
+      'icon-kbd-multimedia_mute_4': '/icons/kbd/Multimedia-Mute-4.svg',
+      'icon-kbd-multimedia_pause': '/icons/kbd/Multimedia-Pause.svg',
+      'icon-kbd-multimedia_play_pause': '/icons/kbd/Multimedia-Play-Pause.svg',
+      'icon-kbd-multimedia_play': '/icons/kbd/Multimedia-Play.svg',
+      'icon-kbd-multimedia_record': '/icons/kbd/Multimedia-Record.svg',
+      'icon-kbd-multimedia_rewind_start': '/icons/kbd/Multimedia-Rewind-Start.svg',
+      'icon-kbd-multimedia_rewind': '/icons/kbd/Multimedia-Rewind.svg',
+      'icon-kbd-multimedia_stop': '/icons/kbd/Multimedia-Stop.svg',
+      'icon-kbd-multimedia_up': '/icons/kbd/Multimedia-Up.svg',
+      'icon-kbd-multimedia_volume_down_1': '/icons/kbd/Multimedia-Volume-Down-1.svg',
+      'icon-kbd-multimedia_volume_down_2': '/icons/kbd/Multimedia-Volume-Down-2.svg',
+      'icon-kbd-multimedia_volume_up_1': '/icons/kbd/Multimedia-Volume-Up-1.svg',
+      'icon-kbd-multimedia_volume_up_2': '/icons/kbd/Multimedia-Volume-Up-2.svg',
+      'icon-kbd-redo_1': '/icons/kbd/Redo-1.svg',
+      'icon-kbd-return_1': '/icons/kbd/Return-1.svg',
+      'icon-kbd-return_2': '/icons/kbd/Return-2.svg',
+      'icon-kbd-return_3': '/icons/kbd/Return-3.svg',
+      'icon-kbd-return_4': '/icons/kbd/Return-4.svg',
+      'icon-kbd-scissors_1': '/icons/kbd/Scissors-1.svg',
+      'icon-kbd-scissors_2': '/icons/kbd/Scissors-2.svg',
+      'icon-kbd-scissors_3': '/icons/kbd/Scissors-3.svg',
+      'icon-kbd-search_1': '/icons/kbd/Search-1.svg',
+      'icon-kbd-search_2': '/icons/kbd/Search-2.svg',
+      'icon-kbd-symbol_alien': '/icons/kbd/Symbol-Alien.svg',
+      'icon-kbd-symbol_ankh': '/icons/kbd/Symbol-Ankh.svg',
+      'icon-kbd-symbol_keyboard': '/icons/kbd/Symbol-Keyboard.svg',
+      'icon-kbd-symbol_peace': '/icons/kbd/Symbol-Peace.svg',
+      'icon-kbd-symbol_skull_bones_1': '/icons/kbd/Symbol-Skull-Bones-1.svg',
+      'icon-kbd-symbol_skull_bones_2': '/icons/kbd/Symbol-Skull-Bones-2.svg',
+      'icon-kbd-symbol_yinyang': '/icons/kbd/Symbol-YinYang.svg',
+      'icon-kbd-tab_1': '/icons/kbd/Tab-1.svg',
+      'icon-kbd-tab_2': '/icons/kbd/Tab-2.svg',
+      'icon-kbd-undo_1': '/icons/kbd/Undo-1.svg',
+      'icon-kbd-undo_2': '/icons/kbd/Undo-2.svg',
+      'icon-kbd-undo_3': '/icons/kbd/Undo-3.svg',
+      'icon-kbd-unicode_alternate_1': '/icons/kbd/Unicode-Alternate-1.svg',
+      'icon-kbd-unicode_alternate_2': '/icons/kbd/Unicode-Alternate-2.svg',
+      'icon-kbd-unicode_backspace_deleteleft_big': '/icons/kbd/Unicode-BackSpace-DeleteLeft-Big.svg',
+      'icon-kbd-unicode_backspace_deleteleft_small': '/icons/kbd/Unicode-BackSpace-DeleteLeft-Small.svg',
+      'icon-kbd-unicode_break_1': '/icons/kbd/Unicode-Break-1.svg',
+      'icon-kbd-unicode_break_2': '/icons/kbd/Unicode-Break-2.svg',
+      'icon-kbd-unicode_clearscreen_1': '/icons/kbd/Unicode-ClearScreen-1.svg',
+      'icon-kbd-unicode_clearscreen_2': '/icons/kbd/Unicode-ClearScreen-2.svg',
+      'icon-kbd-unicode_clock': '/icons/kbd/Unicode-Clock.svg',
+      'icon-kbd-unicode_command_1': '/icons/kbd/Unicode-Command-1.svg',
+      'icon-kbd-unicode_command_3': '/icons/kbd/Unicode-Command-3.svg',
+      'icon-kbd-unicode_control_1': '/icons/kbd/Unicode-Control-1.svg',
+      'icon-kbd-unicode_control_2': '/icons/kbd/Unicode-Control-2.svg',
+      'icon-kbd-unicode_control_3': '/icons/kbd/Unicode-Control-3.svg',
+      'icon-kbd-unicode_decimal_separator_1': '/icons/kbd/Unicode-Decimal-Separator-1.svg',
+      'icon-kbd-unicode_decimal_separator_2': '/icons/kbd/Unicode-Decimal-Separator-2.svg',
+      'icon-kbd-unicode_deleteright_big': '/icons/kbd/Unicode-DeleteRight-Big.svg',
+      'icon-kbd-unicode_deleteright_small': '/icons/kbd/Unicode-DeleteRight-Small.svg',
+      'icon-kbd-unicode_enter_1': '/icons/kbd/Unicode-Enter-1.svg',
+      'icon-kbd-unicode_enter_2': '/icons/kbd/Unicode-Enter-2.svg',
+      'icon-kbd-unicode_escape_1': '/icons/kbd/Unicode-Escape-1.svg',
+      'icon-kbd-unicode_escape_2': '/icons/kbd/Unicode-Escape-2.svg',
+      'icon-kbd-unicode_hourglass_1': '/icons/kbd/Unicode-Hourglass-1.svg',
+      'icon-kbd-unicode_hourglass_2': '/icons/kbd/Unicode-Hourglass-2.svg',
+      'icon-kbd-unicode_insert_1': '/icons/kbd/Unicode-Insert-1.svg',
+      'icon-kbd-unicode_insert_2': '/icons/kbd/Unicode-Insert-2.svg',
+      'icon-kbd-unicode_lock_closed_1': '/icons/kbd/Unicode-Lock-Closed-1.svg',
+      'icon-kbd-unicode_lock_closed_2': '/icons/kbd/Unicode-Lock-Closed-2.svg',
+      'icon-kbd-unicode_lock_open_1': '/icons/kbd/Unicode-Lock-Open-1.svg',
+      'icon-kbd-unicode_lock_open_2': '/icons/kbd/Unicode-Lock-Open-2.svg',
+      'icon-kbd-unicode_option_1': '/icons/kbd/Unicode-Option-1.svg',
+      'icon-kbd-unicode_option_2': '/icons/kbd/Unicode-Option-2.svg',
+      'icon-kbd-unicode_page_down_1': '/icons/kbd/Unicode-Page-Down-1.svg',
+      'icon-kbd-unicode_page_down_2': '/icons/kbd/Unicode-Page-Down-2.svg',
+      'icon-kbd-unicode_page_down_3': '/icons/kbd/Unicode-Page-Down-3.svg',
+      'icon-kbd-unicode_page_up_1': '/icons/kbd/Unicode-Page-Up-1.svg',
+      'icon-kbd-unicode_page_up_2': '/icons/kbd/Unicode-Page-Up-2.svg',
+      'icon-kbd-unicode_page_up_3': '/icons/kbd/Unicode-Page-Up-3.svg',
+      'icon-kbd-unicode_pause_1': '/icons/kbd/Unicode-Pause-1.svg',
+      'icon-kbd-unicode_pause_2': '/icons/kbd/Unicode-Pause-2.svg',
+      'icon-kbd-unicode_printscreen_1': '/icons/kbd/Unicode-PrintScreen-1.svg',
+      'icon-kbd-unicode_printscreen_2': '/icons/kbd/Unicode-PrintScreen-2.svg',
+      'icon-kbd-unicode_screen_bright': '/icons/kbd/Unicode-Screen-Bright.svg',
+      'icon-kbd-unicode_screen_dim': '/icons/kbd/Unicode-Screen-Dim.svg',
+      'icon-kbd-unicode_scroll_1': '/icons/kbd/Unicode-Scroll-1.svg',
+      'icon-kbd-unicode_scroll_2': '/icons/kbd/Unicode-Scroll-2.svg',
+      'icon-kbd-unicode_stopwatch': '/icons/kbd/Unicode-Stopwatch.svg',
+      'icon-kbd-batman': '/icons/kbd/batman.svg',
+      'icon-kbd-community_awesome_invert': '/icons/kbd/community-awesome-invert.svg',
+      'icon-kbd-community_awesome': '/icons/kbd/community-awesome.svg',
+      'icon-kbd-community_hapster': '/icons/kbd/community-hapster.svg',
+      'icon-kbd-copyleft': '/icons/kbd/copyleft.svg',
+      'icon-kbd-logo_amiga': '/icons/kbd/logo-amiga.svg',
+      'icon-kbd-logo_android': '/icons/kbd/logo-android.svg',
+      'icon-kbd-logo_apple_outline': '/icons/kbd/logo-apple-outline.svg',
+      'icon-kbd-logo_apple': '/icons/kbd/logo-apple.svg',
+      'icon-kbd-logo_atari': '/icons/kbd/logo-atari.svg',
+      'icon-kbd-logo_bsd_freebsd': '/icons/kbd/logo-bsd-freebsd.svg',
+      'icon-kbd-logo_commodore': '/icons/kbd/logo-commodore.svg',
+      'icon-kbd-logo_gnu': '/icons/kbd/logo-gnu.svg',
+      'icon-kbd-logo_linux_archlinux': '/icons/kbd/logo-linux-archlinux.svg',
+      'icon-kbd-logo_linux_centos': '/icons/kbd/logo-linux-centos.svg',
+      'icon-kbd-logo_linux_debian': '/icons/kbd/logo-linux-debian.svg',
+      'icon-kbd-logo_linux_edubuntu': '/icons/kbd/logo-linux-edubuntu.svg',
+      'icon-kbd-logo_linux_fedora': '/icons/kbd/logo-linux-fedora.svg',
+      'icon-kbd-logo_linux_gentoo': '/icons/kbd/logo-linux-gentoo.svg',
+      'icon-kbd-logo_linux_knoppix': '/icons/kbd/logo-linux-knoppix.svg',
+      'icon-kbd-logo_linux_opensuse': '/icons/kbd/logo-linux-opensuse.svg',
+      'icon-kbd-logo_linux_redhat': '/icons/kbd/logo-linux-redhat.svg',
+      'icon-kbd-logo_linux_tux_ibm_invert': '/icons/kbd/logo-linux-tux-ibm-invert.svg',
+      'icon-kbd-logo_linux_tux_ibm': '/icons/kbd/logo-linux-tux-ibm.svg',
+      'icon-kbd-logo_linux_tux': '/icons/kbd/logo-linux-tux.svg',
+      'icon-kbd-logo_ubuntu_cof_circle': '/icons/kbd/logo-ubuntu_cof-circle.svg',
+      'icon-kbd-logo_ubuntu_cof': '/icons/kbd/logo-ubuntu_cof.svg',
+      'icon-kbd-logo_vim': '/icons/kbd/logo-vim.svg',
+      'icon-kbd-logo_windows_7': '/icons/kbd/logo-windows-7.svg',
+      'icon-kbd-logo_windows_8': '/icons/kbd/logo-windows-8.svg',
+      'icon-kbd-logo_winlin_cygwin': '/icons/kbd/logo-winlin-cygwin.svg',
+      'icon-kbd-unie600_kbd_custom': '/icons/kbd/uniE600_kbd-custom.svg',
+      'icon-kbd-unie601_kbd_custom': '/icons/kbd/uniE601_kbd-custom.svg',
+      'icon-kbd-unie602_kbd_custom': '/icons/kbd/uniE602_kbd-custom.svg',
+      'icon-kbd-unie603_kbd_custom': '/icons/kbd/uniE603_kbd-custom.svg',
+      'icon-kbd-unie604_kbd_custom': '/icons/kbd/uniE604_kbd-custom.svg',
+      'icon-kbd-unie605_kbd_custom': '/icons/kbd/uniE605_kbd-custom.svg',
+      'icon-kbd-unie606_kbd_custom': '/icons/kbd/uniE606_kbd-custom.svg',
+      'icon-kbd-unie607_kbd_custom': '/icons/kbd/uniE607_kbd-custom.svg',
+      'icon-kbd-unie608_kbd_custom': '/icons/kbd/uniE608_kbd-custom.svg',
+      'icon-kbd-unie609_kbd_custom': '/icons/kbd/uniE609_kbd-custom.svg',
+      'icon-kbd-unie60a_kbd_custom': '/icons/kbd/uniE60A_kbd-custom.svg',
+      'icon-kbd-unie60b_kbd_custom': '/icons/kbd/uniE60B_kbd-custom.svg',
+      'icon-kbd-unie60c_kbd_custom': '/icons/kbd/uniE60C_kbd-custom.svg',
+      'icon-kbd-unie60d_kbd_custom': '/icons/kbd/uniE60D_kbd-custom.svg',
+      'icon-kbd-unie60e_kbd_custom': '/icons/kbd/uniE60E_kbd-custom.svg',
+      'icon-kbd-unie60f_kbd_custom': '/icons/kbd/uniE60F_kbd-custom.svg',
+      'icon-kbd-unie610_kbd_custom': '/icons/kbd/uniE610_kbd-custom.svg',
+      'icon-kbd-unie611_kbd_custom': '/icons/kbd/uniE611_kbd-custom.svg',
+      'icon-kbd-unie612_kbd_custom': '/icons/kbd/uniE612_kbd-custom.svg',
+      'icon-kbd-unie613_kbd_custom': '/icons/kbd/uniE613_kbd-custom.svg',
+      'icon-kbd-unie614_kbd_custom': '/icons/kbd/uniE614_kbd-custom.svg',
+      'icon-kbd-unie615_kbd_custom': '/icons/kbd/uniE615_kbd-custom.svg',
+      'icon-kbd-unie616_kbd_custom': '/icons/kbd/uniE616_kbd-custom.svg',
+      'icon-kbd-unie617_kbd_custom': '/icons/kbd/uniE617_kbd-custom.svg',
+      'icon-kbd-unie618_kbd_custom': '/icons/kbd/uniE618_kbd-custom.svg',
+      'icon-kbd-unie619_kbd_custom': '/icons/kbd/uniE619_kbd-custom.svg',
+      'icon-kbd-unie700_kbd_custom': '/icons/kbd/uniE700_kbd-custom.svg',
+      'icon-kbd-unie701_kbd_custom': '/icons/kbd/uniE701_kbd-custom.svg',
+      'icon-kbd-unie702_kbd_custom': '/icons/kbd/uniE702_kbd-custom.svg',
+      'icon-kbd-unie703_kbd_custom': '/icons/kbd/uniE703_kbd-custom.svg',
+      'icon-kbd-unie704_kbd_custom': '/icons/kbd/uniE704_kbd-custom.svg',
+      'icon-kbd-unie800_kbd_custom': '/icons/kbd/uniE800_kbd-custom.svg',
+      'icon-kbd-unie801_kbd_custom': '/icons/kbd/uniE801_kbd-custom.svg',
+      'icon-kbd-unie802_kbd_custom': '/icons/kbd/uniE802_kbd-custom.svg',
+      'icon-kbd-unie803_kbd_custom': '/icons/kbd/uniE803_kbd-custom.svg',
+      'icon-kbd-unie804_kbd_custom': '/icons/kbd/uniE804_kbd-custom.svg',
+      'icon-kbd-unie805_kbd_custom': '/icons/kbd/uniE805_kbd-custom.svg',
+      'icon-kbd-unie806_kbd_custom': '/icons/kbd/uniE806_kbd-custom.svg',
+      'icon-kbd-unie807_kbd_custom': '/icons/kbd/uniE807_kbd-custom.svg',
+      'icon-kbd-unie808_kbd_custom': '/icons/kbd/uniE808_kbd-custom.svg',
+      'icon-kbd-unie809_kbd_custom': '/icons/kbd/uniE809_kbd-custom.svg',
+      'icon-kbd-unie80a_kbd_custom': '/icons/kbd/uniE80A_kbd-custom.svg',
+      'icon-kbd-unie80b_kbd_custom': '/icons/kbd/uniE80B_kbd-custom.svg',
+      'icon-kbd-unie80c_kbd_custom': '/icons/kbd/uniE80C_kbd-custom.svg',
+      'icon-kbd-unie80d_kbd_custom': '/icons/kbd/uniE80D_kbd-custom.svg',
+      'icon-kbd-unie80e_kbd_custom': '/icons/kbd/uniE80E_kbd-custom.svg',
+      'icon-kbd-unie80f_kbd_custom': '/icons/kbd/uniE80F_kbd-custom.svg',
+      'icon-kbd-unie810_kbd_custom': '/icons/kbd/uniE810_kbd-custom.svg',
+      'icon-kbd-unie811_kbd_custom': '/icons/kbd/uniE811_kbd-custom.svg',
+      'icon-kbd-unie812_kbd_custom': '/icons/kbd/uniE812_kbd-custom.svg',
+      'icon-kbd-unie813_kbd_custom': '/icons/kbd/uniE813_kbd-custom.svg',
+      'icon-kbd-unie814_kbd_custom': '/icons/kbd/uniE814_kbd-custom.svg',
+      'icon-kbd-unie815_kbd_custom': '/icons/kbd/uniE815_kbd-custom.svg',
+      'icon-kbd-unie816_kbd_custom': '/icons/kbd/uniE816_kbd-custom.svg',
+      'icon-kbd-unie817_kbd_custom': '/icons/kbd/uniE817_kbd-custom.svg',
+      'icon-kbd-unie818_kbd_custom': '/icons/kbd/uniE818_kbd-custom.svg',
+      'icon-kbd-unie819_kbd_custom': '/icons/kbd/uniE819_kbd-custom.svg',
+      'icon-kbd-unie81a_kbd_custom': '/icons/kbd/uniE81A_kbd-custom.svg',
+      'icon-kbd-unie81b_kbd_custom': '/icons/kbd/uniE81B_kbd-custom.svg',
+      'icon-kbd-unie81c_kbd_custom': '/icons/kbd/uniE81C_kbd-custom.svg',
+      'icon-kbd-unie81d_kbd_custom': '/icons/kbd/uniE81D_kbd-custom.svg',
+      'icon-kbd-unie81e_kbd_custom': '/icons/kbd/uniE81E_kbd-custom.svg',
+      'icon-kbd-unie81f_kbd_custom': '/icons/kbd/uniE81F_kbd-custom.svg',
+      'icon-kbd-unie820_kbd_custom': '/icons/kbd/uniE820_kbd-custom.svg',
+      'icon-kbd-unie821_kbd_custom': '/icons/kbd/uniE821_kbd-custom.svg',
+      'icon-kbd-unie822_kbd_custom': '/icons/kbd/uniE822_kbd-custom.svg',
+      'icon-kbd-unie823_kbd_custom': '/icons/kbd/uniE823_kbd-custom.svg',
+      'icon-kbd-unie824_kbd_custom': '/icons/kbd/uniE824_kbd-custom.svg',
+      'icon-kbd-unie825_kbd_custom': '/icons/kbd/uniE825_kbd-custom.svg',
+      'icon-kbd-unie826_kbd_custom': '/icons/kbd/uniE826_kbd-custom.svg',
+      'icon-kbd-unie827_kbd_custom': '/icons/kbd/uniE827_kbd-custom.svg',
+      'icon-kbd-unie828_kbd_custom': '/icons/kbd/uniE828_kbd-custom.svg',
+      'icon-kbd-unie829_kbd_custom': '/icons/kbd/uniE829_kbd-custom.svg',
+      'icon-kbd-unie82a_kbd_custom': '/icons/kbd/uniE82A_kbd-custom.svg',
+      'icon-kbd-unie82b_kbd_custom': '/icons/kbd/uniE82B_kbd-custom.svg',
+      'icon-kbd-unie82c_kbd_custom': '/icons/kbd/uniE82C_kbd-custom.svg',
+      'icon-kbd-unie82d_kbd_custom': '/icons/kbd/uniE82D_kbd-custom.svg',
+      'icon-kbd-unie82e_kbd_custom': '/icons/kbd/uniE82E_kbd-custom.svg',
+      'icon-kbd-unie82f_kbd_custom': '/icons/kbd/uniE82F_kbd-custom.svg',
+      'icon-kbd-unie830_kbd_custom': '/icons/kbd/uniE830_kbd-custom.svg',
+      'icon-kbd-unie831_kbd_custom': '/icons/kbd/uniE831_kbd-custom.svg',
+      'icon-kbd-unie832_kbd_custom': '/icons/kbd/uniE832_kbd-custom.svg',
+      'icon-kbd-unie833_kbd_custom': '/icons/kbd/uniE833_kbd-custom.svg',
+      'icon-kbd-unie834_kbd_custom': '/icons/kbd/uniE834_kbd-custom.svg',
+      'icon-kbd-unie835_kbd_custom': '/icons/kbd/uniE835_kbd-custom.svg',
+      'icon-kbd-unie836_kbd_custom': '/icons/kbd/uniE836_kbd-custom.svg',
+      'icon-kbd-unie837_kbd_custom': '/icons/kbd/uniE837_kbd-custom.svg',
+      'icon-kbd-unie838_kbd_custom': '/icons/kbd/uniE838_kbd-custom.svg',
+      'icon-kbd-unie839_kbd_custom': '/icons/kbd/uniE839_kbd-custom.svg',
+      'icon-kbd-unie83a_kbd_custom': '/icons/kbd/uniE83A_kbd-custom.svg',
+      'icon-kbd-unie83b_kbd_custom': '/icons/kbd/uniE83B_kbd-custom.svg',
+      'icon-kbd-unie83c_kbd_custom': '/icons/kbd/uniE83C_kbd-custom.svg',
+      'icon-kbd-unie83d_kbd_custom': '/icons/kbd/uniE83D_kbd-custom.svg',
+      'icon-kbd-unie83e_kbd_custom': '/icons/kbd/uniE83E_kbd-custom.svg',
+      'icon-kbd-unie83f_kbd_custom': '/icons/kbd/uniE83F_kbd-custom.svg',
+      'icon-kbd-unie840_kbd_custom': '/icons/kbd/uniE840_kbd-custom.svg',
+      'icon-kbd-unie841_kbd_custom': '/icons/kbd/uniE841_kbd-custom.svg',
+      'icon-kbd-unie842_kbd_custom': '/icons/kbd/uniE842_kbd-custom.svg',
+      'icon-kbd-unie843_kbd_custom': '/icons/kbd/uniE843_kbd-custom.svg',
+      'icon-kbd-unie844_kbd_custom': '/icons/kbd/uniE844_kbd-custom.svg',
+      'icon-kbd-unie845_kbd_custom': '/icons/kbd/uniE845_kbd-custom.svg',
+      'icon-kbd-unie846_kbd_custom': '/icons/kbd/uniE846_kbd-custom.svg',
+      'icon-kbd-unie847_kbd_custom': '/icons/kbd/uniE847_kbd-custom.svg',
+      'icon-kbd-unie848_kbd_custom': '/icons/kbd/uniE848_kbd-custom.svg',
+      'icon-kbd-unie849_kbd_custom': '/icons/kbd/uniE849_kbd-custom.svg',
+      'icon-kbd-unie84a_kbd_custom': '/icons/kbd/uniE84A_kbd-custom.svg',
+      'icon-kbd-unie84b_kbd_custom': '/icons/kbd/uniE84B_kbd-custom.svg',
+      'icon-kbd-unie84c_kbd_custom': '/icons/kbd/uniE84C_kbd-custom.svg',
+      'icon-kbd-unie84d_kbd_custom': '/icons/kbd/uniE84D_kbd-custom.svg',
+      'icon-kbd-unie84e_kbd_custom': '/icons/kbd/uniE84E_kbd-custom.svg',
+      'icon-kbd-unie84f_kbd_custom': '/icons/kbd/uniE84F_kbd-custom.svg',
+      'icon-kbd-unie850_kbd_custom': '/icons/kbd/uniE850_kbd-custom.svg',
+      'icon-kbd-unie851_kbd_custom': '/icons/kbd/uniE851_kbd-custom.svg',
+      'icon-kbd-unie852_kbd_custom': '/icons/kbd/uniE852_kbd-custom.svg',
+      'icon-kbd-unie853_kbd_custom': '/icons/kbd/uniE853_kbd-custom.svg',
+      'icon-kbd-unie854_kbd_custom': '/icons/kbd/uniE854_kbd-custom.svg',
+      'icon-kbd-unie855_kbd_custom': '/icons/kbd/uniE855_kbd-custom.svg',
+      'icon-kbd-unie856_kbd_custom': '/icons/kbd/uniE856_kbd-custom.svg',
+      'icon-kbd-unie857_kbd_custom': '/icons/kbd/uniE857_kbd-custom.svg',
+      'icon-kbd-unie858_kbd_custom': '/icons/kbd/uniE858_kbd-custom.svg',
+      'icon-kbd-unie859_kbd_custom': '/icons/kbd/uniE859_kbd-custom.svg',
+      'icon-kbd-unie85a_kbd_custom': '/icons/kbd/uniE85A_kbd-custom.svg',
+      'icon-kbd-unie85b_kbd_custom': '/icons/kbd/uniE85B_kbd-custom.svg',
+      'icon-kbd-unie85c_kbd_custom': '/icons/kbd/uniE85C_kbd-custom.svg',
+      'icon-kbd-unie85d_kbd_custom': '/icons/kbd/uniE85D_kbd-custom.svg',
+      'icon-kbd-unie85e_kbd_custom': '/icons/kbd/uniE85E_kbd-custom.svg',
+      'icon-kbd-unie85f_kbd_custom': '/icons/kbd/uniE85F_kbd-custom.svg',
+      'icon-kbd-unie860_kbd_custom': '/icons/kbd/uniE860_kbd-custom.svg',
+      'icon-kbd-unie861_kbd_custom': '/icons/kbd/uniE861_kbd-custom.svg',
+      'icon-kbd-unie862_kbd_custom': '/icons/kbd/uniE862_kbd-custom.svg',
+      'icon-kbd-unie863_kbd_custom': '/icons/kbd/uniE863_kbd-custom.svg',
+      'icon-kbd-unie864_kbd_custom': '/icons/kbd/uniE864_kbd-custom.svg',
+      'icon-kbd-unie865_kbd_custom': '/icons/kbd/uniE865_kbd-custom.svg',
+      'icon-kbd-unie866_kbd_custom': '/icons/kbd/uniE866_kbd-custom.svg',
+      'icon-kbd-unie867_kbd_custom': '/icons/kbd/uniE867_kbd-custom.svg',
+      'icon-kbd-unie868_kbd_custom': '/icons/kbd/uniE868_kbd-custom.svg',
+      'icon-kbd-unie869_kbd_custom': '/icons/kbd/uniE869_kbd-custom.svg',
+      'icon-kbd-unie86a_kbd_custom': '/icons/kbd/uniE86A_kbd-custom.svg',
+      'icon-kbd-unie86b_kbd_custom': '/icons/kbd/uniE86B_kbd-custom.svg',
+      'icon-kbd-unie86c_kbd_custom': '/icons/kbd/uniE86C_kbd-custom.svg',
+      'icon-kbd-unie86d_kbd_custom': '/icons/kbd/uniE86D_kbd-custom.svg',
+      'icon-kbd-unie86e_kbd_custom': '/icons/kbd/uniE86E_kbd-custom.svg',
+      'icon-kbd-unie86f_kbd_custom': '/icons/kbd/uniE86F_kbd-custom.svg',
+      'icon-kbd-unie870_kbd_custom': '/icons/kbd/uniE870_kbd-custom.svg',
+      'icon-kbd-unie8a0_kbd_custom': '/icons/kbd/uniE8A0_kbd-custom.svg',
+      'icon-kbd-unie8a1_kbd_custom': '/icons/kbd/uniE8A1_kbd-custom.svg',
+      'icon-kbd-unie8a2_kbd_custom': '/icons/kbd/uniE8A2_kbd-custom.svg',
+      'icon-kbd-unie8a3_kbd_custom': '/icons/kbd/uniE8A3_kbd-custom.svg',
+      'icon-kbd-unie8a4_kbd_custom': '/icons/kbd/uniE8A4_kbd-custom.svg',
+      'icon-kbd-unie8a5_kbd_custom': '/icons/kbd/uniE8A5_kbd-custom.svg',
+      'icon-kbd-unie8a6_kbd_custom': '/icons/kbd/uniE8A6_kbd-custom.svg'
     };
     
     const path = svgPaths[iconName];
@@ -1110,10 +1413,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           parsedLabel.forEach(part => {
             if (part.type === 'icon') {
               // Check if this is a custom SVG icon
-              if (part.className === 'custom-icon icon-40s-logo') {
-                totalWidth += fontSize * 1.2; // SVG icons are sized based on font size
+              if (part.className?.includes('custom-icon')) {
+                totalWidth += fontSize; // SVG icons are sized same as font size
               } else {
-                // Use font manager for consistent font handling
+                // Trashcons font icons
                 ctx.font = fontManager.getRenderFont('trashcons', fontSize);
                 totalWidth += ctx.measureText(part.content).width;
               }
@@ -1143,38 +1446,80 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           return;
         }
         
-        parsedLabel.forEach(part => {
+        parsedLabel.forEach((part, partIndex) => {
           if (part.type === 'icon') {
             // Check if this is a custom SVG icon
-            if (part.className === 'custom-icon icon-40s-logo') {
-              // Calculate icon size based on font size
-              const iconSize = Math.round(fontSize * 1.2);
-              
+            if (part.className?.includes('custom-icon') && part.iconName) {
+              // Calculate icon size - use fontSize directly to match text sizing
+              const iconSize = fontSize;
+
               // Get colored version of the icon
-              const coloredIcon = getColoredIcon('icon-40s-logo', textColor, iconSize);
-              
+              const coloredIcon = getColoredIcon(part.iconName, textColor, iconSize);
+
               if (coloredIcon) {
                 // Calculate Y position based on text baseline
+                // Note: kbd SVG files have viewBox="0 -200 1000 1000" which includes
+                // significant top/bottom padding. The actual icon content is centered
+                // in the viewBox, so we need aggressive upward shifts.
                 let iconY = currentY;
                 if (finalPosition.baseline === 'middle') {
+                  // Middle baseline: center of text is at currentY
+                  // Icons are already centered in their viewBox, so just center vertically
                   iconY = currentY - iconSize / 2;
                 } else if (finalPosition.baseline === 'alphabetic') {
-                  iconY = currentY - iconSize * 0.8;
+                  // Alphabetic baseline: bottom of text is at currentY
+                  // Shift up significantly due to viewBox padding
+                  iconY = currentY - iconSize * 0.7;
                 } else if (finalPosition.baseline === 'hanging') {
-                  iconY = currentY;
+                  // Hanging baseline: top of text is at currentY
+                  // SVG viewBox has significant top padding (~20% of viewBox)
+                  // Shift up by ~35% of icon size to align with actual top
+                  iconY = currentY - iconSize * 0.35;
                 }
-                
+
+                // Calculate X position with column alignment
+                // Only normalize position if this is the first part (for column alignment)
+                // If there's text before the icon, let it flow naturally after the text
+                let iconX = currentX;
+                if (partIndex === 0) {
+                  // First part - apply column normalization for alignment
+                  if (finalPosition.align === 'start') {
+                    // Left column: normalize all to x=0.10 for vertical alignment
+                    const targetX = 0.10;
+                    const normalizedX = innerX + (innerWidth * targetX);
+                    iconX = normalizedX - iconSize * 0.08; // Apply left padding adjustment
+                  } else if (finalPosition.align === 'end') {
+                    // Right column: normalize all to x=0.90 for vertical alignment
+                    const targetX = 0.90;
+                    const normalizedX = innerX + (innerWidth * targetX);
+                    iconX = normalizedX + iconSize * 0.18; // Apply right padding adjustment
+                  } else {
+                    // Center column: use currentX as calculated
+                    iconX = currentX;
+                  }
+                } else {
+                  // Subsequent part - position after previous content
+                  // Apply only the SVG padding adjustment, not column normalization
+                  if (finalPosition.align === 'start') {
+                    iconX = currentX - iconSize * 0.08;
+                  } else if (finalPosition.align === 'end') {
+                    iconX = currentX + iconSize * 0.18;
+                  } else {
+                    iconX = currentX;
+                  }
+                }
+
                 // Draw the colored icon
-                ctx.drawImage(coloredIcon, currentX, iconY);
+                ctx.drawImage(coloredIcon, iconX, iconY);
                 currentX += iconSize;
               }
             } else {
-              // Draw regular font icon using trashcons
+              // Draw Trashcons font icon
               ctx.font = `${fontSize}px trashcons`;
               ctx.fillStyle = textColor;
               ctx.textAlign = 'left';
               ctx.textBaseline = finalPosition.baseline as CanvasTextBaseline;
-              
+
               // Render the icon character
               if (part.content && part.content.length > 0) {
                 ctx.fillText(part.content, currentX, currentY);
