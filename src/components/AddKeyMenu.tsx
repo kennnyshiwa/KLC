@@ -47,6 +47,8 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
     { name: 'Little Ass Enter', width: 1.5, height: 1, x2: .75, y2: -1, width2: .75, height2: 2 },
     { name: 'Stepped Caps', width: 1.75, height: 1, stepped: true },
     { name: 'Stepped Shift', width: 2.25, height: 1, stepped: true },
+    { name: '1.25 TabLock R2', width: 1.25, height: 2, x2: 0, y2: 1, width2: 1.5, height2: 1},
+    { name: '1.5 TabLock R2', width: 1.5, height: 2, x2: 0, y2: 1, width2: 1.75, height2: 1}
   ],
   'Indicators': [
     { name: '3mm LED', width: 0.25, height: 0.25, isLED: true },
