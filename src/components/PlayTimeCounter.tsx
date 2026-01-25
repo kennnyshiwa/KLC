@@ -7,6 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL ||
 
 const SYNC_INTERVAL = 60; // Sync every 60 seconds
 const LEADER_KEY = 'klc_playtime_leader';
+const SHARED_TIME_KEY = 'klc_playtime_shared';
 const LEADER_HEARTBEAT_INTERVAL = 1000; // 1 second
 const LEADER_STALE_THRESHOLD = 3000; // 3 seconds - leader is stale if no heartbeat
 
@@ -65,10 +66,33 @@ const isLeaderStale = (info: LeaderInfo | null): boolean => {
   return Date.now() - info.timestamp > LEADER_STALE_THRESHOLD;
 };
 
+interface SharedTimeInfo {
+  totalTime: number;
+  timestamp: number;
+}
+
+const getSharedTime = (): SharedTimeInfo | null => {
+  try {
+    const data = localStorage.getItem(SHARED_TIME_KEY);
+    if (data) {
+      return JSON.parse(data);
+    }
+  } catch {
+    localStorage.removeItem(SHARED_TIME_KEY);
+  }
+  return null;
+};
+
+const setSharedTime = (totalTime: number): void => {
+  const info: SharedTimeInfo = { totalTime, timestamp: Date.now() };
+  localStorage.setItem(SHARED_TIME_KEY, JSON.stringify(info));
+};
+
 const PlayTimeCounter: React.FC = () => {
   const { user } = useAuth();
   const [serverTime, setServerTime] = useState<number>(0);
   const [sessionTime, setSessionTime] = useState<number>(0);
+  const [displayTime, setDisplayTime] = useState<number>(0);
   const [isVisible, setIsVisible] = useState<boolean>(!document.hidden);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [isLeader, setIsLeader] = useState<boolean>(false);
@@ -77,13 +101,18 @@ const PlayTimeCounter: React.FC = () => {
   const timerRef = useRef<number | undefined>(undefined);
   const leaderCheckRef = useRef<number | undefined>(undefined);
   const sessionTimeRef = useRef<number>(0);
+  const isLeaderRef = useRef<boolean>(false);
 
-  // Keep sessionTimeRef in sync with sessionTime state
+  // Keep refs in sync with state
   useEffect(() => {
     sessionTimeRef.current = sessionTime;
   }, [sessionTime]);
 
-  // Total time is server time + current session time
+  useEffect(() => {
+    isLeaderRef.current = isLeader;
+  }, [isLeader]);
+
+  // Total time is server time + current session time (used by leader)
   const totalTime = serverTime + sessionTime;
 
   // Try to become or maintain leader status
@@ -93,19 +122,42 @@ const PlayTimeCounter: React.FC = () => {
     if (currentLeader?.tabId === TAB_ID) {
       // We are already leader, update heartbeat
       setLeaderInfo(TAB_ID);
-      setIsLeader(true);
+      if (!isLeaderRef.current) {
+        setIsLeader(true);
+      }
       return true;
     }
 
     if (isLeaderStale(currentLeader)) {
-      // No leader or stale leader, we become leader
+      // No leader or stale leader, try to become leader
+      // When becoming leader, sync our time from shared storage first
+      const sharedTime = getSharedTime();
+      if (sharedTime && !isLeaderRef.current) {
+        // Adopt the shared time as our starting point
+        setServerTime(sharedTime.totalTime);
+        setSessionTime(0);
+        lastSyncTime.current = 0;
+      }
       setLeaderInfo(TAB_ID);
-      setIsLeader(true);
-      return true;
+
+      // Verify we actually got leadership (another tab might have claimed it)
+      const verifyLeader = getLeaderInfo();
+      if (verifyLeader?.tabId === TAB_ID) {
+        setIsLeader(true);
+        return true;
+      }
+      // Lost the race, fall through to non-leader handling
     }
 
-    // Someone else is leader
-    setIsLeader(false);
+    // Someone else is leader - read the shared time for display
+    if (isLeaderRef.current) {
+      // We lost leadership
+      setIsLeader(false);
+    }
+    const sharedTime = getSharedTime();
+    if (sharedTime) {
+      setDisplayTime(sharedTime.totalTime);
+    }
     return false;
   }, []);
 
@@ -132,7 +184,10 @@ const PlayTimeCounter: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setServerTime(data.totalPlayTime || 0);
+        const fetchedTime = data.totalPlayTime || 0;
+        setServerTime(fetchedTime);
+        // Also set displayTime as fallback until leader election settles
+        setDisplayTime(prev => prev === 0 ? fetchedTime : prev);
         setIsInitialized(true);
       }
     } catch (error) {
@@ -195,9 +250,15 @@ const PlayTimeCounter: React.FC = () => {
   useEffect(() => {
     if (user) {
       fetchPlayTime();
+      // Also initialize display time from shared storage if available
+      const sharedTime = getSharedTime();
+      if (sharedTime) {
+        setDisplayTime(sharedTime.totalTime);
+      }
     } else {
       setServerTime(0);
       setSessionTime(0);
+      setDisplayTime(0);
       setIsInitialized(false);
       relinquishLeadership();
     }
@@ -210,15 +271,20 @@ const PlayTimeCounter: React.FC = () => {
       return;
     }
 
-    // Initial leader check
-    tryBecomeLeader();
-
-    // Periodic leader check/heartbeat
-    leaderCheckRef.current = window.setInterval(() => {
+    // Add small random delay before initial leader election to prevent race conditions
+    // when multiple tabs refresh simultaneously
+    const initialDelay = Math.random() * 100; // 0-100ms random delay
+    const initialTimeout = window.setTimeout(() => {
       tryBecomeLeader();
-    }, LEADER_HEARTBEAT_INTERVAL);
+
+      // Periodic leader check/heartbeat
+      leaderCheckRef.current = window.setInterval(() => {
+        tryBecomeLeader();
+      }, LEADER_HEARTBEAT_INTERVAL);
+    }, initialDelay);
 
     return () => {
+      clearTimeout(initialTimeout);
       if (leaderCheckRef.current) {
         clearInterval(leaderCheckRef.current);
         leaderCheckRef.current = undefined;
@@ -234,6 +300,12 @@ const PlayTimeCounter: React.FC = () => {
         const newLeader = getLeaderInfo();
         if (newLeader?.tabId !== TAB_ID) {
           setIsLeader(false);
+        }
+      } else if (e.key === SHARED_TIME_KEY && !isLeaderRef.current) {
+        // Non-leader tabs update display from shared time
+        const sharedTime = getSharedTime();
+        if (sharedTime) {
+          setDisplayTime(sharedTime.totalTime);
         }
       }
     };
@@ -281,10 +353,17 @@ const PlayTimeCounter: React.FC = () => {
       return;
     }
 
+    // Immediately broadcast current time when becoming leader
+    setSharedTime(serverTime + sessionTime);
+
     timerRef.current = window.setInterval(() => {
       setSessionTime(prev => {
         const newTime = prev + 1;
+        const newTotalTime = serverTime + newTime;
         lastSyncTime.current += 1;
+
+        // Broadcast the current time to other tabs
+        setSharedTime(newTotalTime);
 
         // Sync to server every SYNC_INTERVAL seconds
         if (lastSyncTime.current >= SYNC_INTERVAL) {
@@ -301,7 +380,7 @@ const PlayTimeCounter: React.FC = () => {
         timerRef.current = undefined;
       }
     };
-  }, [user, isVisible, isInitialized, isLeader, syncToServer]);
+  }, [user, isVisible, isInitialized, isLeader, serverTime, syncToServer]);
 
   // Periodically refetch server time for non-leader tabs to stay updated
   useEffect(() => {
@@ -320,13 +399,16 @@ const PlayTimeCounter: React.FC = () => {
     return null;
   }
 
+  // Leader uses computed totalTime, non-leaders use shared displayTime
+  const shownTime = isLeader ? totalTime : displayTime;
+
   return (
     <div
       className="playtime-counter"
-      title={`Total time spent in KLC: ${formatTimeVerbose(totalTime)}${isLeader ? ' (active)' : ' (syncing)'}`}
+      title={`Total time spent in KLC: ${formatTimeVerbose(shownTime)}${isLeader ? ' (active)' : ' (syncing)'}`}
     >
       <Clock size={16} />
-      <span className="playtime-counter-number">{formatTime(totalTime)}</span>
+      <span className="playtime-counter-number">{formatTime(shownTime)}</span>
     </div>
   );
 };
