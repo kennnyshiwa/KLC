@@ -220,7 +220,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
           // Create new labels array with matrix position
           const newLabels = new Array(12).fill('');
           newLabels[0] = `${rowIndex},${colIndex}`; // Matrix position in top-left
-          newLabels[3] = '0,0'; // Default layout option in bottom-left
+          // Note: We don't auto-assign layout options (labels[3]) to avoid overlap on wide keys
+          // Users can set these manually per-key if needed for alternative layouts
 
           updates.push({
             id: key.id,

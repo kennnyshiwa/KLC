@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
-import { Key, KeyProfile } from '../types';
-import { ChevronDown, ChevronRight, ChevronLeft, Type } from 'lucide-react';
+import { Key, KeyProfile, VialLayoutOption } from '../types';
+import { ChevronDown, ChevronRight, ChevronLeft, Type, Plus, X } from 'lucide-react';
 import { calculateNewPositionForRotationCenter } from '../utils/rotationUtils';
 import ColorPicker from './ColorPicker';
 import CharacterPicker from './CharacterPicker';
@@ -46,6 +46,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
   
   const [expandedSections, setExpandedSections] = useState({
     keyboard: true,
+    vialLabels: true,
     position: true,
     rotation: true,
     size: true,
@@ -545,6 +546,139 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
           </div>
         )}
       </div>
+
+      {/* Vial Labels - Only show when Vial mode is enabled */}
+      {editorSettings.vialMode && (
+        <div className="property-section">
+          <div className="section-header" onClick={() => toggleSection('vialLabels')}>
+            {expandedSections.vialLabels ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            <span>Vial Layout Options</span>
+          </div>
+          {expandedSections.vialLabels && (
+            <div className="section-content">
+              <p className="section-hint" style={{ fontSize: '11px', opacity: 0.7, marginBottom: '8px' }}>
+                Define layout options for Vial export (e.g., Space: Split/Longbar)
+              </p>
+
+              {/* Existing options */}
+              {(keyboard?.meta?.vialLabels || []).map((option, optionIndex) => (
+                <div key={optionIndex} className="vial-option-group" style={{
+                  marginBottom: '12px',
+                  padding: '8px',
+                  backgroundColor: 'rgba(0,0,0,0.1)',
+                  borderRadius: '4px'
+                }}>
+                  <div className="property-row" style={{ marginBottom: '6px' }}>
+                    <label style={{ fontSize: '11px' }}>Option {optionIndex}</label>
+                    <div style={{ display: 'flex', gap: '4px', flex: 1 }}>
+                      <input
+                        type="text"
+                        value={option.name}
+                        onChange={(e) => {
+                          const newLabels = [...(keyboard?.meta?.vialLabels || [])];
+                          newLabels[optionIndex] = { ...newLabels[optionIndex], name: e.target.value };
+                          updateMetadata({ vialLabels: newLabels });
+                        }}
+                        placeholder="Option name"
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        className="btn btn-sm"
+                        onClick={() => {
+                          const newLabels = [...(keyboard?.meta?.vialLabels || [])];
+                          newLabels.splice(optionIndex, 1);
+                          updateMetadata({ vialLabels: newLabels });
+                          saveToHistory();
+                        }}
+                        title="Remove option"
+                        style={{
+                          padding: '4px 6px',
+                          minWidth: 'auto',
+                          backgroundColor: 'rgba(255, 100, 100, 0.2)',
+                          color: '#ff6b6b',
+                          border: '1px solid rgba(255, 100, 100, 0.3)'
+                        }}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Values for this option */}
+                  <div style={{ marginLeft: '12px' }}>
+                    <label style={{ fontSize: '10px', opacity: 0.7 }}>Values:</label>
+                    {option.values.map((value, valueIndex) => (
+                      <div key={valueIndex} className="property-row" style={{ marginBottom: '4px' }}>
+                        <div style={{ display: 'flex', gap: '4px', flex: 1 }}>
+                          <input
+                            type="text"
+                            value={value}
+                            onChange={(e) => {
+                              const newLabels = [...(keyboard?.meta?.vialLabels || [])];
+                              const newValues = [...newLabels[optionIndex].values];
+                              newValues[valueIndex] = e.target.value;
+                              newLabels[optionIndex] = { ...newLabels[optionIndex], values: newValues };
+                              updateMetadata({ vialLabels: newLabels });
+                            }}
+                            placeholder={`Value ${valueIndex}`}
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => {
+                              const newLabels = [...(keyboard?.meta?.vialLabels || [])];
+                              const newValues = [...newLabels[optionIndex].values];
+                              newValues.splice(valueIndex, 1);
+                              newLabels[optionIndex] = { ...newLabels[optionIndex], values: newValues };
+                              updateMetadata({ vialLabels: newLabels });
+                              saveToHistory();
+                            }}
+                            title="Remove value"
+                            style={{
+                              padding: '2px 4px',
+                              minWidth: 'auto',
+                              backgroundColor: 'rgba(255, 100, 100, 0.15)',
+                              color: '#ff6b6b',
+                              border: '1px solid rgba(255, 100, 100, 0.2)'
+                            }}
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      className="btn btn-sm"
+                      onClick={() => {
+                        const newLabels = [...(keyboard?.meta?.vialLabels || [])];
+                        const newValues = [...newLabels[optionIndex].values, ''];
+                        newLabels[optionIndex] = { ...newLabels[optionIndex], values: newValues };
+                        updateMetadata({ vialLabels: newLabels });
+                      }}
+                      style={{ marginTop: '4px', fontSize: '11px' }}
+                    >
+                      <Plus size={12} /> Add Value
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add new option button */}
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={() => {
+                  const newLabels = [...(keyboard?.meta?.vialLabels || [])];
+                  newLabels.push({ name: '', values: [''] });
+                  updateMetadata({ vialLabels: newLabels });
+                }}
+                style={{ width: '100%' }}
+              >
+                <Plus size={14} /> Add Layout Option
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {selectedKeysList.length === 0 ? (
         <div className="no-selection">

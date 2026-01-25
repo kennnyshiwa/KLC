@@ -86,16 +86,25 @@ export function exportToVial(keyboard: Keyboard): VialConfig {
     }
   });
 
-  // Build layout labels array
-  const labels: string[][] = [];
-  const sortedOptions = Array.from(layoutOptions.keys()).sort((a, b) => a - b);
-  sortedOptions.forEach(optionIndex => {
-    const values = Array.from(layoutOptions.get(optionIndex)!).sort((a, b) => a - b);
-    // Create labels like ["Option 0", "Value 0", "Value 1", ...]
-    const optionLabels = [`Option ${optionIndex}`];
-    values.forEach(v => optionLabels.push(`Value ${v}`));
-    labels.push(optionLabels);
-  });
+  // Build layout labels array from metadata if available, otherwise generate from key data
+  let labels: string[][] = [];
+
+  if (keyboard.meta?.vialLabels && keyboard.meta.vialLabels.length > 0) {
+    // Use user-defined labels from metadata
+    labels = keyboard.meta.vialLabels.map(option => {
+      return [option.name, ...option.values];
+    });
+  } else {
+    // Fall back to auto-generated labels from key data
+    const sortedOptions = Array.from(layoutOptions.keys()).sort((a, b) => a - b);
+    sortedOptions.forEach(optionIndex => {
+      const values = Array.from(layoutOptions.get(optionIndex)!).sort((a, b) => a - b);
+      // Create labels like ["Option 0", "Value 0", "Value 1", ...]
+      const optionLabels = [`Option ${optionIndex}`];
+      values.forEach(v => optionLabels.push(`Value ${v}`));
+      labels.push(optionLabels);
+    });
+  }
 
   // Sort keys by Y then X for proper row grouping
   const sortedKeys = [...keyboard.keys].sort((a, b) => {

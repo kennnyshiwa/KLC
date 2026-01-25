@@ -41,6 +41,11 @@ export interface Key {
   rowLabelShape?: 'convex' | 'concave'; // For row labels to indicate profile shape
 }
 
+export interface VialLayoutOption {
+  name: string;      // Option name, e.g., "Space", "Layout", "Mods"
+  values: string[];  // Possible values, e.g., ["Split", "Longbar"]
+}
+
 export interface KeyboardMetadata {
   name?: string;
   author?: string;
@@ -56,6 +61,7 @@ export interface KeyboardMetadata {
   plate?: boolean;
   pcb?: boolean;
   css?: string;
+  vialLabels?: VialLayoutOption[];  // Vial layout option labels
 }
 
 export interface Keyboard {
