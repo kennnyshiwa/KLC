@@ -7,6 +7,7 @@ import Toolbar from './components/Toolbar';
 import MenuBar from './components/MenuBar';
 import UserMenu from './components/UserMenu';
 import LayoutCounter from './components/LayoutCounter';
+import PlayTimeCounter from './components/PlayTimeCounter';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useImportedCSS } from './hooks/useImportedCSS';
 import { parseKLE } from './utils/kleParser';
@@ -71,6 +72,7 @@ function App() {
         </div>
         <div className="header-right">
           <LayoutCounter />
+          <PlayTimeCounter />
           <a 
             href="https://github.com/kennnyshiwa/KLE2.0" 
             target="_blank" 

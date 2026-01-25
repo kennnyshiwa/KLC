@@ -81,6 +81,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      // Dispatch event before logout so components can sync data while session is still valid
+      window.dispatchEvent(new CustomEvent('app:before-logout'));
+
       const response = await fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
@@ -88,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
         }
       });
-      
+
       if (response.ok) {
         setUser(null);
         // Optionally refresh the page to clear any cached data

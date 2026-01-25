@@ -23,6 +23,7 @@ model User {
   email         String?
   createdAt     DateTime    @default(now())
   lastLogin     DateTime    @default(now())
+  totalPlayTime Int         @default(0)
   layouts       Layout[]
 }
 

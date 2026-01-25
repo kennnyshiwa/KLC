@@ -116,6 +116,27 @@ body {
   font-size: 0.85rem;
 }
 
+.playtime-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.playtime-counter svg {
+  opacity: 0.8;
+}
+
+.playtime-counter-number {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .app-content {
   flex: 1;
   display: flex;
@@ -2219,6 +2240,10 @@ body {
 }
 
 .dark-mode .layout-counter {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .playtime-counter {
   background-color: rgba(255, 255, 255, 0.05);
 }
 

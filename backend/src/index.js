@@ -8,6 +8,7 @@ import { PrismaClient } from '../generated/prisma/index.js';
 import authRoutes from './routes/auth.js';
 import layoutRoutes from './routes/layouts.js';
 import githubRoutes from './routes/github.js';
+import playtimeRoutes from './routes/playtime.js';
 
 // Load environment variables (only in development)
 if (process.env.NODE_ENV !== 'production') {
@@ -118,6 +119,7 @@ app.get('/api/config', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/layouts', layoutRoutes);
 app.use('/api/github', githubRoutes);
+app.use('/api/playtime', playtimeRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
