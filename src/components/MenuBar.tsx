@@ -12,6 +12,7 @@ import { exportToKLE2String, importFromKLE2String } from '../utils/kle2Serialize
 import { importOriginalKLEFile } from '../utils/originalKLEParser';
 import { exportToKLEString } from '../utils/kleExporter';
 import { exportToVialString } from '../utils/vialExporter';
+import { importFromVialString } from '../utils/vialImporter';
 import { initializeFonts } from '../utils/fontManager';
 import { saveAs } from 'file-saver';
 
@@ -93,6 +94,38 @@ const MenuBar: React.FC = () => {
     } catch (error) {
       alert('Error exporting to Vial: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
+  };
+
+  const handleImportVial = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const imported = importFromVialString(text);
+
+        // Enable Vial mode since we're importing a Vial file
+        const { updateEditorSettings, markAsSaved } = useKeyboardStore.getState();
+        updateEditorSettings({ vialMode: true });
+
+        setKeyboard(imported);
+        setCurrentLayoutId(null);
+        clearSelection();
+        saveToHistory();
+        markAsSaved();
+        setActiveMenu(null);
+
+      } catch (error) {
+        alert('Error importing Vial file: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      }
+    };
+
+    input.click();
   };
 
   const handleNew = () => {
@@ -244,6 +277,9 @@ const MenuBar: React.FC = () => {
             </button>
             <button className="menu-dropdown-item" onClick={() => { handleExportOriginalKLE(); }}>
               Export to KLE
+            </button>
+            <button className="menu-dropdown-item" onClick={() => { handleImportVial(); }}>
+              Import from Vial
             </button>
             <button className="menu-dropdown-item" onClick={() => { handleExportVial(); }}>
               Export to Vial
