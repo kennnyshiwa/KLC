@@ -50,6 +50,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const [activeColorMenu, setActiveColorMenu] = React.useState<'GMK' | 'ABS' | 'PBT' | null>(null);
   const [showMirrorModal, setShowMirrorModal] = React.useState(false);
   const toolbarContainerRef = React.useRef<HTMLDivElement>(null);
+  // Store original labels when Vial mode is enabled
+  const originalLabelsRef = React.useRef<Map<string, string[]>>(new Map());
   const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
   const keyboard = useKeyboardStore((state) => state.keyboard);
   const editorSettings = useKeyboardStore((state) => state.editorSettings);
@@ -178,6 +180,81 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
 
   const toggleSnap = () => {
     updateEditorSettings({ snapToGrid: !editorSettings.snapToGrid });
+  };
+
+  const handleToggleVialMode = () => {
+    const newVialMode = !editorSettings.vialMode;
+    updateEditorSettings({ vialMode: newVialMode });
+
+    if (newVialMode) {
+      // Enabling Vial mode - store original labels and assign matrix positions
+
+      // First, store original labels for all keys
+      keyboard.keys.forEach(key => {
+        originalLabelsRef.current.set(key.id, [...key.labels]);
+      });
+
+      // Group keys by Y position to determine rows
+      const rowGroups = new Map<number, Key[]>();
+      keyboard.keys.forEach(key => {
+        // Round Y to nearest 0.25 for grouping
+        const rowY = Math.round(key.y * 4) / 4;
+        if (!rowGroups.has(rowY)) {
+          rowGroups.set(rowY, []);
+        }
+        rowGroups.get(rowY)!.push(key);
+      });
+
+      // Sort rows by Y position
+      const sortedRows = Array.from(rowGroups.entries())
+        .sort((a, b) => a[0] - b[0]);
+
+      // Assign matrix positions
+      const updates: Array<{ id: string; changes: Partial<Key> }> = [];
+
+      sortedRows.forEach(([, rowKeys], rowIndex) => {
+        // Sort keys within row by X position
+        const sortedKeys = [...rowKeys].sort((a, b) => a.x - b.x);
+
+        sortedKeys.forEach((key, colIndex) => {
+          // Create new labels array with matrix position
+          const newLabels = new Array(12).fill('');
+          newLabels[0] = `${rowIndex},${colIndex}`; // Matrix position in top-left
+          newLabels[3] = '0,0'; // Default layout option in bottom-left
+
+          updates.push({
+            id: key.id,
+            changes: { labels: newLabels }
+          });
+        });
+      });
+
+      if (updates.length > 0) {
+        updateKeys(updates);
+        saveToHistory();
+      }
+    } else {
+      // Disabling Vial mode - restore original labels
+      const updates: Array<{ id: string; changes: Partial<Key> }> = [];
+
+      keyboard.keys.forEach(key => {
+        const originalLabels = originalLabelsRef.current.get(key.id);
+        if (originalLabels) {
+          updates.push({
+            id: key.id,
+            changes: { labels: originalLabels }
+          });
+        }
+      });
+
+      if (updates.length > 0) {
+        updateKeys(updates);
+        saveToHistory();
+      }
+
+      // Clear the stored labels
+      originalLabelsRef.current.clear();
+    }
   };
   
   // Close color menu when clicking outside
@@ -340,6 +417,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
             title="Toggle size labels on keys > 1u (front legend)"
           >
             Size
+          </button>
+          <button
+            onClick={handleToggleVialMode}
+            className={`toolbar-btn ${editorSettings.vialMode ? 'active' : ''}`}
+            title="Toggle Vial matrix position labels (replaces all legends)"
+          >
+            Vial
           </button>
           <button
             onClick={() => setShowMirrorModal(true)}
