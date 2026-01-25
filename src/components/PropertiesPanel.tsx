@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
-import { Key, KeyProfile, VialLayoutOption } from '../types';
+import { Key, KeyProfile } from '../types';
 import { ChevronDown, ChevronRight, ChevronLeft, Type, Plus, X } from 'lucide-react';
 import { calculateNewPositionForRotationCenter } from '../utils/rotationUtils';
 import ColorPicker from './ColorPicker';
