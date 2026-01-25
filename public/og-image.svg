@@ -1,0 +1,21 @@
+<svg width="600" height="315" viewBox="0 0 600 315" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2c3e50"/>
+      <stop offset="100%" style="stop-color:#1a252f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="315" fill="url(#bg)"/>
+
+  <!-- Main text -->
+  <text x="300" y="140" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="36" font-weight="700" fill="white">
+    Keyboard Layout Creator
+  </text>
+
+  <!-- Subtitle -->
+  <text x="300" y="180" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="400" fill="#3498db">
+    Design custom keyboard layouts with ease
+  </text>
+</svg>
