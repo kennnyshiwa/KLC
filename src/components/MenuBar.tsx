@@ -11,6 +11,7 @@ import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import { exportToKLE2String, importFromKLE2String } from '../utils/kle2Serializer';
 import { importOriginalKLEFile } from '../utils/originalKLEParser';
 import { exportToKLEString } from '../utils/kleExporter';
+import { exportToVialString } from '../utils/vialExporter';
 import { initializeFonts } from '../utils/fontManager';
 import { saveAs } from 'file-saver';
 
@@ -79,6 +80,18 @@ const MenuBar: React.FC = () => {
       setActiveMenu(null);
     } catch (error) {
       alert('Error exporting keyboard: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  const handleExportVial = () => {
+    try {
+      const jsonString = exportToVialString(keyboard);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const filename = `${keyboard.meta.name || 'keyboard'}_vial.json`;
+      saveAs(blob, filename);
+      setActiveMenu(null);
+    } catch (error) {
+      alert('Error exporting to Vial: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -231,6 +244,9 @@ const MenuBar: React.FC = () => {
             </button>
             <button className="menu-dropdown-item" onClick={() => { handleExportOriginalKLE(); }}>
               Export to KLE
+            </button>
+            <button className="menu-dropdown-item" onClick={() => { handleExportVial(); }}>
+              Export to Vial
             </button>
             <div className="menu-divider" />
             <button className="menu-dropdown-item" onClick={() => { handleImportJSON(); }}>
