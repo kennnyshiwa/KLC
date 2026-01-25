@@ -222,9 +222,24 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
     const updates = selectedKeysList.map(key => {
       const newLabels = [...key.labels];
       newLabels[index] = value;
+
+      const changes: Partial<Key> = { labels: newLabels };
+
+      // Sync centerLegend when editing positions 8 or 9
+      // This handles imported KLE layouts where position 9 is stored as centerLegend
+      if ((index === 8 || index === 9) && key.centerLegend) {
+        if (!value) {
+          // Clear centerLegend when clearing the legend
+          changes.centerLegend = undefined;
+        } else if (index === 8) {
+          // Update centerLegend when editing position 8 (the standard center position)
+          changes.centerLegend = value;
+        }
+      }
+
       return {
         id: key.id,
-        changes: { labels: newLabels }
+        changes
       };
     });
     updateKeys(updates);
