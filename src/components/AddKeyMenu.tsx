@@ -28,6 +28,7 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
     { name: '2u', width: 2, height: 1 },
     { name: '2.25u', width: 2.25, height: 1 },
     { name: '2.75u', width: 2.75, height: 1 },
+    { name: '5u Space', width: 5, height: 1 },
     { name: '6.25u Space', width: 6.25, height: 1 },
     { name: '7u Space', width: 7, height: 1 },
     { name: '8u Space', width: 8, height: 1 },
