@@ -11,7 +11,7 @@ interface VialConfig {
     cols: number;
   };
   layouts: {
-    labels: string[][];
+    labels: (string | string[])[];  // Can be string (checkbox) or string[] (multi-option)
     keymap: any[][];
   };
 }
@@ -172,10 +172,17 @@ export function importFromVial(vialData: VialConfig): Keyboard {
   // Convert Vial layout labels to VialLayoutOption format
   const vialLabels: VialLayoutOption[] = [];
   if (vialData.layouts.labels && vialData.layouts.labels.length > 0) {
-    vialData.layouts.labels.forEach((labelArray) => {
-      if (labelArray.length > 0) {
+    vialData.layouts.labels.forEach((labelItem) => {
+      if (typeof labelItem === 'string') {
+        // Single string = checkbox/toggle option (index 0 = off, index 1 = on)
+        vialLabels.push({
+          name: labelItem,
+          values: []  // Empty values array indicates a checkbox option
+        });
+      } else if (Array.isArray(labelItem) && labelItem.length > 0) {
+        // Array of strings = multi-option choice
         // First element is the option name, rest are values
-        const [name, ...values] = labelArray;
+        const [name, ...values] = labelItem;
         vialLabels.push({
           name: name || 'Option',
           values: values.length > 0 ? values : ['Default']

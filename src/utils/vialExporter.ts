@@ -10,7 +10,7 @@ interface VialConfig {
     cols: number;
   };
   layouts: {
-    labels: string[][];
+    labels: (string | string[])[];  // Can be string (checkbox) or string[] (multi-option)
     keymap: any[][];
   };
 }
@@ -45,18 +45,32 @@ function parseLayoutOption(label: string): { option: number; value: number } | n
 
 /**
  * Build the Vial label string for a key
- * Format: "row,col\n\n\noption,value" where option,value is in position 3
+ * KLE label positions: 0-11 separated by newlines
+ * Position 0: matrix position (row,col)
+ * Position 3: layout option (option,value)
+ * Position 9: encoder flag ("e")
  */
 function buildVialLabelString(key: Key): string {
-  const matrixPos = key.labels[0] || '';
-  const layoutOption = key.labels[3] || '';
-
-  // If there's a layout option, we need newlines to position it at index 3
-  if (layoutOption) {
-    return `${matrixPos}\n\n\n${layoutOption}`;
+  // Find the highest non-empty label position
+  let maxPosition = 0;
+  for (let i = 0; i < 12; i++) {
+    if (key.labels[i]) {
+      maxPosition = i;
+    }
   }
 
-  return matrixPos;
+  // If no labels, return empty string
+  if (maxPosition === 0 && !key.labels[0]) {
+    return '';
+  }
+
+  // Build the label string with all positions up to maxPosition
+  const parts: string[] = [];
+  for (let i = 0; i <= maxPosition; i++) {
+    parts.push(key.labels[i] || '');
+  }
+
+  return parts.join('\n');
 }
 
 /**
@@ -87,11 +101,16 @@ export function exportToVial(keyboard: Keyboard): VialConfig {
   });
 
   // Build layout labels array from metadata if available, otherwise generate from key data
-  let labels: string[][] = [];
+  let labels: (string | string[])[] = [];
 
   if (keyboard.meta?.vialLabels && keyboard.meta.vialLabels.length > 0) {
     // Use user-defined labels from metadata
     labels = keyboard.meta.vialLabels.map(option => {
+      // Checkbox options (empty values) are exported as single strings
+      if (option.values.length === 0) {
+        return option.name;
+      }
+      // Multi-option choices are exported as arrays
       return [option.name, ...option.values];
     });
   } else {
