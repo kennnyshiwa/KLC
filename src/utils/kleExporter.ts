@@ -105,6 +105,7 @@ export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[]
     rotation_y: 0,
     ghost: false,
     stepped: false,
+    steppedCenter: false,
     nub: false,
     decal: false,
     align: undefined as number | undefined,

@@ -43,6 +43,7 @@ export interface KLE2Key {
   // Special properties
   ghost?: boolean;
   stepped?: boolean;
+  steppedCenter?: boolean;
   nub?: boolean;
   decal?: boolean;
 }
@@ -85,6 +86,7 @@ export function exportToKLE2(keyboard: Keyboard): KLE2Format {
       ...(key.frontLegends && { frontLegends: key.frontLegends }),
       ...(key.ghost && { ghost: key.ghost }),
       ...(key.stepped && { stepped: key.stepped }),
+      ...(key.steppedCenter && { steppedCenter: key.steppedCenter }),
       ...(key.nub && { nub: key.nub }),
       ...(key.decal && { decal: key.decal })
     }))
@@ -128,6 +130,7 @@ export function importFromKLE2(data: KLE2Format): Keyboard {
       if (keyData.frontLegends) key.frontLegends = keyData.frontLegends;
       if (keyData.ghost) key.ghost = keyData.ghost;
       if (keyData.stepped) key.stepped = keyData.stepped;
+      if (keyData.steppedCenter) key.steppedCenter = keyData.steppedCenter;
       if (keyData.nub) key.nub = keyData.nub;
       if (keyData.decal) key.decal = keyData.decal;
       

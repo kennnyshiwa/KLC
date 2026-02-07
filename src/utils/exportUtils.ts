@@ -278,7 +278,20 @@ export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
                `width="${keyWidth * 0.4 - edgeHeight}" height="${keyHeight - edgeHeight * 2 - topOffset}" ` +
                `fill="rgba(0,0,0,0.1)" rx="2" ry="2" />`;
       }
-    
+
+      // Center stepped cap shading
+      if (key.steppedCenter) {
+        const stepWidth = keyWidth * 0.2;
+        // Left edge shading
+        svg += `\n  <rect x="${keyX + edgeHeight}" y="${keyY + edgeHeight}" ` +
+               `width="${stepWidth - edgeHeight}" height="${keyHeight - edgeHeight * 2 - topOffset}" ` +
+               `fill="rgba(0,0,0,0.1)" rx="2" ry="2" />`;
+        // Right edge shading
+        svg += `\n  <rect x="${keyX + keyWidth - stepWidth}" y="${keyY + edgeHeight}" ` +
+               `width="${stepWidth - edgeHeight}" height="${keyHeight - edgeHeight * 2 - topOffset}" ` +
+               `fill="rgba(0,0,0,0.1)" rx="2" ry="2" />`;
+      }
+
       // Homing nub
       if (key.nub) {
         const centerX = keyX + keyWidth / 2;

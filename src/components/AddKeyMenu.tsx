@@ -13,6 +13,7 @@ interface KeyTemplate {
   x2?: number;
   y2?: number;
   stepped?: boolean;
+  steppedCenter?: boolean;
   isLabel?: boolean; // For pure label elements
   label?: string; // Pre-defined label text
   isLED?: boolean; // For LED indicator circles
@@ -28,6 +29,7 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
     { name: '2u', width: 2, height: 1 },
     { name: '2.25u', width: 2.25, height: 1 },
     { name: '2.75u', width: 2.75, height: 1 },
+    { name: '3u', width: 3, height: 1 },
     { name: '5u Space', width: 5, height: 1 },
     { name: '6.25u Space', width: 6.25, height: 1 },
     { name: '7u Space', width: 7, height: 1 },
@@ -47,6 +49,7 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
     { name: 'Medium Ass Enter', width: 1.75, height: 1, x2: .75, y2: -1, width2: 1, height2: 2},
     { name: 'Little Ass Enter', width: 1.5, height: 1, x2: .75, y2: -1, width2: .75, height2: 2 },
     { name: 'Stepped Caps', width: 1.75, height: 1, stepped: true },
+    { name: 'Center Stepped Caps', width: 1.75, height: 1, steppedCenter: true },
     { name: 'Stepped Shift', width: 2.25, height: 1, stepped: true },
     { name: '1.25 TabLock R2', width: 1.25, height: 2, x2: 0, y2: 1, width2: 1.5, height2: 1},
     { name: '1.5 TabLock R2', width: 1.5, height: 2, x2: 0, y2: 1, width2: 1.75, height2: 1}
@@ -222,6 +225,7 @@ const AddKeyMenu: React.FC = () => {
         color: template.isLabel ? 'transparent' : (template.isLED ? '#ff0000' : (template.isEncoder ? '#cccccc' : '#f9f9f9')),
         profile: template.isLED ? 'LED' : (template.isEncoder ? 'ENCODER' : 'OEM'),
         stepped: template.stepped,
+        steppedCenter: template.steppedCenter,
         decal: template.isLabel || template.isLED || template.isEncoder, // Row labels, LEDs, and encoders are decal keys
         ghost: template.isLabel, // Only row labels are ghost
         // Don't set a default rowLabelShape - let user choose

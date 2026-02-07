@@ -819,24 +819,24 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         // Draw stepped key indicator
         if (key.stepped) {
           ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Darker shade
-          
+
           // Check if key has secondary dimensions (like stepped Caps Lock)
           if (key.x2 !== undefined || key.y2 !== undefined || key.width2 || key.height2) {
             const x2 = (key.x2 || 0) * unitSize;
             const y2 = (key.y2 || 0) * unitSize;
             const width2 = (key.width2 || key.width) * unitSize;
             const height2 = (key.height2 || key.height) * unitSize;
-            
+
             // Only shade the primary rectangle if y2 > 0 (there's a gap between them)
             if (y2 > 0) {
               ctx.fillRect(
                 renderX + keyWidth * 0.5, // Start at middle
-                renderY + edgeHeight, 
+                renderY + edgeHeight,
                 keyWidth * 0.5 - edgeHeight, // Extend to right edge
                 keyHeight - edgeHeight * 2 - topOffset
               );
             }
-            
+
             // Always shade the secondary rectangle's right half
             ctx.fillRect(
               renderX + x2 + width2 * 0.5, // Start at middle of secondary
@@ -848,11 +848,33 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             // For regular keys, shade from middle to right
             ctx.fillRect(
               renderX + keyWidth * 0.5, // Start at middle
-              renderY + edgeHeight, 
+              renderY + edgeHeight,
               keyWidth * 0.5 - edgeHeight, // Extend to right edge minus the edge border
               keyHeight - edgeHeight * 2 - topOffset
             );
           }
+        }
+
+        // Draw center stepped key indicator
+        if (key.steppedCenter) {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Darker shade
+          const stepWidth = keyWidth * 0.2; // 20% on each side for the stepped portion
+
+          // Shade left edge
+          ctx.fillRect(
+            renderX + edgeHeight,
+            renderY + edgeHeight,
+            stepWidth - edgeHeight,
+            keyHeight - edgeHeight * 2 - topOffset
+          );
+
+          // Shade right edge
+          ctx.fillRect(
+            renderX + keyWidth - stepWidth,
+            renderY + edgeHeight,
+            stepWidth - edgeHeight,
+            keyHeight - edgeHeight * 2 - topOffset
+          );
         }
         
         // Draw homing nub indicator

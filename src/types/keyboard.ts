@@ -31,6 +31,7 @@ export interface Key {
   nub?: boolean;
   ghost?: boolean;
   stepped?: boolean;
+  steppedCenter?: boolean;
   decal?: boolean;
   frontLegends?: string[];
   centerLegend?: string;

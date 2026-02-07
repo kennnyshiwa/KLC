@@ -1426,6 +1426,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     Stepped
                   </label>
                 </div>
+                <div className="property-row checkbox-row">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={firstKey.steppedCenter || false}
+                      onChange={(e) => handleKeyUpdate('steppedCenter', e.target.checked)}
+                    />
+                    Center Stepped
+                  </label>
+                </div>
                 <div className="property-row">
                   <label>Homing Nub</label>
                   <select 
