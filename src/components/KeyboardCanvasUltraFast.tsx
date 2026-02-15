@@ -33,6 +33,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const keyRectsRef = useRef<KeyRect[]>([]);
   const animationFrameRef = useRef<number | null>(null);
+  const renderRef = useRef<() => void>(() => {});
+  const requestRenderRef = useRef<() => void>(() => {});
   
   // Interaction state
   const isDraggingRef = useRef(false);
@@ -451,9 +453,14 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     // Debug: confirm render is running
 
     // Clear canvas with appropriate background for theme
+    // Reset transform to identity so we can clear using physical pixel coords directly,
+    // then restore the scale — avoids asking the GPU to fill a rect 9x larger than the canvas
     const isDarkMode = document.documentElement.classList.contains('dark-mode');
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = isDarkMode ? '#1a1a1a' : '#fafafa';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
     
     const { editorSettings, keyboard, selectedKeys, hoveredKey } = stateRef.current;
     const unitSize = editorSettings.unitSize;
@@ -1943,10 +1950,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     // Final restore of transform
     ctx.restore();
   };
+  renderRef.current = render;
 
   // Request animation frame render
   const requestRender = () => {
-    
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
@@ -1961,9 +1968,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         isSettingRotationPoint: latestState.isSettingRotationPoint,
         isRotationSectionExpanded: latestState.isRotationSectionExpanded,
       };
-      render();
+      // Always call the latest render function via ref to avoid stale closures
+      renderRef.current();
     });
   };
+  requestRenderRef.current = requestRender;
 
   // Get key at position
   const getKeyAtPosition = (x: number, y: number): KeyRect | null => {
@@ -2439,17 +2448,16 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
 
     // Support high-DPI displays for crisp rendering
     // Use a higher resolution multiplier to match original KLE's DOM-based crisp rendering
+    // On mobile (high DPR), reduce the multiplier to stay within canvas buffer limits
+    // Mobile GPUs often cap at ~16M pixels or 8192px per dimension
     const dpr = window.devicePixelRatio || 1;
-    const RESOLUTION_MULTIPLIER = 3; // Render at 3x resolution for crisp output
+    const RESOLUTION_MULTIPLIER = dpr >= 2 ? 1 : 3;
     const totalScale = dpr * RESOLUTION_MULTIPLIER;
 
     // Set canvas resolution (accounting for device pixel ratio + additional quality multiplier)
+    // CSS display size is set via React JSX props (width/height) to avoid style conflicts
     canvas.width = width * totalScale;
     canvas.height = height * totalScale;
-
-    // Set canvas display size (CSS pixels)
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
 
     // Scale context to match total resolution
     ctx.scale(totalScale, totalScale);
@@ -2493,7 +2501,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     };
   }, [width, height]);
 
-  // Subscribe to store changes
+  // Subscribe to store changes — use refs to avoid stale closures
   useEffect(() => {
     const unsubscribe = useKeyboardStore.subscribe((state) => {
       stateRef.current = {
@@ -2504,9 +2512,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         isSettingRotationPoint: state.isSettingRotationPoint,
         isRotationSectionExpanded: state.isRotationSectionExpanded,
       };
-      requestRender();
+      requestRenderRef.current();
     });
-    
+
     return unsubscribe;
   }, []);
   
@@ -2524,17 +2532,17 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       if (!fontManager.isFontLoaded('trashcons')) {
         // Add listener for when font loads
         fontManager.onFontLoaded('trashcons', () => {
-          requestRender();
+          requestRenderRef.current();
         });
       } else {
         // Font is already loaded, make sure we render
-        requestRender();
+        requestRenderRef.current();
       }
     }
-    
+
     // Listen for dark mode toggle
     const handleDarkModeToggle = () => {
-      requestRender();
+      requestRenderRef.current();
     };
     
     window.addEventListener('darkModeToggled', handleDarkModeToggle);
@@ -2549,8 +2557,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       ref={canvasRef}
       style={{
         display: 'block',
-        width: '100%',
-        height: '100%',
+        width: `${width}px`,
+        height: `${height}px`,
         backgroundColor: 'transparent'
       }}
     />
