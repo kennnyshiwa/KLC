@@ -79,7 +79,6 @@ const AddKeyMenu: React.FC = () => {
   
   const addKey = useKeyboardStore((state) => state.addKey);
   const keyboard = useKeyboardStore((state) => state.keyboard);
-  const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
   const lastModifiedKeyId = useKeyboardStore((state) => state.lastModifiedKeyId);
   const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
   const updateKeys = useKeyboardStore((state) => state.updateKeys);
@@ -237,7 +236,7 @@ const AddKeyMenu: React.FC = () => {
       newX += template.width;
     }
     
-    saveToHistory();
+    // Note: saveToHistory() is already called inside addKey(), no need to call again
     setIsOpen(false);
     setQuantity(1); // Reset quantity after adding
   };

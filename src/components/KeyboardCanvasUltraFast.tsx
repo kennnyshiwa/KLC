@@ -451,9 +451,14 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     // Debug: confirm render is running
 
     // Clear canvas with appropriate background for theme
+    // Reset transform to identity so we can clear using physical pixel coords directly,
+    // then restore the scale — avoids asking the GPU to fill a rect 9x larger than the canvas
     const isDarkMode = document.documentElement.classList.contains('dark-mode');
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = isDarkMode ? '#1a1a1a' : '#fafafa';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
     
     const { editorSettings, keyboard, selectedKeys, hoveredKey } = stateRef.current;
     const unitSize = editorSettings.unitSize;
@@ -2439,8 +2444,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
 
     // Support high-DPI displays for crisp rendering
     // Use a higher resolution multiplier to match original KLE's DOM-based crisp rendering
+    // On mobile (high DPR), reduce the multiplier to stay within canvas buffer limits
+    // Mobile GPUs often cap at ~16M pixels or 8192px per dimension
     const dpr = window.devicePixelRatio || 1;
-    const RESOLUTION_MULTIPLIER = 3; // Render at 3x resolution for crisp output
+    const RESOLUTION_MULTIPLIER = dpr >= 2 ? 1 : 3;
     const totalScale = dpr * RESOLUTION_MULTIPLIER;
 
     // Set canvas resolution (accounting for device pixel ratio + additional quality multiplier)
