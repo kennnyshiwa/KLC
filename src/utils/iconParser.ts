@@ -421,19 +421,45 @@ export function parseIconLegend(legend: string): ParsedIcon[] {
 export const AVAILABLE_ICONS = [
   { name: 'None', value: '' },
   { name: '40s Logo', value: '<span class="custom-icon icon-40s-logo"></span>' },
-  // Trashcons font icons
+  // Trashcons font icons - Arrows
+  { name: 'Arrow Left (Trashcons)', value: '<span class="trashcons icon-left"></span>' },
+  { name: 'Arrow Right (Trashcons)', value: '<span class="trashcons icon-right"></span>' },
+  { name: 'Arrow Up (Trashcons)', value: '<span class="trashcons icon-up"></span>' },
+  { name: 'Arrow Down (Trashcons)', value: '<span class="trashcons icon-down"></span>' },
+  // Trashcons font icons - Numpad operators
+  { name: 'Multiply (Trashcons)', value: '<span class="trashcons icon-mult"></span>' },
+  { name: 'Minus (Trashcons)', value: '<span class="trashcons icon-minus"></span>' },
+  { name: 'Plus (Trashcons)', value: '<span class="trashcons icon-plus"></span>' },
+  { name: 'Divide (Trashcons)', value: '<span class="trashcons icon-div"></span>' },
+  // Trashcons font icons - Layer keys
+  { name: 'Lower (Trashcons)', value: '<span class="trashcons icon-lower"></span>' },
+  { name: 'Raise (Trashcons)', value: '<span class="trashcons icon-raise"></span>' },
+  { name: 'Fn (Trashcons)', value: '<span class="trashcons icon-fn"></span>' },
+  // Trashcons font icons - Modifier keys
+  { name: 'Shift (Trashcons)', value: '<span class="trashcons icon-shift"></span>' },
+  { name: 'Control (Trashcons)', value: '<span class="trashcons icon-ctrl"></span>' },
+  { name: 'Alt (Trashcons)', value: '<span class="trashcons icon-alt"></span>' },
+  { name: 'Menu (Trashcons)', value: '<span class="trashcons icon-menu"></span>' },
+  { name: 'Sys (Trashcons)', value: '<span class="trashcons icon-sys"></span>' },
+  // Trashcons font icons - Common keys
   { name: 'Enter (Trashcons)', value: '<span class="trashcons icon-enter"></span>' },
   { name: 'Escape (Trashcons)', value: '<span class="trashcons icon-esc"></span>' },
   { name: 'Tab (Trashcons)', value: '<span class="trashcons icon-tab"></span>' },
   { name: 'Backspace (Trashcons)', value: '<span class="trashcons icon-backspace"></span>' },
   { name: 'Delete (Trashcons)', value: '<span class="trashcons icon-delete"></span>' },
-  { name: 'Shift (Trashcons)', value: '<span class="trashcons icon-shift"></span>' },
-  { name: 'Control (Trashcons)', value: '<span class="trashcons icon-ctrl"></span>' },
-  { name: 'Alt (Trashcons)', value: '<span class="trashcons icon-alt"></span>' },
-  { name: 'Arrows ← (Trashcons)', value: '<span class="trashcons icon-left"></span>' },
-  { name: 'Arrows → (Trashcons)', value: '<span class="trashcons icon-right"></span>' },
-  { name: 'Arrows ↑ (Trashcons)', value: '<span class="trashcons icon-up"></span>' },
-  { name: 'Arrows ↓ (Trashcons)', value: '<span class="trashcons icon-down"></span>' },
+  { name: 'Insert (Trashcons)', value: '<span class="trashcons icon-insert"></span>' },
+  // Trashcons font icons - Navigation
+  { name: 'Home (Trashcons)', value: '<span class="trashcons icon-home"></span>' },
+  { name: 'End (Trashcons)', value: '<span class="trashcons icon-end"></span>' },
+  { name: 'Page Up (Trashcons)', value: '<span class="trashcons icon-pgup"></span>' },
+  { name: 'Page Down (Trashcons)', value: '<span class="trashcons icon-pgdn"></span>' },
+  // Trashcons font icons - Lock keys
+  { name: 'Caps Lock (Trashcons)', value: '<span class="trashcons icon-capslock"></span>' },
+  { name: 'Num Lock (Trashcons)', value: '<span class="trashcons icon-numlock"></span>' },
+  { name: 'Scroll Lock (Trashcons)', value: '<span class="trashcons icon-scrllock"></span>' },
+  // Trashcons font icons - Function row
+  { name: 'Print Screen (Trashcons)', value: '<span class="trashcons icon-prntscrn"></span>' },
+  { name: 'Pause (Trashcons)', value: '<span class="trashcons icon-pause"></span>' },
 ];
 
 /**
