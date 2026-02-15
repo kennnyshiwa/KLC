@@ -33,6 +33,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const keyRectsRef = useRef<KeyRect[]>([]);
   const animationFrameRef = useRef<number | null>(null);
+  const renderRef = useRef<() => void>(() => {});
+  const requestRenderRef = useRef<() => void>(() => {});
   
   // Interaction state
   const isDraggingRef = useRef(false);
@@ -1948,10 +1950,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     // Final restore of transform
     ctx.restore();
   };
+  renderRef.current = render;
 
   // Request animation frame render
   const requestRender = () => {
-    
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
@@ -1966,9 +1968,11 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         isSettingRotationPoint: latestState.isSettingRotationPoint,
         isRotationSectionExpanded: latestState.isRotationSectionExpanded,
       };
-      render();
+      // Always call the latest render function via ref to avoid stale closures
+      renderRef.current();
     });
   };
+  requestRenderRef.current = requestRender;
 
   // Get key at position
   const getKeyAtPosition = (x: number, y: number): KeyRect | null => {
@@ -2451,12 +2455,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     const totalScale = dpr * RESOLUTION_MULTIPLIER;
 
     // Set canvas resolution (accounting for device pixel ratio + additional quality multiplier)
+    // CSS display size is set via React JSX props (width/height) to avoid style conflicts
     canvas.width = width * totalScale;
     canvas.height = height * totalScale;
-
-    // Set canvas display size (CSS pixels)
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
 
     // Scale context to match total resolution
     ctx.scale(totalScale, totalScale);
@@ -2500,7 +2501,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     };
   }, [width, height]);
 
-  // Subscribe to store changes
+  // Subscribe to store changes — use refs to avoid stale closures
   useEffect(() => {
     const unsubscribe = useKeyboardStore.subscribe((state) => {
       stateRef.current = {
@@ -2511,9 +2512,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         isSettingRotationPoint: state.isSettingRotationPoint,
         isRotationSectionExpanded: state.isRotationSectionExpanded,
       };
-      requestRender();
+      requestRenderRef.current();
     });
-    
+
     return unsubscribe;
   }, []);
   
@@ -2531,17 +2532,17 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       if (!fontManager.isFontLoaded('trashcons')) {
         // Add listener for when font loads
         fontManager.onFontLoaded('trashcons', () => {
-          requestRender();
+          requestRenderRef.current();
         });
       } else {
         // Font is already loaded, make sure we render
-        requestRender();
+        requestRenderRef.current();
       }
     }
-    
+
     // Listen for dark mode toggle
     const handleDarkModeToggle = () => {
-      requestRender();
+      requestRenderRef.current();
     };
     
     window.addEventListener('darkModeToggled', handleDarkModeToggle);
@@ -2556,8 +2557,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       ref={canvasRef}
       style={{
         display: 'block',
-        width: '100%',
-        height: '100%',
+        width: `${width}px`,
+        height: `${height}px`,
         backgroundColor: 'transparent'
       }}
     />
