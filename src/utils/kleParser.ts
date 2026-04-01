@@ -518,12 +518,5 @@ export function serializeToKLE(keyboard: Keyboard, krkMode: boolean = false): an
 // Convert JSON to KLE's JavaScript object notation string
 export function serializeToKLEString(keyboard: Keyboard, krkMode: boolean = false): string {
   const kleData = serializeToKLE(keyboard, krkMode);
-  
-  // Convert to JavaScript object notation by removing quotes from property names
-  const jsonString = JSON.stringify(kleData, null, 2);
-  
-  // Only remove quotes from property names, not from string values
-  return jsonString.replace(/"([^"]+)":\s*/g, (_, propName) => {
-    return `${propName}: `;
-  });
+  return JSON.stringify(kleData, null, 2);
 }
