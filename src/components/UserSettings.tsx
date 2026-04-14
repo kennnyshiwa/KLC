@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Trash2, Moon, Sun, AlertTriangle } from 'lucide-react';
+import { Trash2, AlertTriangle } from 'lucide-react';
 
 interface UserSettingsProps {
   isOpen: boolean;
@@ -12,30 +12,11 @@ const API_URL = import.meta.env.VITE_API_URL ||
 
 const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem('darkMode') === 'true';
-  });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
   if (!isOpen || !user) return null;
-
-  const handleDarkModeToggle = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', String(newDarkMode));
-    
-    // Apply dark mode class to document
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
-    }
-    
-    // Trigger a re-render of the canvas
-    window.dispatchEvent(new Event('darkModeToggled'));
-  };
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') return;
@@ -72,23 +53,6 @@ const UserSettings: React.FC<UserSettingsProps> = ({ isOpen, onClose }) => {
         </div>
         
         <div className="modal-body">
-          <div className="settings-section">
-            <h3>Appearance</h3>
-            <div className="setting-item">
-              <div className="setting-info">
-                <label>Dark Mode</label>
-                <p className="setting-description">Toggle dark mode for the entire application</p>
-              </div>
-              <button 
-                className={`toggle-button ${darkMode ? 'active' : ''}`}
-                onClick={handleDarkModeToggle}
-              >
-                {darkMode ? <Moon size={16} /> : <Sun size={16} />}
-                <span>{darkMode ? 'Dark' : 'Light'}</span>
-              </button>
-            </div>
-          </div>
-
           <div className="settings-section danger-zone">
             <h3>Danger Zone</h3>
             <div className="setting-item">

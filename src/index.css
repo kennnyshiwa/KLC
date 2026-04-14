@@ -91,6 +91,28 @@ body {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
+.theme-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.theme-toggle-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-toggle-button.active {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
 .layout-counter {
   display: flex;
   align-items: center;
@@ -2237,6 +2259,15 @@ body {
 
 .dark-mode .discord-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .theme-toggle-button {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .theme-toggle-button:hover,
+.dark-mode .theme-toggle-button.active {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .dark-mode .layout-counter {
