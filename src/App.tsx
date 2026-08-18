@@ -14,7 +14,7 @@ import { useImportedCSS } from './hooks/useImportedCSS';
 import { parseKLE } from './utils/kleParser';
 import { presetLayouts } from './constants/presetLayouts';
 import { initializeFonts } from './utils/fontManager';
-import { Code2, Monitor, PanelBottom, Smartphone, Wrench, X } from 'lucide-react';
+import { Check, ChevronDown, Code2, Monitor, PanelBottom, Smartphone, Wrench, X } from 'lucide-react';
 
 type MobileUiPreference = 'auto' | 'mobile' | 'desktop';
 
@@ -51,12 +51,15 @@ function App() {
   const [autoMobileUi, setAutoMobileUi] = useState(() => shouldUseMobileUi());
   const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
   const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
+  const [isUiModeMenuOpen, setIsUiModeMenuOpen] = useState(false);
+  const uiModeMenuRef = useRef<HTMLDivElement>(null);
   
   useKeyboardShortcuts();
   useImportedCSS();
 
   const isMobileMode = mobileUiPreference === 'mobile' || (mobileUiPreference === 'auto' && autoMobileUi);
   const isForcedDesktopPreference = mobileUiPreference === 'desktop';
+  const shouldShowUiModeToggle = autoMobileUi || mobileUiPreference !== 'auto';
   const mobileModeLabel =
     mobileUiPreference === 'auto'
       ? autoMobileUi
@@ -65,6 +68,14 @@ function App() {
       : mobileUiPreference === 'mobile'
         ? 'Forced mobile'
         : 'Forced desktop';
+  const uiModeButtonLabel =
+    mobileUiPreference === 'auto'
+      ? autoMobileUi
+        ? 'UI: Auto mobile'
+        : 'UI: Auto desktop'
+      : mobileUiPreference === 'mobile'
+        ? 'UI: Mobile'
+        : 'UI: Desktop';
 
   // Warn user about unsaved changes
   useEffect(() => {
@@ -133,12 +144,20 @@ function App() {
     }
   }, [isMobileMode]);
 
-  const cycleMobileUiPreference = () => {
-    setMobileUiPreference((current) => {
-      if (current === 'auto') return 'mobile';
-      if (current === 'mobile') return 'desktop';
-      return 'auto';
-    });
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (uiModeMenuRef.current && !uiModeMenuRef.current.contains(event.target as Node)) {
+        setIsUiModeMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleUiModeChange = (nextMode: MobileUiPreference) => {
+    setMobileUiPreference(nextMode);
+    setIsUiModeMenuOpen(false);
   };
 
   return (
@@ -201,15 +220,59 @@ function App() {
               >
                 {isMobileInspectorOpen ? <X size={18} /> : <PanelBottom size={18} />}
               </button>
+            </>
+          )}
+          {shouldShowUiModeToggle && (
+            <div className="ui-mode-menu" ref={uiModeMenuRef}>
               <button
                 type="button"
-                className="mobile-header-button"
-                onClick={cycleMobileUiPreference}
-                title={`Switch UI mode. Current: ${mobileModeLabel}`}
+                className={`ui-mode-trigger ${isUiModeMenuOpen ? 'active' : ''}`}
+                onClick={() => setIsUiModeMenuOpen((open) => !open)}
+                title={`Choose UI mode. Current: ${mobileModeLabel}`}
               >
-                {isForcedDesktopPreference ? <Monitor size={18} /> : <Smartphone size={18} />}
+                {mobileUiPreference === 'desktop' ? <Monitor size={16} /> : <Smartphone size={16} />}
+                <span>{uiModeButtonLabel}</span>
+                <ChevronDown size={14} />
               </button>
-            </>
+
+              {isUiModeMenuOpen && (
+                <div className="ui-mode-popover">
+                  <button
+                    type="button"
+                    className={`ui-mode-popover-option ${mobileUiPreference === 'auto' ? 'active' : ''}`}
+                    onClick={() => handleUiModeChange('auto')}
+                  >
+                    <div>
+                      <strong>Auto</strong>
+                      <p>Use screen size and input type.</p>
+                    </div>
+                    {mobileUiPreference === 'auto' && <Check size={16} />}
+                  </button>
+                  <button
+                    type="button"
+                    className={`ui-mode-popover-option ${mobileUiPreference === 'mobile' ? 'active' : ''}`}
+                    onClick={() => handleUiModeChange('mobile')}
+                  >
+                    <div>
+                      <strong>Mobile</strong>
+                      <p>Canvas-first phone UI.</p>
+                    </div>
+                    {mobileUiPreference === 'mobile' && <Check size={16} />}
+                  </button>
+                  <button
+                    type="button"
+                    className={`ui-mode-popover-option ${isForcedDesktopPreference ? 'active' : ''}`}
+                    onClick={() => handleUiModeChange('desktop')}
+                  >
+                    <div>
+                      <strong>Desktop</strong>
+                      <p>Full menu bar and side panel.</p>
+                    </div>
+                    {isForcedDesktopPreference && <Check size={16} />}
+                  </button>
+                </div>
+              )}
+            </div>
           )}
           <ThemeToggle />
           <UserMenu />
@@ -270,21 +333,21 @@ function App() {
                   <button
                     type="button"
                     className={`mobile-mode-option ${mobileUiPreference === 'auto' ? 'active' : ''}`}
-                    onClick={() => setMobileUiPreference('auto')}
+                    onClick={() => handleUiModeChange('auto')}
                   >
                     Auto
                   </button>
                   <button
                     type="button"
                     className={`mobile-mode-option ${mobileUiPreference === 'mobile' ? 'active' : ''}`}
-                    onClick={() => setMobileUiPreference('mobile')}
+                    onClick={() => handleUiModeChange('mobile')}
                   >
                     Mobile
                   </button>
                   <button
                     type="button"
                     className={`mobile-mode-option ${isForcedDesktopPreference ? 'active' : ''}`}
-                    onClick={() => setMobileUiPreference('desktop')}
+                    onClick={() => handleUiModeChange('desktop')}
                   >
                     Desktop
                   </button>
