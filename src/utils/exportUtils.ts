@@ -79,43 +79,34 @@ function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54): {
 
 export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard: Keyboard, editorSettings?: any) => {
   if (!stage) return;
-  
-  // Get the full canvas data
-  const fullDataURL = stage.toDataURL();
-  
-  // Create an image from the data URL
+
+  const svgBlob = new Blob([buildKeyboardSVG(keyboard)], { type: 'image/svg+xml;charset=utf-8' });
+  const objectUrl = URL.createObjectURL(svgBlob);
+
   const img = new Image();
   img.onload = () => {
-    // Calculate bounds using the same unit size as the editor
     const unitSize = editorSettings?.unitSize || 54;
     const bounds = getKeyboardBounds(keyboard, unitSize);
-    
-    // Add space for footer if we have name or author
     const hasFooter = keyboard.meta.name || keyboard.meta.author;
     const footerHeight = hasFooter ? 40 : 0;
-    
-    // Create a new canvas with the cropped size plus footer
+
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(bounds.width);
     canvas.height = Math.round(bounds.height) + footerHeight;
     const ctx = canvas.getContext('2d');
-    
-    if (!ctx) return;
-    
-    // Fill with white background
+
+    if (!ctx) {
+      URL.revokeObjectURL(objectUrl);
+      return;
+    }
+
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw the cropped portion of the original image
-    ctx.drawImage(
-      img,
-      Math.round(bounds.minX), Math.round(bounds.minY), Math.round(bounds.width), Math.round(bounds.height),  // Source rectangle
-      0, 0, Math.round(bounds.width), Math.round(bounds.height)                                               // Destination rectangle
-    );
-    
-    // Add footer with name and author if available
+
+    // Render the full layout export, not the current viewport-sized editor canvas.
+    ctx.drawImage(img, 0, 0, Math.round(bounds.width), Math.round(bounds.height));
+
     if (hasFooter) {
-      // Draw a subtle separator line
       ctx.strokeStyle = '#e0e0e0';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -141,19 +132,24 @@ export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard:
       const textY = bounds.height + footerHeight / 2 + 5;
       ctx.fillText(footerText.join(' • '), canvas.width / 2, textY);
     }
-    
-    // Convert the cropped canvas to blob
+
     canvas.toBlob((blob) => {
       if (blob) {
         saveAs(blob, `${keyboard.meta.name || 'keyboard'}.png`);
       }
     }, 'image/png');
+
+    URL.revokeObjectURL(objectUrl);
   };
-  
-  img.src = fullDataURL;
+
+  img.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+  };
+
+  img.src = objectUrl;
 };
 
-export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
+function buildKeyboardSVG(keyboard: Keyboard) {
   const unitSize = 54; // Default unit size
   const bounds = getKeyboardBounds(keyboard, unitSize);
   
@@ -399,8 +395,11 @@ export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
   
   svg += '\n</svg>';
   
-  // Save as file
-  const blob = new Blob([svg], { type: 'image/svg+xml' });
+  return svg;
+}
+
+export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
+  const blob = new Blob([buildKeyboardSVG(keyboard)], { type: 'image/svg+xml' });
   saveAs(blob, `${keyboard.meta.name || 'keyboard'}.svg`);
 };
 

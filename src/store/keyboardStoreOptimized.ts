@@ -24,8 +24,10 @@ interface KeyboardState {
   updateKey: (keyId: string, updates: Partial<Key>) => void;
   updateKeys: (updates: Array<{ id: string; changes: Partial<Key> }>) => void;
   addKey: (key: Key) => void;
+  insertKeysAfterKey: (keyId: string, insertedKeys: Key[]) => void;
   deleteKey: (keyId: string) => void;
   deleteKeys: (keyIds: string[]) => void;
+  replaceKeyWithKeys: (keyId: string, replacementKeys: Key[]) => void;
   
   // Selection
   selectKey: (keyId: string, multiSelect?: boolean) => void;
@@ -157,6 +159,34 @@ export const useKeyboardStore = create<KeyboardState>()(
         get().saveToHistory();
       },
 
+      insertKeysAfterKey: (keyId, insertedKeys) => {
+        if (insertedKeys.length === 0) {
+          return;
+        }
+
+        const state = get();
+        const keyIndex = state.keyboard.keys.findIndex((key) => key.id === keyId);
+
+        if (keyIndex === -1) {
+          return;
+        }
+
+        const nextKeys = [...state.keyboard.keys];
+        nextKeys.splice(keyIndex + 1, 0, ...insertedKeys);
+
+        set({
+          keyboard: {
+            ...state.keyboard,
+            keys: nextKeys,
+          },
+          hasUnsavedChanges: true,
+          selectedKeys: new Set(insertedKeys.map((key) => key.id)),
+          lastModifiedKeyId: insertedKeys[insertedKeys.length - 1]?.id || keyId,
+        });
+
+        get().saveToHistory();
+      },
+
       deleteKey: (keyId) => {
         set((state) => ({
           keyboard: {
@@ -179,6 +209,34 @@ export const useKeyboardStore = create<KeyboardState>()(
           hasUnsavedChanges: true,
           selectedKeys: new Set(Array.from(state.selectedKeys).filter(id => !idsToDelete.has(id))),
         }));
+        get().saveToHistory();
+      },
+
+      replaceKeyWithKeys: (keyId, replacementKeys) => {
+        if (replacementKeys.length === 0) {
+          return;
+        }
+
+        const state = get();
+        const keyIndex = state.keyboard.keys.findIndex((key) => key.id === keyId);
+
+        if (keyIndex === -1) {
+          return;
+        }
+
+        const nextKeys = [...state.keyboard.keys];
+        nextKeys.splice(keyIndex, 1, ...replacementKeys);
+
+        set({
+          keyboard: {
+            ...state.keyboard,
+            keys: nextKeys,
+          },
+          hasUnsavedChanges: true,
+          selectedKeys: new Set(replacementKeys.map((key) => key.id)),
+          lastModifiedKeyId: replacementKeys[replacementKeys.length - 1]?.id || keyId,
+        });
+
         get().saveToHistory();
       },
 

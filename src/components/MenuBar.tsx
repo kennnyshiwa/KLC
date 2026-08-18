@@ -248,7 +248,6 @@ const MenuBar: React.FC = () => {
     input.click();
   };
 
-
   return (
     <>
       <div className="menu-bar" ref={menuRef}>

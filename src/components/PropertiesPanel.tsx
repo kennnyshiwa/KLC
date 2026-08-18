@@ -956,7 +956,6 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     />
                   </div>
                 </div>
-                
                 {/* Advanced Size Options - Special Keys */}
                 <div className="property-subsection" style={{ marginTop: '12px' }}>
                   <div 

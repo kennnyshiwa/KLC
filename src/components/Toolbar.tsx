@@ -8,7 +8,8 @@ import {
   Trash2,
   Maximize2,
   MousePointer2,
-  FlipVertical
+  FlipVertical,
+  ChevronDown,
 } from 'lucide-react';
 import { duplicateKey } from '../utils/keyUtils';
 import ExportMenu from './ExportMenu';
@@ -16,10 +17,18 @@ import AddKeyMenu from './AddKeyMenu';
 import ColorMenuBar, { ColorMenuGrid } from './ColorMenuBar';
 import MirrorModal from './MirrorModal';
 import { Key } from '../types';
+import { detectBottomRowTarget, planBottomRowSplitVariant, type BottomRowTargetDetection } from '../utils/bottomRowVariants';
+import { getSuggestedSplitOptions, type SplitSuggestionBucket } from '../utils/splitKeySuggestions';
 
 interface ToolbarProps {
   getStage: () => any;
 }
+
+const SPLIT_BUCKET_LABELS: Record<SplitSuggestionBucket, string> = {
+  common: 'Common',
+  reasonable: 'Reasonable',
+  cursed: 'Cursed',
+};
 
 // Custom selection mode icons
 const SelectionModeIcon: React.FC<{ mode: 'touch' | 'enclose' }> = ({ mode }) => {
@@ -49,6 +58,8 @@ const SelectionModeIcon: React.FC<{ mode: 'touch' | 'enclose' }> = ({ mode }) =>
 const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const [activeColorMenu, setActiveColorMenu] = React.useState<'GMK' | 'ABS' | 'PBT' | null>(null);
   const [showMirrorModal, setShowMirrorModal] = React.useState(false);
+  const [showBottomRowMenu, setShowBottomRowMenu] = React.useState(false);
+  const [pinnedBottomRowTarget, setPinnedBottomRowTarget] = React.useState<BottomRowTargetDetection | null>(null);
   const toolbarContainerRef = React.useRef<HTMLDivElement>(null);
   // Store original labels when Vial mode is enabled
   const originalLabelsRef = React.useRef<Map<string, string[]>>(new Map());
@@ -65,8 +76,33 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const selectAll = useKeyboardStore((state) => state.selectAll);
   const saveToHistory = useKeyboardStore((state) => state.saveToHistory);
   const addKey = useKeyboardStore((state) => state.addKey);
+  const insertKeysAfterKey = useKeyboardStore((state) => state.insertKeysAfterKey);
   const setMultiSelectMode = useKeyboardStore((state) => state.setMultiSelectMode);
   const updateKeys = useKeyboardStore((state) => state.updateKeys);
+
+  const detectedBottomRowTarget = React.useMemo(() => detectBottomRowTarget(keyboard.keys), [keyboard.keys]);
+  const pinnedBottomRowTargetIsValid = React.useMemo(() => {
+    if (!pinnedBottomRowTarget) {
+      return false;
+    }
+
+    return pinnedBottomRowTarget.keys.every((pinnedKey) =>
+      keyboard.keys.some((key) => key.id === pinnedKey.id),
+    );
+  }, [keyboard.keys, pinnedBottomRowTarget]);
+
+  const bottomRowTarget = pinnedBottomRowTargetIsValid ? pinnedBottomRowTarget : detectedBottomRowTarget;
+
+  const bottomRowSuggestions = React.useMemo(
+    () => (bottomRowTarget ? getSuggestedSplitOptions(bottomRowTarget.width) : []),
+    [bottomRowTarget],
+  );
+
+  const bottomRowSuggestionsByBucket = React.useMemo(() => ({
+    common: bottomRowSuggestions.filter((suggestion) => suggestion.bucket === 'common'),
+    reasonable: bottomRowSuggestions.filter((suggestion) => suggestion.bucket === 'reasonable'),
+    cursed: bottomRowSuggestions.filter((suggestion) => suggestion.bucket === 'cursed'),
+  }), [bottomRowSuggestions]);
 
   const handleDelete = () => {
     if (selectedKeys.size > 0) {
@@ -263,14 +299,45 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
     const handleClickOutside = (event: MouseEvent) => {
       if (toolbarContainerRef.current && !toolbarContainerRef.current.contains(event.target as Node)) {
         setActiveColorMenu(null);
+        setShowBottomRowMenu(false);
       }
     };
 
-    if (activeColorMenu) {
+    if (activeColorMenu || showBottomRowMenu) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [activeColorMenu]);
+  }, [activeColorMenu, showBottomRowMenu]);
+
+  React.useEffect(() => {
+    if (!showBottomRowMenu) {
+      if (pinnedBottomRowTarget) {
+        setPinnedBottomRowTarget(null);
+      }
+      return;
+    }
+
+    if (!pinnedBottomRowTarget) {
+      if (detectedBottomRowTarget) {
+        setPinnedBottomRowTarget(detectedBottomRowTarget);
+      }
+      return;
+    }
+
+    if (!pinnedBottomRowTargetIsValid) {
+      setPinnedBottomRowTarget(detectedBottomRowTarget ?? null);
+    }
+  }, [detectedBottomRowTarget, pinnedBottomRowTarget, pinnedBottomRowTargetIsValid, showBottomRowMenu]);
+
+  const handleApplyBottomRowSuggestion = (widths: number[]) => {
+    if (!bottomRowTarget) {
+      return;
+    }
+
+    setPinnedBottomRowTarget(bottomRowTarget);
+    const plan = planBottomRowSplitVariant(keyboard, bottomRowTarget, widths);
+    insertKeysAfterKey(plan.insertAfterKeyId, plan.appendedKeys);
+  };
 
   return (
     <div className="toolbar-container" ref={toolbarContainerRef}>
@@ -356,6 +423,98 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
           >
             Stabs
           </button>
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowBottomRowMenu((current) => !current)}
+              className={`toolbar-btn toolbar-btn-with-text toolbar-dropdown-btn ${showBottomRowMenu ? 'active' : ''}`}
+              title="Suggest bottom-row split variants"
+              style={{ minWidth: '98px' }}
+            >
+              <span>Bottom Row</span>
+              <ChevronDown size={12} />
+            </button>
+
+            {showBottomRowMenu && (
+              <div className="menu-dropdown" onClick={(event) => event.stopPropagation()}>
+                <div style={{ padding: '10px 12px', minWidth: '320px', maxWidth: '360px' }}>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      letterSpacing: '0.04em',
+                      marginBottom: '6px',
+                      opacity: 0.8,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Detected target
+                  </div>
+
+                  {bottomRowTarget ? (
+                    <>
+                      <div style={{ fontSize: '13px', fontWeight: 600 }}>{bottomRowTarget.summary}</div>
+                      <div style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.75, marginTop: '4px' }}>
+                        {bottomRowTarget.reason}
+                      </div>
+
+                      {(['common', 'reasonable', 'cursed'] as SplitSuggestionBucket[]).map((bucket) => {
+                        const suggestions = bottomRowSuggestionsByBucket[bucket];
+
+                        if (suggestions.length === 0) {
+                          return null;
+                        }
+
+                        return (
+                          <div key={bucket} style={{ marginTop: '14px' }}>
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                letterSpacing: '0.04em',
+                                marginBottom: '6px',
+                                opacity: 0.8,
+                                textTransform: 'uppercase',
+                              }}
+                            >
+                              {SPLIT_BUCKET_LABELS[bucket]}
+                            </div>
+
+                            <div style={{ display: 'grid', gap: '6px' }}>
+                              {suggestions.map((suggestion) => (
+                                <button
+                                  key={suggestion.id}
+                                  className="menu-dropdown-item"
+                                  onClick={() => handleApplyBottomRowSuggestion(suggestion.widths)}
+                                  title={suggestion.reason}
+                                  style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-start',
+                                    gap: '2px',
+                                    whiteSpace: 'normal',
+                                  }}
+                                >
+                                  <span>{suggestion.label}</span>
+                                  <span style={{ fontSize: '11px', opacity: 0.7, textAlign: 'left' }}>
+                                    {suggestion.reason}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <div style={{ fontSize: '12px', lineHeight: 1.4, opacity: 0.75 }}>
+                      No compatible bottom-row anchor detected yet. Add a wide horizontal key first.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => {
               const newKrkMode = !editorSettings.krkMode;
