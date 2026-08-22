@@ -1,6 +1,7 @@
 import { saveAs } from 'file-saver';
 import { Keyboard } from '../types';
 import { getLegendPosition } from './keyUtils';
+import { parseIconLegend } from './iconParser';
 
 // Calculate the bounding box of all keys
 function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54): {
@@ -149,7 +150,7 @@ export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard:
   img.src = objectUrl;
 };
 
-function buildKeyboardSVG(keyboard: Keyboard) {
+export function buildKeyboardSVG(keyboard: Keyboard) {
   const unitSize = 54; // Default unit size
   const bounds = getKeyboardBounds(keyboard, unitSize);
   
@@ -162,6 +163,8 @@ function buildKeyboardSVG(keyboard: Keyboard) {
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
 <defs>
   <style>
+    @font-face { font-family: 'trashcons'; src: url('/fonts/trashcons.woff') format('woff'); }
+    @font-face { font-family: 'GortonPerfected'; src: url('/fonts/GortonPerfectedVF.woff') format('woff'); }
     .key { fill: #cccccc; stroke: #7f8c8d; stroke-width: 1; }
     .key-selected { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
     .key-text { font-family: Arial, sans-serif; font-size: 12px; fill: #000; }
@@ -332,14 +335,16 @@ function buildKeyboardSVG(keyboard: Keyboard) {
           textColor = key.default.color[0];
         }
         
-        const svgBaseline = position.baseline === 'alphabetic' ? 'baseline' : 
-                           position.baseline === 'hanging' ? 'hanging' : 
-                           'middle';
-        
-        svg += `\n  <text x="${textX}" y="${textY}" ` +
-               `font-size="${fontSize}" fill="${textColor}" ` +
-               `text-anchor="${position.align}" dominant-baseline="${svgBaseline}" ` +
-               `font-family="Arial, sans-serif">${escapeXml(legend)}</text>`;
+        svg += renderLegendTextSvg({
+          legend,
+          x: textX,
+          y: textY,
+          fontSize,
+          textColor,
+          textAnchor: position.align,
+          baseline: position.baseline,
+          fontFamily: key.font || 'Arial, sans-serif',
+        });
       });
     }
     
@@ -379,15 +384,16 @@ function buildKeyboardSVG(keyboard: Keyboard) {
         textColor = key.default.color[0];
       }
       
-      // Convert canvas text align/baseline to SVG equivalents
-      const svgBaseline = position.baseline === 'alphabetic' ? 'baseline' : 
-                         position.baseline === 'hanging' ? 'hanging' : 
-                         'middle';
-      
-      svg += `\n  <text x="${textX}" y="${textY}" ` +
-             `font-size="${fontSize}" fill="${textColor}" ` +
-             `text-anchor="${position.align}" dominant-baseline="${svgBaseline}" ` +
-             `font-family="Arial, sans-serif">${escapeXml(label)}</text>`;
+      svg += renderLegendTextSvg({
+        legend: label,
+        x: textX,
+        y: textY,
+        fontSize,
+        textColor,
+        textAnchor: position.align,
+        baseline: position.baseline,
+        fontFamily: key.font || 'Arial, sans-serif',
+      });
     });
     
     svg += '\n</g>';
@@ -402,6 +408,117 @@ export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
   const blob = new Blob([buildKeyboardSVG(keyboard)], { type: 'image/svg+xml' });
   saveAs(blob, `${keyboard.meta.name || 'keyboard'}.svg`);
 };
+
+function renderLegendTextSvg({
+  legend,
+  x,
+  y,
+  fontSize,
+  textColor,
+  textAnchor,
+  baseline,
+  fontFamily,
+}: {
+  legend: string;
+  x: number;
+  y: number;
+  fontSize: number;
+  textColor: string;
+  textAnchor: string;
+  baseline: string;
+  fontFamily: string;
+}): string {
+  if (!legend) {
+    return '';
+  }
+
+  const lines = legend.split('\n');
+  if (lines.length === 1) {
+    return renderLegendLineSvg({
+      legend,
+      x,
+      y,
+      fontSize,
+      textColor,
+      textAnchor,
+      baseline,
+      fontFamily,
+    });
+  }
+
+  const lineHeight = fontSize * 1.2;
+  const totalHeight = lineHeight * (lines.length - 1);
+  const startY = y - totalHeight / 2;
+
+  return lines
+    .map((line, index) =>
+      renderLegendLineSvg({
+        legend: line,
+        x,
+        y: startY + index * lineHeight,
+        fontSize,
+        textColor,
+        textAnchor,
+        baseline: 'middle',
+        fontFamily,
+      })
+    )
+    .join('');
+}
+
+function renderLegendLineSvg({
+  legend,
+  x,
+  y,
+  fontSize,
+  textColor,
+  textAnchor,
+  baseline,
+  fontFamily,
+}: {
+  legend: string;
+  x: number;
+  y: number;
+  fontSize: number;
+  textColor: string;
+  textAnchor: string;
+  baseline: string;
+  fontFamily: string;
+}): string {
+  const parsedLegend = parseIconLegend(legend);
+  const svgBaseline = baseline === 'alphabetic' ? 'baseline' : baseline === 'hanging' ? 'hanging' : 'middle';
+  const textAttrs =
+    `x="${x}" y="${y}" font-size="${fontSize}" fill="${escapeXml(textColor)}" ` +
+    `text-anchor="${escapeXml(textAnchor)}" dominant-baseline="${svgBaseline}" xml:space="preserve"`;
+
+  if (parsedLegend.length === 0) {
+    return `\n  <text ${textAttrs} font-family="${escapeXml(fontFamily)}">${escapeXml(legend)}</text>`;
+  }
+
+  const parts = parsedLegend
+    .map((part) => {
+      if (part.type === 'icon') {
+        if (part.content) {
+          return `<tspan font-family="trashcons">${escapeXml(part.content)}</tspan>`;
+        }
+
+        return '';
+      }
+
+      if (!part.content) {
+        return '';
+      }
+
+      return `<tspan font-family="${escapeXml(fontFamily)}">${escapeXml(part.content)}</tspan>`;
+    })
+    .join('');
+
+  if (!parts) {
+    return '';
+  }
+
+  return `\n  <text ${textAttrs}>${parts}</text>`;
+}
 
 function escapeXml(text: string): string {
   return text
