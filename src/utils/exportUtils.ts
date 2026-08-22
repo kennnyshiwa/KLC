@@ -2,6 +2,8 @@ import { saveAs } from 'file-saver';
 import { Keyboard } from '../types';
 import { getLegendPosition } from './keyUtils';
 import { parseIconLegend } from './iconParser';
+import trashconsFontData from '/fonts/trashcons.woff?inline';
+import gortonPerfectedFontData from '/fonts/GortonPerfectedVF.woff?inline';
 
 // Calculate the bounding box of all keys
 function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54): {
@@ -163,8 +165,8 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
 <defs>
   <style>
-    @font-face { font-family: 'trashcons'; src: url('/fonts/trashcons.woff') format('woff'); }
-    @font-face { font-family: 'GortonPerfected'; src: url('/fonts/GortonPerfectedVF.woff') format('woff'); }
+    @font-face { font-family: 'trashcons'; src: url('${trashconsFontData}') format('woff'); }
+    @font-face { font-family: 'GortonPerfected'; src: url('${gortonPerfectedFontData}') format('woff'); }
     .key { fill: #cccccc; stroke: #7f8c8d; stroke-width: 1; }
     .key-selected { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
     .key-text { font-family: Arial, sans-serif; font-size: 12px; fill: #000; }
@@ -187,9 +189,14 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
     const keyWidth = key.width * unitSize - 1;
     const keyHeight = key.height * unitSize - 1;
     
-    // For text positioning, use the full key dimensions without inset
-    const textKeyWidth = key.width * unitSize;
-    const textKeyHeight = key.height * unitSize;
+    const legendArea = getLegendArea({
+      key,
+      keyX,
+      keyY,
+      keyWidth,
+      keyHeight,
+      unitSize,
+    });
     
     // Apply rotation transform with adjusted center
     const rotX = ((key.rotation_x !== undefined ? key.rotation_x : key.x + key.width / 2) * unitSize) - bounds.minX;
@@ -312,9 +319,8 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
         const index = frontIndex + 4; // Map to label positions 4, 5, 6
         const position = getLegendPosition(index);
         
-        // Calculate text position using full key dimensions
-        const textX = keyX + textKeyWidth * position.x;
-        const textY = keyY + textKeyHeight * position.y;
+        const textX = legendArea.x + legendArea.width * position.x;
+        const textY = legendArea.y + legendArea.height * position.y;
         
         // Get text size for front legends
         let textSizeValue = 3;
@@ -359,9 +365,8 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
       
       const position = getLegendPosition(index);
       
-      // Calculate text position
-      const textX = keyX + keyWidth * position.x;
-      const textY = keyY + keyHeight * position.y;
+      const textX = legendArea.x + legendArea.width * position.x;
+      const textY = legendArea.y + legendArea.height * position.y;
       
       // Get text size - default is 3 in KLE
       let textSizeValue = 3;
@@ -402,6 +407,50 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
   svg += '\n</svg>';
   
   return svg;
+}
+
+function getLegendArea({
+  key,
+  keyX,
+  keyY,
+  keyWidth,
+  keyHeight,
+  unitSize,
+}: {
+  key: Keyboard['keys'][number];
+  keyX: number;
+  keyY: number;
+  keyWidth: number;
+  keyHeight: number;
+  unitSize: number;
+}) {
+  const edgeHeight = 6;
+  const topOffset = 3;
+
+  let effectiveX = keyX;
+  let effectiveY = keyY;
+  let effectiveWidth = keyWidth;
+  let effectiveHeight = keyHeight;
+
+  const hasSecondaryRect =
+    key.x2 !== undefined ||
+    key.y2 !== undefined ||
+    key.width2 !== undefined ||
+    key.height2 !== undefined;
+
+  if (hasSecondaryRect && key.x2 !== undefined && key.x2 < 0 && key.width2 && key.width2 > key.width) {
+    effectiveX = keyX + (key.x2 || 0) * unitSize;
+    effectiveY = keyY + (key.y2 || 0) * unitSize;
+    effectiveWidth = (key.width2 || key.width) * unitSize - 1;
+    effectiveHeight = (key.height2 || key.height) * unitSize - 1;
+  }
+
+  return {
+    x: effectiveX + edgeHeight,
+    y: effectiveY + edgeHeight,
+    width: effectiveWidth - edgeHeight * 2,
+    height: effectiveHeight - edgeHeight * 2 - topOffset,
+  };
 }
 
 export const exportAsSVG = (_stage: any, keyboard: Keyboard) => {
