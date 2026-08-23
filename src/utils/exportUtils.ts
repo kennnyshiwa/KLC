@@ -4,6 +4,7 @@ import { getLegendPosition } from './keyUtils';
 import { parseIconLegend } from './iconParser';
 import trashconsFontData from '/fonts/trashcons.woff?inline';
 import gortonPerfectedFontData from '/fonts/GortonPerfectedVF.woff?inline';
+import type { KeyboardCanvasStage } from '../components/KeyboardCanvasUltraFast';
 
 // Calculate the bounding box of all keys
 function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54): {
@@ -80,76 +81,10 @@ function getKeyboardBounds(keyboard: Keyboard, unitSize: number = 54): {
   };
 }
 
-export const exportAsPNG = (stage: { toDataURL: () => string } | null, keyboard: Keyboard, editorSettings?: any) => {
+export const exportAsPNG = async (stage: KeyboardCanvasStage | null, keyboard: Keyboard) => {
   if (!stage) return;
-
-  const svgBlob = new Blob([buildKeyboardSVG(keyboard)], { type: 'image/svg+xml;charset=utf-8' });
-  const objectUrl = URL.createObjectURL(svgBlob);
-
-  const img = new Image();
-  img.onload = () => {
-    const unitSize = editorSettings?.unitSize || 54;
-    const bounds = getKeyboardBounds(keyboard, unitSize);
-    const hasFooter = keyboard.meta.name || keyboard.meta.author;
-    const footerHeight = hasFooter ? 40 : 0;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bounds.width);
-    canvas.height = Math.round(bounds.height) + footerHeight;
-    const ctx = canvas.getContext('2d');
-
-    if (!ctx) {
-      URL.revokeObjectURL(objectUrl);
-      return;
-    }
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Render the full layout export, not the current viewport-sized editor canvas.
-    ctx.drawImage(img, 0, 0, Math.round(bounds.width), Math.round(bounds.height));
-
-    if (hasFooter) {
-      ctx.strokeStyle = '#e0e0e0';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(20, bounds.height + 5);
-      ctx.lineTo(canvas.width - 20, bounds.height + 5);
-      ctx.stroke();
-      
-      // Prepare text
-      const footerText = [];
-      if (keyboard.meta.name) {
-        footerText.push(keyboard.meta.name);
-      }
-      if (keyboard.meta.author) {
-        footerText.push(`by ${keyboard.meta.author}`);
-      }
-      
-      // Draw footer text
-      ctx.fillStyle = '#333333';
-      ctx.font = '14px Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
-      const textY = bounds.height + footerHeight / 2 + 5;
-      ctx.fillText(footerText.join(' • '), canvas.width / 2, textY);
-    }
-
-    canvas.toBlob((blob) => {
-      if (blob) {
-        saveAs(blob, `${keyboard.meta.name || 'keyboard'}.png`);
-      }
-    }, 'image/png');
-
-    URL.revokeObjectURL(objectUrl);
-  };
-
-  img.onerror = () => {
-    URL.revokeObjectURL(objectUrl);
-  };
-
-  img.src = objectUrl;
+  const blob = await stage.captureLayoutPNG({ padding: 20 });
+  if (blob) saveAs(blob, `${keyboard.meta.name || 'keyboard'}.png`);
 };
 
 export function buildKeyboardSVG(keyboard: Keyboard) {

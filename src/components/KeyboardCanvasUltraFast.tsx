@@ -5,6 +5,7 @@ import { getLegendPosition, getStabilizerPositions } from '../utils/keyUtils';
 import { parseIconLegend } from '../utils/iconParser';
 import { fontManager } from '../utils/fontManager';
 import { isPointInRotatedRect, calculateNewPositionForRotationCenter } from '../utils/rotationUtils';
+import { getKeyboardRenderBounds, scaleRenderBounds } from '../utils/canvasExportBounds';
 
 interface KeyboardCanvasProps {
   width: number;
@@ -12,7 +13,12 @@ interface KeyboardCanvasProps {
 }
 
 export interface KeyboardCanvasRef {
-  getStage: () => { toDataURL: () => string } | null;
+  getStage: () => KeyboardCanvasStage | null;
+}
+
+export interface KeyboardCanvasStage {
+  toDataURL: () => string;
+  captureLayoutPNG: (options?: { padding?: number }) => Promise<Blob | null>;
 }
 
 interface KeyRect {
@@ -35,6 +41,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
   const animationFrameRef = useRef<number | null>(null);
   const renderRef = useRef<() => void>(() => {});
   const requestRenderRef = useRef<() => void>(() => {});
+  const isExportingRef = useRef(false);
   
   // Interaction state
   const isDraggingRef = useRef(false);
@@ -61,8 +68,55 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
 
   useImperativeHandle(ref, () => ({
     getStage: () => canvasRef.current ? {
-      toDataURL: () => canvasRef.current!.toDataURL()
-    } : null
+      toDataURL: () => canvasRef.current!.toDataURL(),
+      captureLayoutPNG: async ({ padding = 20 } = {}) => {
+        const canvas = canvasRef.current;
+        const ctx = contextRef.current;
+        if (!canvas || !ctx) return null;
+
+        isExportingRef.current = true;
+        renderRef.current();
+
+        try {
+          const scale = canvas.width / width;
+          const cssBounds = getKeyboardRenderBounds(
+            stateRef.current.keyboard.keys,
+            stateRef.current.editorSettings.unitSize,
+            {
+              offsetX: CANVAS_PADDING_LEFT,
+              offsetY: CANVAS_PADDING_TOP,
+              padding,
+              canvasWidth: width,
+              canvasHeight: height,
+            },
+          );
+          if (!cssBounds) return null;
+          const bounds = scaleRenderBounds(cssBounds, scale, canvas.width, canvas.height);
+
+          const output = document.createElement('canvas');
+          output.width = bounds.width;
+          output.height = bounds.height;
+          const outputContext = output.getContext('2d');
+          if (!outputContext) return null;
+          outputContext.drawImage(
+            canvas,
+            bounds.x,
+            bounds.y,
+            bounds.width,
+            bounds.height,
+            0,
+            0,
+            bounds.width,
+            bounds.height,
+          );
+
+          return await new Promise(resolve => output.toBlob(resolve, 'image/png'));
+        } finally {
+          isExportingRef.current = false;
+          renderRef.current();
+        }
+      },
+    } : null,
   }));
 
   // Helper function to adjust color brightness
@@ -491,7 +545,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Apply drag offset to selected keys
       let renderX = keyX;
       let renderY = keyY;
-      if (isDraggingRef.current && selectedKeys.has(key.id)) {
+      if (!isExportingRef.current && isDraggingRef.current && selectedKeys.has(key.id)) {
         renderX += dragOffsetRef.current.x;
         renderY += dragOffsetRef.current.y;
       }
@@ -680,7 +734,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         let baseRgb = parseColor(baseColor);
         
         // Brighten the key when hovered
-        if (hoveredKey === key.id) {
+        if (!isExportingRef.current && hoveredKey === key.id) {
           baseRgb = adjustBrightness(baseRgb, 20);
         }
         
@@ -907,7 +961,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       
       
       // Draw selection outline if selected (skip for row labels)
-      if (selectedKeys.has(key.id) && !(key.decal && key.ghost)) {
+      if (!isExportingRef.current && selectedKeys.has(key.id) && !(key.decal && key.ghost)) {
         // Check if this is a special shaped key
         const hasSecondaryRect = key.x2 !== undefined || key.y2 !== undefined || 
                                 key.width2 !== undefined || key.height2 !== undefined;
@@ -1794,7 +1848,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     ctx.restore();
     
     // Draw selection rectangle (in screen coordinates)
-    if (isSelectingRef.current) {
+    if (!isExportingRef.current && isSelectingRef.current) {
       ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
       ctx.strokeStyle = '#3498db';
       ctx.lineWidth = 1;
@@ -1808,7 +1862,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     ctx.translate(CANVAS_PADDING_LEFT, CANVAS_PADDING_TOP);
     
     // Draw rotation points for selected keys (only when rotation section is expanded)
-    if (stateRef.current.selectedKeys.size > 0 && stateRef.current.isRotationSectionExpanded) {
+    if (!isExportingRef.current && stateRef.current.selectedKeys.size > 0 && stateRef.current.isRotationSectionExpanded) {
       ctx.save();
       stateRef.current.selectedKeys.forEach(keyId => {
         const key = keyboard.keys.find(k => k.id === keyId);
@@ -1865,7 +1919,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     }
     
     // Draw stabilizer tooltip if hovering over one
-    if (hoveredStabRef.current && stateRef.current.editorSettings.showStabilizerPositions) {
+    if (!isExportingRef.current && hoveredStabRef.current && stateRef.current.editorSettings.showStabilizerPositions) {
       const { keyId, stabIndex, x, y, keyWidth } = hoveredStabRef.current;
       const key = keyboard.keys.find(k => k.id === keyId);
       if (key) {

@@ -2,20 +2,20 @@ import React, { useState } from 'react';
 import { FileDown, Image, FileText } from 'lucide-react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { exportAsPNG, exportAsSVG } from '../utils/exportUtils';
+import type { KeyboardCanvasStage } from './KeyboardCanvasUltraFast';
 
 interface ExportMenuProps {
-  getStage: () => any;
+  getStage: () => KeyboardCanvasStage | null;
 }
 
 const ExportMenu: React.FC<ExportMenuProps> = ({ getStage }) => {
   const [showMenu, setShowMenu] = useState(false);
   const keyboard = useKeyboardStore((state) => state.keyboard);
-  const editorSettings = useKeyboardStore((state) => state.editorSettings);
   
   const handleExportPNG = () => {
     const stage = getStage();
     if (stage) {
-      exportAsPNG(stage, keyboard, editorSettings);
+      void exportAsPNG(stage, keyboard);
     }
     setShowMenu(false);
   };
