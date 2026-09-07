@@ -1,4 +1,4 @@
-import { Keyboard, Key } from '../types';
+import { Keyboard, Key, KLEKeyData, KLELayout } from '../types';
 
 interface VialConfig {
   name: string;
@@ -11,7 +11,7 @@ interface VialConfig {
   };
   layouts: {
     labels: (string | string[])[];  // Can be string (checkbox) or string[] (multi-option)
-    keymap: any[][];
+    keymap: KLELayout;
   };
 }
 
@@ -51,23 +51,32 @@ function parseLayoutOption(label: string): { option: number; value: number } | n
  * Position 9: encoder flag ("e")
  */
 function buildVialLabelString(key: Key): string {
+  const labels = [...key.labels];
+
+  if (key.profile === 'ENCODER') {
+    if (labels[8] === 'e') {
+      labels[8] = '';
+    }
+    labels[9] = 'e';
+  }
+
   // Find the highest non-empty label position
   let maxPosition = 0;
   for (let i = 0; i < 12; i++) {
-    if (key.labels[i]) {
+    if (labels[i]) {
       maxPosition = i;
     }
   }
 
   // If no labels, return empty string
-  if (maxPosition === 0 && !key.labels[0]) {
+  if (maxPosition === 0 && !labels[0]) {
     return '';
   }
 
   // Build the label string with all positions up to maxPosition
   const parts: string[] = [];
   for (let i = 0; i <= maxPosition; i++) {
-    parts.push(key.labels[i] || '');
+    parts.push(labels[i] || '');
   }
 
   return parts.join('\n');
@@ -158,20 +167,20 @@ export function exportToVial(keyboard: Keyboard): VialConfig {
   }
 
   // Build keymap in Vial/KLE format
-  const keymap: any[][] = [];
+  const keymap: KLELayout = [];
   let lastY = 0;
 
   rows.forEach((rowKeys, rowIndex) => {
     if (rowKeys.length === 0) return;
 
-    const row: any[] = [];
+    const row: Array<KLEKeyData | string> = [];
     const firstKey = rowKeys[0];
     const rowY = Math.round(firstKey.y * 4) / 4;
 
     let expectedX = 0;
 
     rowKeys.forEach((key, keyIndex) => {
-      const props: any = {};
+      const props: KLEKeyData = {};
 
       // Handle Y offset for first key in row (except first row)
       if (keyIndex === 0 && rowIndex > 0) {
