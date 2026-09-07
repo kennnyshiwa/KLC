@@ -9,7 +9,8 @@ export interface RowLabelingPlan {
 }
 
 const SIZE_LEGEND_SLOT = 1;
-const ROW_LABEL_WIDTH = 0.5;
+const ROW_LABEL_WIDTH = 1;
+const ROW_LABEL_GUTTER = 1.25;
 
 const parseHexColor = (color: string): [number, number, number] | null => {
   const hex = color.trim().replace(/^#/, '');
@@ -213,7 +214,6 @@ export const planRowLabeling = (keys: Key[], createId: () => string): RowLabelin
   const resolvedRows = resolvePhysicalRows(keys);
   const existingRowLabels = keys.filter(isRowLabelKey);
   const existingLegendValues = new Set(existingRowLabels.map((key) => key.labels?.[0]).filter(Boolean));
-  const labelX = Math.min(...keys.filter(isPhysicalKey).map((key) => key.x)) - ROW_LABEL_WIDTH;
 
   // Visible labels are separate KLC row-label decals. Existing row-label decals
   // own their row and are never moved, renamed, or overwritten. Ambiguous KRK
@@ -230,7 +230,7 @@ export const planRowLabeling = (keys: Key[], createId: () => string): RowLabelin
     existingLegendValues.add(label);
     return [{
       id: createId(),
-      x: labelX,
+      x: 0,
       y,
       width: ROW_LABEL_WIDTH,
       height: 1,
@@ -242,8 +242,22 @@ export const planRowLabeling = (keys: Key[], createId: () => string): RowLabelin
     }];
   });
 
+  const rowPositionUpdates = planRowPositionUpdates(keys);
+  const shouldReserveLabelGutter = additions.length > 0 && existingRowLabels.length === 0;
+  const rowPositionChanges = new Map(rowPositionUpdates.map(({ id, changes }) => [id, changes]));
+  const updates = shouldReserveLabelGutter
+    ? keys.filter((key) => !isRowLabelKey(key)).map((key) => ({
+      id: key.id,
+      changes: {
+        x: key.x + ROW_LABEL_GUTTER,
+        ...(key.rotation_x === undefined ? {} : { rotation_x: key.rotation_x + ROW_LABEL_GUTTER }),
+        ...rowPositionChanges.get(key.id),
+      },
+    }))
+    : rowPositionUpdates;
+
   return {
-    updates: planRowPositionUpdates(keys),
+    updates,
     additions,
     labeledKeyCount: resolvedRows.reduce((count, row) => count + row.rowKeys.length, 0),
   };

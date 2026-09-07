@@ -190,7 +190,7 @@ describe('row auto-labeling', () => {
       { id: 'row-two', changes: { rowPosition: 'K2' } },
     ]);
     expect(plan.additions).toEqual([
-      expect.objectContaining({ id: 'generated-0', x: -0.5, y: 1, width: 0.5, labels: ['R2'], decal: true, ghost: true }),
+      expect.objectContaining({ id: 'generated-0', x: 0, y: 1, width: 1, labels: ['R2'], decal: true, ghost: true }),
     ]);
     expect(keys).toEqual(original);
     expect(plan.additions).not.toEqual(expect.arrayContaining([
@@ -203,6 +203,32 @@ describe('row auto-labeling', () => {
       updates: [],
       additions: [],
       labeledKeyCount: 3,
+    });
+  });
+
+  it('reserves the established 1.25u label gutter once without changing relative key geometry', () => {
+    const keys = [
+      makeKey('plain', { x: 2, y: 0 }),
+      makeKey('rotated', { x: 3, y: 0, rotation_angle: 15, rotation_x: 2.5, rotation_y: 0.5 }),
+      makeKey('encoder', { x: 4, y: 0, profile: 'ENCODER', decal: true, labels: [] }),
+    ];
+
+    const firstPlan = planRowLabeling(keys, () => 'row-label');
+
+    expect(firstPlan.updates).toEqual([
+      { id: 'plain', changes: { x: 3.25, rowPosition: 'K1' } },
+      { id: 'rotated', changes: { x: 4.25, rotation_x: 3.75, rowPosition: 'K1' } },
+      { id: 'encoder', changes: { x: 5.25 } },
+    ]);
+    expect(firstPlan.additions).toEqual([
+      expect.objectContaining({ x: 0, width: 1, labels: ['R1'] }),
+    ]);
+
+    const applied = [...applyUpdates(keys, firstPlan.updates), ...firstPlan.additions];
+    expect(planRowLabeling(applied, () => 'duplicate')).toEqual({
+      updates: [],
+      additions: [],
+      labeledKeyCount: 2,
     });
   });
 
@@ -264,8 +290,8 @@ describe('auto-label history integration', () => {
     expect(useKeyboardStore.getState().history).toHaveLength(2);
     expect([...useKeyboardStore.getState().selectedKeys]).toEqual(['selected']);
     expect(useKeyboardStore.getState().keyboard.keys).toEqual([
-      expect.objectContaining({ id: 'selected', rowPosition: 'K1', frontLegends: ['', 'USER', ''] }),
-      expect.objectContaining({ id: 'generated-row-label', labels: ['R1'] }),
+      expect.objectContaining({ id: 'selected', x: 1.25, rowPosition: 'K1', frontLegends: ['', 'USER', ''] }),
+      expect.objectContaining({ id: 'generated-row-label', x: 0, width: 1, labels: ['R1'] }),
     ]);
 
     useKeyboardStore.getState().undo();
@@ -274,6 +300,8 @@ describe('auto-label history integration', () => {
 
     useKeyboardStore.getState().redo();
     expect(useKeyboardStore.getState().keyboard.keys).toHaveLength(2);
-    expect(useKeyboardStore.getState().keyboard.keys[0].rowPosition).toBe('K1');
+    expect(useKeyboardStore.getState().keyboard.keys[0]).toEqual(
+      expect.objectContaining({ x: 1.25, rowPosition: 'K1' }),
+    );
   });
 });

@@ -88,9 +88,9 @@ describe('Toolbar automatic labels', () => {
     await user.click(screen.getByRole('button', { name: 'Rows' }));
     expect(applyKeyBatch).toHaveBeenCalledTimes(1);
     expect(applyKeyBatch.mock.calls[0][0]).toEqual([
-      { id: 'one-unit', changes: { rowPosition: 'K1' } },
-      { id: 'wide', changes: { rowPosition: 'K1' } },
-      { id: 'second-row', changes: { rowPosition: 'K2' } },
+      { id: 'one-unit', changes: { x: 1.25, rowPosition: 'K1' } },
+      { id: 'wide', changes: { x: 2.25, rowPosition: 'K1' } },
+      { id: 'second-row', changes: { x: 1.25, rowPosition: 'K2' } },
     ]);
 
     applyKeyBatch.mockClear();
@@ -118,18 +118,18 @@ describe('Toolbar automatic labels', () => {
     expect(applyKeyBatch).toHaveBeenCalledTimes(1);
     expect(applyKeyBatch.mock.calls[0][1]).toEqual([
       expect.objectContaining({
-        x: -0.5,
+        x: 0,
         y: 0,
-        width: 0.5,
+        width: 1,
         labels: ['R1'],
         color: 'transparent',
         decal: true,
         ghost: true,
       }),
       expect.objectContaining({
-        x: -0.5,
+        x: 0,
         y: 1,
-        width: 0.5,
+        width: 1,
         labels: ['R2'],
         color: 'transparent',
         decal: true,

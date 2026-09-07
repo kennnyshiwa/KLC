@@ -80,6 +80,14 @@ const physicalKeys = Array.from({ length: 5 }, (_, row): Key => ({
   profile: 'OEM',
 }));
 
+const applyPlan = (keys: Key[], plan: ReturnType<typeof planRowLabeling>): Key[] => {
+  const changesById = new Map(plan.updates.map(({ id, changes }) => [id, changes]));
+  return [
+    ...keys.map((key) => ({ ...key, ...changesById.get(key.id) })),
+    ...plan.additions,
+  ];
+};
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -103,7 +111,7 @@ describe.each([
       ...state,
       keyboard: {
         meta: { name: 'Canvas bounds regression' },
-        keys: [...physicalKeys, ...plan.additions],
+        keys: applyPlan(physicalKeys, plan),
       },
       editorSettings: { ...state.editorSettings, unitSize: 54 },
       selectedKeys: new Set(),
@@ -120,6 +128,7 @@ describe.each([
     expect(labels.map(({ text }) => text)).toEqual(['R1', 'R2', 'R3', 'R4', 'R5']);
 
     rectangles.forEach((rectangle) => {
+      expect(rectangle.width).toBe(52);
       expect(rectangle.x).toBeGreaterThanOrEqual(0);
       expect(rectangle.y).toBeGreaterThanOrEqual(0);
       expect(rectangle.x + rectangle.width).toBeLessThanOrEqual(visibleWidth);
