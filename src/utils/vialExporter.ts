@@ -53,7 +53,11 @@ function parseLayoutOption(label: string): { option: number; value: number } | n
 function buildVialLabelString(key: Key): string {
   const labels = [...key.labels];
 
-  if (key.profile === 'ENCODER') {
+  // Vial defines the exact center legend "e" as encoder-only and serializes it
+  // in slot 9. Older persisted KLC layouts may lack profile and retain that
+  // marker in slot 8, so the marker itself is also an encoder signal.
+  // https://get.vial.today/docs/encoders.html#3-add-vial-encoders-as-part-of-kle-keymap
+  if (key.profile === 'ENCODER' || labels[8] === 'e') {
     if (labels[8] === 'e') {
       labels[8] = '';
     }

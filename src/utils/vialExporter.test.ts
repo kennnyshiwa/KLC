@@ -43,8 +43,8 @@ const differingPaths = (before: unknown, after: unknown, path = ''): string[] =>
 };
 
 describe('exportToVial encoder labels', () => {
-  it('moves a stale encoder marker from slot 8 to the required slot 9', () => {
-    const labels = ['2,5', '', '', '3,1', '', '', '', '', 'e', 'stale'];
+  it('writes the marker in slot 9 for an explicit encoder profile', () => {
+    const labels = ['2,5', '', '', '3,1', '', '', '', '', '', 'stale'];
 
     const result = exportedLabel(makeKey({ profile: 'ENCODER', labels }));
 
@@ -52,12 +52,24 @@ describe('exportToVial encoder labels', () => {
     expect(result.split('\n')).toHaveLength(10);
     expect(result.split('\n')[8]).toBe('');
     expect(result.split('\n')[9]).toBe('e');
-    expect(labels[8]).toBe('e');
+    expect(labels[8]).toBe('');
     expect(labels[9]).toBe('stale');
   });
 
-  it('leaves non-encoder labels unchanged', () => {
-    const labels = ['2,5', 'top', '', '3,1', '', '', '', '', 'e'];
+  it('moves the exact persisted encoder marker without requiring a profile', () => {
+    const labels = ['2,5', '', '', '', '', '', '', '', 'e'];
+
+    const result = exportedLabel(makeKey({ labels }));
+
+    expect(result).toBe(`2,5${'\n'.repeat(9)}e`);
+    expect(result.split('\n')[8]).toBe('');
+    expect(result.split('\n')[9]).toBe('e');
+    expect(labels[8]).toBe('e');
+    expect(labels[9]).toBeUndefined();
+  });
+
+  it('leaves non-encoder labels and lookalikes unchanged', () => {
+    const labels = ['2,5', 'top', '', '3,1', '', '', '', '', 'E'];
 
     expect(exportedLabel(makeKey({ profile: 'OEM', labels })))
       .toBe(labels.join('\n'));
@@ -88,16 +100,16 @@ describe('reporter Vial fixture regression', () => {
     expect(expected.layouts.keymap[5][20]).toEqual({ x: 0.25, h: 2 });
 
     const keyboard = importFromVial(reporter);
+    const keyboardBeforeExport = cloneFixture(keyboard);
     const encoderKeys = keyboard.keys.filter(key => key.labels[8] === 'e');
     expect(encoderKeys).toHaveLength(2);
-    encoderKeys.forEach(key => {
-      key.profile = 'ENCODER';
-    });
+    expect(keyboard.keys.every(key => key.profile === undefined)).toBe(true);
 
     const exported = exportToVial(keyboard);
 
     expect(exported).toEqual(expected);
     expect(exported.layouts.keymap[5][20]).toEqual(reporter.layouts.keymap[5][20]);
+    expect(keyboard).toEqual(keyboardBeforeExport);
     expect(reporter).toEqual(reporterBeforeImport);
   });
 });
