@@ -665,6 +665,7 @@ body {
 
 .toolbar-btn.active:hover {
   background-color: #2980b9;
+  color: white;
 }
 
 .toolbar-result {

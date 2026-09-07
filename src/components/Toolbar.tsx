@@ -506,7 +506,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
           </button>
           <button
             onClick={handleAutoLabelRows}
-            className={`toolbar-btn toolbar-btn-with-text ${rowsApplied ? 'active' : ''}`}
+            className={`toolbar-btn ${rowsApplied ? 'active' : ''}`}
             title="Add visible row-label decals and KRK positions to unambiguous physical rows"
             aria-pressed={rowsApplied}
           >

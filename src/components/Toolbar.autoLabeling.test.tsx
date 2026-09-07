@@ -77,8 +77,14 @@ describe('Toolbar automatic labels', () => {
   it('shows standalone Rows and Size controls at representative mobile width', () => {
     render(<Toolbar getStage={() => null} />);
 
-    expect(screen.getByRole('button', { name: 'Rows' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Size' })).toBeVisible();
+    const krkButton = screen.getByRole('button', { name: 'KRK' });
+    const rowsButton = screen.getByRole('button', { name: 'Rows' });
+    const sizeButton = screen.getByRole('button', { name: 'Size' });
+
+    expect(rowsButton).toBeVisible();
+    expect(sizeButton).toBeVisible();
+    expect(rowsButton.className).toBe(krkButton.className);
+    expect(rowsButton.className).toBe(sizeButton.className);
   });
 
   it('applies each action as one store update without an extra history save', async () => {
