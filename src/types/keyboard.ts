@@ -34,6 +34,11 @@ export interface Key {
   steppedCenter?: boolean;
   decal?: boolean;
   frontLegends?: string[];
+  sizeLabelProvenance?: {
+    slot: number;
+    previousValue?: string;
+    appliedValue: string;
+  }; // Allows generated size legends to restore the user's prior legend safely
   centerLegend?: string;
   align?: number;
   font?: string;

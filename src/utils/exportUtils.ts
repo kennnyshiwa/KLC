@@ -2,6 +2,7 @@ import { saveAs } from 'file-saver';
 import { Keyboard } from '../types';
 import { getLegendPosition } from './keyUtils';
 import { parseIconLegend } from './iconParser';
+import { getFrontLegendColor } from './autoLabeling';
 import trashconsFontData from '/fonts/trashcons.woff?inline';
 import gortonPerfectedFontData from '/fonts/GortonPerfectedVF.woff?inline';
 import type { KeyboardCanvasStage } from '../components/KeyboardCanvasUltraFast';
@@ -268,13 +269,7 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
         // Convert KLE textSize to actual font size
         const fontSize = 6 + 2 * textSizeValue;
         
-        // Get text color
-        let textColor = 'rgba(0,0,0,0.6)'; // Default for front legends
-        if (Array.isArray(key.textColor) && key.textColor[index]) {
-          textColor = key.textColor[index];
-        } else if (key.default?.color?.[0]) {
-          textColor = key.default.color[0];
-        }
+        const textColor = getFrontLegendColor(key, frontIndex);
         
         svg += renderLegendTextSvg({
           legend,

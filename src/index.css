@@ -2983,6 +2983,10 @@ html.dark-mode body {
 
 /* Mobile and touch device optimizations */
 @media (max-width: 768px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
   .collapse-button,
   .expand-button {
     min-width: 44px;

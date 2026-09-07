@@ -19,6 +19,7 @@ import MirrorModal from './MirrorModal';
 import { Key } from '../types';
 import { detectBottomRowTarget, planBottomRowSplitVariant, type BottomRowTargetDetection } from '../utils/bottomRowVariants';
 import { getSuggestedSplitOptions, type SplitSuggestionBucket } from '../utils/splitKeySuggestions';
+import { planRowPositionUpdates, planSizeLabelUpdates } from '../utils/autoLabeling';
 
 interface ToolbarProps {
   getStage: () => any;
@@ -158,59 +159,18 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
     const newShowKeySize = !editorSettings.showKeySize;
     updateEditorSettings({ showKeySize: newShowKeySize });
 
-    const updates: Array<{ id: string; changes: Partial<Key> }> = [];
-
-    keyboard.keys.forEach(key => {
-      // Skip decal keys (LEDs, encoders, row labels)
-      if (key.decal) return;
-
-      // Check if key is longer than 1u in either dimension
-      if (key.width > 1 || key.height > 1) {
-        if (newShowKeySize) {
-          // Add size label
-          let sizeLabel = '';
-
-          // Determine the label based on key dimensions
-          if (key.height > 1 && key.width === 1) {
-            // Vertical key (e.g., 1x2)
-            sizeLabel = `${key.width}×${key.height}`;
-          } else if (key.width > 1 && key.height === 1) {
-            // Horizontal key (e.g., 2u, 2.25u)
-            sizeLabel = `${key.width}u`;
-          } else if (key.width > 1 && key.height > 1) {
-            // Both dimensions > 1
-            sizeLabel = `${key.width}×${key.height}`;
-          }
-
-          if (sizeLabel) {
-            // Update the front-center legend (index 1 in frontLegends array)
-            const newFrontLegends = [...(key.frontLegends || ['', '', ''])];
-            newFrontLegends[1] = sizeLabel;
-
-            updates.push({
-              id: key.id,
-              changes: {
-                frontLegends: newFrontLegends
-              }
-            });
-          }
-        } else {
-          // Remove size label from front-center position
-          if (key.frontLegends?.[1]) {
-            const newFrontLegends = [...(key.frontLegends || ['', '', ''])];
-            newFrontLegends[1] = '';
-            updates.push({
-              id: key.id,
-              changes: { frontLegends: newFrontLegends }
-            });
-          }
-        }
-      }
-    });
+    const updates = planSizeLabelUpdates(keyboard.keys, newShowKeySize);
 
     if (updates.length > 0) {
       updateKeys(updates);
-      saveToHistory();
+    }
+  };
+
+  const handleAutoLabelRows = () => {
+    const updates = planRowPositionUpdates(keyboard.keys);
+
+    if (updates.length > 0) {
+      updateKeys(updates);
     }
   };
 
@@ -519,52 +479,6 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
             onClick={() => {
               const newKrkMode = !editorSettings.krkMode;
               updateEditorSettings({ krkMode: newKrkMode });
-
-              // Auto-populate row positions when enabling KRK mode
-              if (newKrkMode && keyboard.keys.length > 0) {
-                // Check if any keys already have row positions (imported KRK data)
-                const hasExistingRowPositions = keyboard.keys.some(key => key.rowPosition);
-
-                if (!hasExistingRowPositions) {
-                  // Only auto-populate if no row positions exist
-                  // Group keys by Y position
-                  const rows = new Map<number, typeof keyboard.keys>();
-                  keyboard.keys.forEach(key => {
-                    const row = Math.floor(key.y);
-                    if (!rows.has(row)) {
-                      rows.set(row, []);
-                    }
-                    rows.get(row)!.push(key);
-                  });
-
-                  // Sort rows and assign row positions
-                  const sortedRows = Array.from(rows.entries()).sort((a, b) => a[0] - b[0]);
-                  const updates: Array<{ id: string; changes: Partial<Key> }> = [];
-
-                  sortedRows.forEach(([, rowKeys], index) => {
-                    // Only assign K1-K6, leave anything beyond row 6 blank
-                    if (index < 6) {
-                      const rowPosition = `K${index + 1}`;
-                      rowKeys.forEach(key => {
-                        // Only set if not already set
-                        if (!key.rowPosition) {
-                          updates.push({
-                            id: key.id,
-                            changes: { rowPosition }
-                          });
-                        }
-                      });
-                    }
-                    // Keys in row 7+ are left blank for user to decide (alternative keys)
-                  });
-
-                  if (updates.length > 0) {
-                    const updateKeys = useKeyboardStore.getState().updateKeys;
-                    updateKeys(updates);
-                    saveToHistory();
-                  }
-                }
-              }
             }}
             className={`toolbar-btn ${editorSettings.krkMode ? 'active' : ''}`}
             title="Enable KRK mode (adds row position data)"
@@ -572,9 +486,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
             KRK
           </button>
           <button
+            onClick={handleAutoLabelRows}
+            className="toolbar-btn toolbar-btn-with-text"
+            title="Auto-label physical key rows K1-K6"
+          >
+            Rows
+          </button>
+          <button
             onClick={handleToggleKeySize}
             className={`toolbar-btn ${editorSettings.showKeySize ? 'active' : ''}`}
-            title="Toggle size labels on keys > 1u (front legend)"
+            title="Toggle generated size labels on physical keys"
           >
             Size
           </button>

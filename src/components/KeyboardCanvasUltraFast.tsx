@@ -6,6 +6,7 @@ import { parseIconLegend } from '../utils/iconParser';
 import { fontManager } from '../utils/fontManager';
 import { isPointInRotatedRect, calculateNewPositionForRotationCenter } from '../utils/rotationUtils';
 import { getKeyboardRenderBounds, scaleRenderBounds } from '../utils/canvasExportBounds';
+import { getFrontLegendColor } from '../utils/autoLabeling';
 
 interface KeyboardCanvasProps {
   width: number;
@@ -1327,8 +1328,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Draw front legends if present
       if (key.frontLegends && key.frontLegends.some(l => l)) {
         ctx.save();
-        // Use white text for decal keys in dark mode, otherwise black
-        ctx.fillStyle = (key.decal && isDarkMode) ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)';
+        const setFrontLegendColor = (slot: number) => {
+          ctx.fillStyle = getFrontLegendColor(key, slot);
+        };
         const frontFont = key.font || '';
         ctx.font = frontFont ? fontManager.getRenderFont(frontFont, 10) : '10px Arial';
         ctx.textBaseline = 'middle';
@@ -1345,18 +1347,21 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           
           // Left front legend - centered within left third
           if (key.frontLegends[0]) {
+            setFrontLegendColor(0);
             ctx.textAlign = 'center';
             ctx.fillText(key.frontLegends[0], renderX + keyWidth / 6, frontY);
           }
           
           // Center front legend
           if (key.frontLegends[1]) {
+            setFrontLegendColor(1);
             ctx.textAlign = 'center';
             ctx.fillText(key.frontLegends[1], renderX + keyWidth / 2, frontY);
           }
           
           // Right front legend - centered within right third
           if (key.frontLegends[2]) {
+            setFrontLegendColor(2);
             ctx.textAlign = 'center';
             ctx.fillText(key.frontLegends[2], renderX + keyWidth * 5 / 6, frontY);
           }
@@ -1364,18 +1369,21 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           // Default positioning for front legends
           // Left front legend
           if (key.frontLegends[0]) {
+            setFrontLegendColor(0);
             ctx.textAlign = 'left';
             ctx.fillText(key.frontLegends[0], renderX + padding, frontY);
           }
           
           // Center front legend
           if (key.frontLegends[1]) {
+            setFrontLegendColor(1);
             ctx.textAlign = 'center';
             ctx.fillText(key.frontLegends[1], renderX + keyWidth / 2, frontY);
           }
           
           // Right front legend
           if (key.frontLegends[2]) {
+            setFrontLegendColor(2);
             ctx.textAlign = 'right';
             ctx.fillText(key.frontLegends[2], renderX + keyWidth - padding, frontY);
           }
