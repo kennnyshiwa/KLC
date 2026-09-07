@@ -667,6 +667,18 @@ body {
   background-color: #2980b9;
 }
 
+.toolbar-result {
+  align-self: center;
+  color: #246b3c;
+  font-size: 0.75rem;
+  font-weight: 600;
+  max-width: 15rem;
+}
+
+.dark-mode .toolbar-result {
+  color: #86d79f;
+}
+
 .toolbar-separator {
   width: 1px;
   height: 24px;

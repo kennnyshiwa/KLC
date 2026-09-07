@@ -2,6 +2,12 @@ import type { Key } from '../types';
 
 export type KeyUpdate = { id: string; changes: Partial<Key> };
 
+export interface RowLabelingPlan {
+  updates: KeyUpdate[];
+  additions: Key[];
+  labeledKeyCount: number;
+}
+
 const SIZE_LEGEND_SLOT = 1;
 
 const parseHexColor = (color: string): [number, number, number] | null => {
@@ -140,7 +146,15 @@ const validRowPosition = (value: string | undefined): value is string => (
   value !== undefined && /^K[1-6]$/.test(value)
 );
 
-export const planRowPositionUpdates = (keys: Key[]): KeyUpdate[] => {
+export const isRowLabelKey = (key: Key): boolean => (
+  key.decal === true && key.ghost === true && key.color === 'transparent'
+);
+
+const visibleLabelForPosition = (rowPosition: string): string => (
+  rowPosition === 'K6' ? 'SP' : `R${rowPosition.slice(1)}`
+);
+
+const resolvePhysicalRows = (keys: Key[]): Array<{ rowKeys: Key[]; rowPosition: string }> => {
   const rows = new Map<number, Key[]>();
 
   keys.filter(isPhysicalKey).forEach((key) => {
@@ -182,12 +196,54 @@ export const planRowPositionUpdates = (keys: Key[]): KeyUpdate[] => {
       }
     }
 
-    if (!rowPosition) {
+    return rowPosition ? [{ rowKeys, rowPosition }] : [];
+  });
+};
+
+export const planRowPositionUpdates = (keys: Key[]): KeyUpdate[] => {
+  return resolvePhysicalRows(keys).flatMap(({ rowKeys, rowPosition }) => (
+    rowKeys
+      .filter((key) => !key.rowPosition)
+      .map((key) => ({ id: key.id, changes: { rowPosition } }))
+  ));
+};
+
+export const planRowLabeling = (keys: Key[], createId: () => string): RowLabelingPlan => {
+  const resolvedRows = resolvePhysicalRows(keys);
+  const existingRowLabels = keys.filter(isRowLabelKey);
+  const existingLegendValues = new Set(existingRowLabels.map((key) => key.labels?.[0]).filter(Boolean));
+  const labelX = Math.min(...keys.filter(isPhysicalKey).map((key) => key.x)) - 1.25;
+
+  // Visible labels are separate KLC row-label decals. Existing row-label decals
+  // own their row and are never moved, renamed, or overwritten. Ambiguous KRK
+  // rows are omitted by resolvePhysicalRows, so custom/conflicting data wins.
+  const additions = resolvedRows.flatMap(({ rowKeys, rowPosition }) => {
+    const y = Math.min(...rowKeys.map((key) => key.y));
+    const label = visibleLabelForPosition(rowPosition);
+    const rowAlreadyHasLabel = existingRowLabels.some((key) => rowBucket(key) === rowBucket(rowKeys[0]));
+
+    if (rowAlreadyHasLabel || existingLegendValues.has(label)) {
       return [];
     }
 
-    return rowKeys
-      .filter((key) => !key.rowPosition)
-      .map((key) => ({ id: key.id, changes: { rowPosition } }));
+    existingLegendValues.add(label);
+    return [{
+      id: createId(),
+      x: labelX,
+      y,
+      width: 1,
+      height: 1,
+      labels: [label],
+      color: 'transparent',
+      profile: 'OEM' as const,
+      decal: true,
+      ghost: true,
+    }];
   });
+
+  return {
+    updates: planRowPositionUpdates(keys),
+    additions,
+    labeledKeyCount: resolvedRows.reduce((count, row) => count + row.rowKeys.length, 0),
+  };
 };

@@ -11,7 +11,7 @@ import {
   FlipVertical,
   ChevronDown,
 } from 'lucide-react';
-import { duplicateKey } from '../utils/keyUtils';
+import { duplicateKey, generateKeyId } from '../utils/keyUtils';
 import ExportMenu from './ExportMenu';
 import AddKeyMenu from './AddKeyMenu';
 import ColorMenuBar, { ColorMenuGrid } from './ColorMenuBar';
@@ -19,7 +19,7 @@ import MirrorModal from './MirrorModal';
 import { Key } from '../types';
 import { detectBottomRowTarget, planBottomRowSplitVariant, type BottomRowTargetDetection } from '../utils/bottomRowVariants';
 import { getSuggestedSplitOptions, type SplitSuggestionBucket } from '../utils/splitKeySuggestions';
-import { planRowPositionUpdates, planSizeLabelUpdates } from '../utils/autoLabeling';
+import { isRowLabelKey, planRowLabeling, planSizeLabelUpdates } from '../utils/autoLabeling';
 
 interface ToolbarProps {
   getStage: () => any;
@@ -61,6 +61,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const [showMirrorModal, setShowMirrorModal] = React.useState(false);
   const [showBottomRowMenu, setShowBottomRowMenu] = React.useState(false);
   const [pinnedBottomRowTarget, setPinnedBottomRowTarget] = React.useState<BottomRowTargetDetection | null>(null);
+  const [rowLabelResult, setRowLabelResult] = React.useState<string | null>(null);
   const toolbarContainerRef = React.useRef<HTMLDivElement>(null);
   // Store original labels when Vial mode is enabled
   const originalLabelsRef = React.useRef<Map<string, string[]>>(new Map());
@@ -80,6 +81,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const insertKeysAfterKey = useKeyboardStore((state) => state.insertKeysAfterKey);
   const setMultiSelectMode = useKeyboardStore((state) => state.setMultiSelectMode);
   const updateKeys = useKeyboardStore((state) => state.updateKeys);
+  const applyKeyBatch = useKeyboardStore((state) => state.applyKeyBatch);
 
   const detectedBottomRowTarget = React.useMemo(() => detectBottomRowTarget(keyboard.keys), [keyboard.keys]);
   const pinnedBottomRowTargetIsValid = React.useMemo(() => {
@@ -167,12 +169,28 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   };
 
   const handleAutoLabelRows = () => {
-    const updates = planRowPositionUpdates(keyboard.keys);
+    const plan = planRowLabeling(keyboard.keys, generateKeyId);
 
-    if (updates.length > 0) {
-      updateKeys(updates);
+    if (plan.updates.length > 0 || plan.additions.length > 0) {
+      applyKeyBatch(plan.updates, plan.additions);
+    }
+
+    if (plan.additions.length > 0) {
+      setRowLabelResult(`Added ${plan.additions.length} row ${plan.additions.length === 1 ? 'label' : 'labels'} to ${plan.labeledKeyCount} ${plan.labeledKeyCount === 1 ? 'key' : 'keys'}.`);
+    } else if (plan.updates.length > 0) {
+      setRowLabelResult(`Updated ${plan.updates.length} ${plan.updates.length === 1 ? 'key' : 'keys'}; visible row labels already present.`);
+    } else {
+      setRowLabelResult('Rows already labeled; no changes needed.');
     }
   };
+
+  const rowsApplied = keyboard.keys.some(isRowLabelKey);
+
+  React.useEffect(() => {
+    if (!rowsApplied && rowLabelResult) {
+      setRowLabelResult(null);
+    }
+  }, [rowLabelResult, rowsApplied]);
 
   const toggleSnap = () => {
     updateEditorSettings({ snapToGrid: !editorSettings.snapToGrid });
@@ -487,8 +505,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
           </button>
           <button
             onClick={handleAutoLabelRows}
-            className="toolbar-btn toolbar-btn-with-text"
-            title="Auto-label physical key rows K1-K6"
+            className={`toolbar-btn toolbar-btn-with-text ${rowsApplied ? 'active' : ''}`}
+            title="Add visible row-label decals and KRK positions to unambiguous physical rows"
+            aria-pressed={rowsApplied}
           >
             Rows
           </button>
@@ -515,6 +534,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
             <FlipVertical size={18} />
           </button>
         </div>
+        {rowLabelResult && (
+          <span className="toolbar-result" role="status" aria-live="polite">
+            {rowLabelResult}
+          </span>
+        )}
         
         <div className="toolbar-separator" />
         

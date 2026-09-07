@@ -23,6 +23,7 @@ interface KeyboardState {
   setKeyboard: (keyboard: Keyboard) => void;
   updateKey: (keyId: string, updates: Partial<Key>) => void;
   updateKeys: (updates: Array<{ id: string; changes: Partial<Key> }>) => void;
+  applyKeyBatch: (updates: Array<{ id: string; changes: Partial<Key> }>, additions: Key[]) => void;
   addKey: (key: Key) => void;
   insertKeysAfterKey: (keyId: string, insertedKeys: Key[]) => void;
   deleteKey: (keyId: string) => void;
@@ -143,6 +144,31 @@ export const useKeyboardStore = create<KeyboardState>()(
           hasUnsavedChanges: true,
           // Track the last modified key (use the last one in the updates array)
           lastModifiedKeyId: updates.length > 0 ? updates[updates.length - 1].id : state.lastModifiedKeyId,
+        }));
+        get().saveToHistory();
+      },
+
+      applyKeyBatch: (updates, additions) => {
+        if (updates.length === 0 && additions.length === 0) {
+          return;
+        }
+
+        const updateMap = new Map(updates.map(({ id, changes }) => [id, changes]));
+        set((state) => ({
+          keyboard: {
+            ...state.keyboard,
+            keys: [
+              ...state.keyboard.keys.map((key) => {
+                const changes = updateMap.get(key.id);
+                return changes ? { ...key, ...changes } : key;
+              }),
+              ...additions,
+            ],
+          },
+          hasUnsavedChanges: true,
+          lastModifiedKeyId: additions[additions.length - 1]?.id
+            ?? updates[updates.length - 1]?.id
+            ?? state.lastModifiedKeyId,
         }));
         get().saveToHistory();
       },

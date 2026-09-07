@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import Toolbar from './Toolbar';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
+import type { Key } from '../types';
 
 expect.extend(matchers);
 
@@ -23,6 +24,7 @@ vi.mock('./MirrorModal', () => ({ default: () => null }));
 
 describe('Toolbar automatic labels', () => {
   const updateKeys = vi.fn();
+  const applyKeyBatch = vi.fn<(updates: Array<{ id: string; changes: Partial<Key> }>, additions: Key[]) => void>();
   const saveToHistory = vi.fn();
   const updateEditorSettings = vi.fn();
   let state: Record<string, unknown>;
@@ -54,7 +56,16 @@ describe('Toolbar automatic labels', () => {
       insertKeysAfterKey: vi.fn(),
       setMultiSelectMode: vi.fn(),
       updateKeys,
+      applyKeyBatch,
     };
+    applyKeyBatch.mockImplementation((updates, additions) => {
+      const keyboard = state.keyboard as { keys: Key[] };
+      const changesById = new Map(updates.map((update) => [update.id, update.changes]));
+      keyboard.keys = [
+        ...keyboard.keys.map((key) => ({ ...key, ...changesById.get(key.id) })),
+        ...additions,
+      ];
+    });
     const mockedStore = useKeyboardStore as unknown as {
       mockImplementation: (
         implementation: (selector: (value: Record<string, unknown>) => unknown) => unknown,
@@ -75,14 +86,14 @@ describe('Toolbar automatic labels', () => {
     render(<Toolbar getStage={() => null} />);
 
     await user.click(screen.getByRole('button', { name: 'Rows' }));
-    expect(updateKeys).toHaveBeenCalledTimes(1);
-    expect(updateKeys).toHaveBeenLastCalledWith([
+    expect(applyKeyBatch).toHaveBeenCalledTimes(1);
+    expect(applyKeyBatch.mock.calls[0][0]).toEqual([
       { id: 'one-unit', changes: { rowPosition: 'K1' } },
       { id: 'wide', changes: { rowPosition: 'K1' } },
       { id: 'second-row', changes: { rowPosition: 'K2' } },
     ]);
 
-    updateKeys.mockClear();
+    applyKeyBatch.mockClear();
     await user.click(screen.getByRole('button', { name: 'Size' }));
     expect(updateEditorSettings).toHaveBeenCalledWith({ showKeySize: true });
     expect(updateKeys).toHaveBeenCalledTimes(1);
@@ -93,5 +104,37 @@ describe('Toolbar automatic labels', () => {
       expect.objectContaining({ id: 'one-unit' }),
     ]));
     expect(saveToHistory).not.toHaveBeenCalled();
+  });
+
+  it('visibly applies row-label decals and reports the result', async () => {
+    const user = userEvent.setup();
+    render(<Toolbar getStage={() => null} />);
+
+    const rowsButton = screen.getByRole('button', { name: 'Rows' });
+    expect(rowsButton).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(rowsButton);
+
+    expect(applyKeyBatch).toHaveBeenCalledTimes(1);
+    expect(applyKeyBatch.mock.calls[0][1]).toEqual([
+      expect.objectContaining({
+        x: -1.25,
+        y: 0,
+        labels: ['R1'],
+        color: 'transparent',
+        decal: true,
+        ghost: true,
+      }),
+      expect.objectContaining({
+        x: -1.25,
+        y: 1,
+        labels: ['R2'],
+        color: 'transparent',
+        decal: true,
+        ghost: true,
+      }),
+    ]);
+    expect(rowsButton).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('status')).toHaveTextContent('Added 2 row labels to 3 keys.');
   });
 });

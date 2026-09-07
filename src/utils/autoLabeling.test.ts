@@ -4,9 +4,12 @@ import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import {
   getFrontLegendColor,
   getGeneratedSizeLabelColor,
+  planRowLabeling,
   planRowPositionUpdates,
   planSizeLabelUpdates,
 } from './autoLabeling';
+import { exportToKLE } from './kleExporter';
+import { exportToVial } from './vialExporter';
 
 const makeKey = (id: string, changes: Partial<Key> = {}): Key => ({
   id,
@@ -152,6 +155,67 @@ describe('row auto-labeling', () => {
       })),
     );
   });
+
+  it('adds separate visible decals without overwriting custom legends or conflicting row data', () => {
+    const keys = [
+      makeKey('row-one-existing', { y: 0, labels: ['Esc'], frontLegends: ['USER'], rowPosition: 'K1' }),
+      makeKey('row-one-missing', { x: 1, y: 0, labels: ['1'] }),
+      makeKey('custom-row-label', {
+        x: -1.25,
+        y: 0,
+        labels: ['CUSTOM'],
+        color: 'transparent',
+        decal: true,
+        ghost: true,
+      }),
+      makeKey('row-two', { y: 1, labels: ['Q'] }),
+      makeKey('conflict-a', { y: 2, rowPosition: 'K3' }),
+      makeKey('conflict-b', { x: 1, y: 2, rowPosition: 'K4' }),
+    ];
+    const original = structuredClone(keys);
+    let nextId = 0;
+
+    const plan = planRowLabeling(keys, () => `generated-${nextId++}`);
+
+    expect(plan.updates).toEqual([
+      { id: 'row-one-missing', changes: { rowPosition: 'K1' } },
+      { id: 'row-two', changes: { rowPosition: 'K2' } },
+    ]);
+    expect(plan.additions).toEqual([
+      expect.objectContaining({ id: 'generated-0', x: -1.25, y: 1, labels: ['R2'], decal: true, ghost: true }),
+    ]);
+    expect(keys).toEqual(original);
+    expect(plan.additions).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ labels: ['R1'] }),
+      expect.objectContaining({ labels: ['R3'] }),
+    ]));
+
+    const applied = [...applyUpdates(keys, plan.updates), ...plan.additions];
+    expect(planRowLabeling(applied, () => 'duplicate')).toEqual({
+      updates: [],
+      additions: [],
+      labeledKeyCount: 3,
+    });
+  });
+
+  it('keeps physical legends intact and produces valid KLE, KRK, and Vial exports', () => {
+    const keys = [
+      makeKey('one', { labels: ['0,0', '', '', '1,0'], frontLegends: ['LEFT', 'CENTER', 'RIGHT'] }),
+      makeKey('two', { x: 1, labels: ['0,1'] }),
+    ];
+    const plan = planRowLabeling(keys, () => 'generated-row-label');
+    const labeledKeys = [...applyUpdates(keys, plan.updates), ...plan.additions];
+    const keyboard: Keyboard = { meta: { name: 'Export safety' }, keys: labeledKeys };
+
+    expect(labeledKeys[0].labels).toEqual(keys[0].labels);
+    expect(labeledKeys[0].frontLegends).toEqual(keys[0].frontLegends);
+    expect(JSON.stringify(exportToKLE(keyboard, false))).toContain('R1');
+    expect(JSON.stringify(exportToKLE(keyboard, true))).toContain('"p":"K1"');
+
+    const vial = exportToVial(keyboard);
+    expect(vial.matrix).toEqual({ rows: 1, cols: 2 });
+    expect(JSON.stringify(vial.layouts.keymap)).toContain('R1');
+  });
 });
 
 describe('auto-label history integration', () => {
@@ -180,5 +244,28 @@ describe('auto-label history integration', () => {
 
     useKeyboardStore.getState().redo();
     expect(useKeyboardStore.getState().keyboard.keys[0].frontLegends?.[1]).toBe('2u');
+  });
+
+  it('commits row metadata and visible decals atomically, preserving selection with working redo', () => {
+    const before = useKeyboardStore.getState();
+    const plan = planRowLabeling(before.keyboard.keys, () => 'generated-row-label');
+
+    before.applyKeyBatch(plan.updates, plan.additions);
+
+    expect(useKeyboardStore.getState().historyIndex).toBe(1);
+    expect(useKeyboardStore.getState().history).toHaveLength(2);
+    expect([...useKeyboardStore.getState().selectedKeys]).toEqual(['selected']);
+    expect(useKeyboardStore.getState().keyboard.keys).toEqual([
+      expect.objectContaining({ id: 'selected', rowPosition: 'K1', frontLegends: ['', 'USER', ''] }),
+      expect.objectContaining({ id: 'generated-row-label', labels: ['R1'] }),
+    ]);
+
+    useKeyboardStore.getState().undo();
+    expect(useKeyboardStore.getState().keyboard.keys).toHaveLength(1);
+    expect(useKeyboardStore.getState().keyboard.keys[0].rowPosition).toBeUndefined();
+
+    useKeyboardStore.getState().redo();
+    expect(useKeyboardStore.getState().keyboard.keys).toHaveLength(2);
+    expect(useKeyboardStore.getState().keyboard.keys[0].rowPosition).toBe('K1');
   });
 });
