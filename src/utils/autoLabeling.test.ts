@@ -27,6 +27,14 @@ const applyUpdates = (keys: Key[], updates: ReturnType<typeof planSizeLabelUpdat
   return keys.map((key) => ({ ...key, ...changesById.get(key.id) }));
 };
 
+const cloneKey = (key: Key): Key => ({
+  ...key,
+  labels: [...key.labels],
+  frontLegends: key.frontLegends ? [...key.frontLegends] : undefined,
+  textColor: key.textColor ? [...key.textColor] : undefined,
+  sizeLabelProvenance: key.sizeLabelProvenance ? { ...key.sizeLabelProvenance } : undefined,
+});
+
 describe('size auto-labeling', () => {
   it('leaves every 1u size field byte-for-byte unchanged in both directions', () => {
     const oneUnit = makeKey('one-unit', {
@@ -38,7 +46,7 @@ describe('size auto-labeling', () => {
         appliedValue: 'USER',
       },
     });
-    const original = structuredClone(oneUnit);
+    const original = cloneKey(oneUnit);
 
     expect(planSizeLabelUpdates([oneUnit], true)).toEqual([]);
     expect(planSizeLabelUpdates([oneUnit], false)).toEqual([]);
@@ -172,7 +180,7 @@ describe('row auto-labeling', () => {
       makeKey('conflict-a', { y: 2, rowPosition: 'K3' }),
       makeKey('conflict-b', { x: 1, y: 2, rowPosition: 'K4' }),
     ];
-    const original = structuredClone(keys);
+    const original = keys.map(cloneKey);
     let nextId = 0;
 
     const plan = planRowLabeling(keys, () => `generated-${nextId++}`);
@@ -182,7 +190,7 @@ describe('row auto-labeling', () => {
       { id: 'row-two', changes: { rowPosition: 'K2' } },
     ]);
     expect(plan.additions).toEqual([
-      expect.objectContaining({ id: 'generated-0', x: -1.25, y: 1, labels: ['R2'], decal: true, ghost: true }),
+      expect.objectContaining({ id: 'generated-0', x: -0.5, y: 1, width: 0.5, labels: ['R2'], decal: true, ghost: true }),
     ]);
     expect(keys).toEqual(original);
     expect(plan.additions).not.toEqual(expect.arrayContaining([

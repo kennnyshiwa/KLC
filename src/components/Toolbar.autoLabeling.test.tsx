@@ -118,16 +118,18 @@ describe('Toolbar automatic labels', () => {
     expect(applyKeyBatch).toHaveBeenCalledTimes(1);
     expect(applyKeyBatch.mock.calls[0][1]).toEqual([
       expect.objectContaining({
-        x: -1.25,
+        x: -0.5,
         y: 0,
+        width: 0.5,
         labels: ['R1'],
         color: 'transparent',
         decal: true,
         ghost: true,
       }),
       expect.objectContaining({
-        x: -1.25,
+        x: -0.5,
         y: 1,
+        width: 0.5,
         labels: ['R2'],
         color: 'transparent',
         decal: true,

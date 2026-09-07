@@ -9,6 +9,7 @@ export interface RowLabelingPlan {
 }
 
 const SIZE_LEGEND_SLOT = 1;
+const ROW_LABEL_WIDTH = 0.5;
 
 const parseHexColor = (color: string): [number, number, number] | null => {
   const hex = color.trim().replace(/^#/, '');
@@ -212,7 +213,7 @@ export const planRowLabeling = (keys: Key[], createId: () => string): RowLabelin
   const resolvedRows = resolvePhysicalRows(keys);
   const existingRowLabels = keys.filter(isRowLabelKey);
   const existingLegendValues = new Set(existingRowLabels.map((key) => key.labels?.[0]).filter(Boolean));
-  const labelX = Math.min(...keys.filter(isPhysicalKey).map((key) => key.x)) - 1.25;
+  const labelX = Math.min(...keys.filter(isPhysicalKey).map((key) => key.x)) - ROW_LABEL_WIDTH;
 
   // Visible labels are separate KLC row-label decals. Existing row-label decals
   // own their row and are never moved, renamed, or overwritten. Ambiguous KRK
@@ -231,7 +232,7 @@ export const planRowLabeling = (keys: Key[], createId: () => string): RowLabelin
       id: createId(),
       x: labelX,
       y,
-      width: 1,
+      width: ROW_LABEL_WIDTH,
       height: 1,
       labels: [label],
       color: 'transparent',
