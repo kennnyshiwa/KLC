@@ -275,13 +275,16 @@ describe('auto-label history integration', () => {
 
     useKeyboardStore.getState().undo();
     expect(useKeyboardStore.getState().keyboard.keys[0].frontLegends?.[1]).toBe('USER');
+    expect([...useKeyboardStore.getState().selectedKeys]).toEqual([]);
 
     useKeyboardStore.getState().redo();
     expect(useKeyboardStore.getState().keyboard.keys[0].frontLegends?.[1]).toBe('2u');
+    expect([...useKeyboardStore.getState().selectedKeys]).toEqual([]);
   });
 
   it('commits row metadata and visible decals atomically, preserving selection with working redo', () => {
     const before = useKeyboardStore.getState();
+    before.selectKeys(['selected', 'missing']);
     const plan = planRowLabeling(before.keyboard.keys, () => 'generated-row-label');
 
     before.applyKeyBatch(plan.updates, plan.additions);
@@ -297,11 +300,13 @@ describe('auto-label history integration', () => {
     useKeyboardStore.getState().undo();
     expect(useKeyboardStore.getState().keyboard.keys).toHaveLength(1);
     expect(useKeyboardStore.getState().keyboard.keys[0].rowPosition).toBeUndefined();
+    expect([...useKeyboardStore.getState().selectedKeys]).toEqual(['selected']);
 
     useKeyboardStore.getState().redo();
     expect(useKeyboardStore.getState().keyboard.keys).toHaveLength(2);
     expect(useKeyboardStore.getState().keyboard.keys[0]).toEqual(
       expect.objectContaining({ x: 1.25, rowPosition: 'K1' }),
     );
+    expect([...useKeyboardStore.getState().selectedKeys]).toEqual(['selected']);
   });
 });

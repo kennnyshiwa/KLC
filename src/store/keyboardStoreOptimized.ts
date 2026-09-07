@@ -8,6 +8,7 @@ interface KeyboardState {
   hoveredKey: string | null;
   editorSettings: EditorSettings;
   history: Keyboard[];
+  historySelections: Array<string[] | null>;
   historyIndex: number;
   isDragging: boolean;
   hasUnsavedChanges: boolean;
@@ -93,6 +94,7 @@ export const useKeyboardStore = create<KeyboardState>()(
         selectionMode: 'touch',
       },
       history: [],
+      historySelections: [],
       historyIndex: -1,
       isDragging: false,
       hasUnsavedChanges: false,
@@ -111,6 +113,7 @@ export const useKeyboardStore = create<KeyboardState>()(
           lastSavedKeyboard: keyboard,
           selectedKeys: new Set(),
           history: [keyboard],
+          historySelections: [null],
           historyIndex: 0,
           currentLayoutId: null, // Clear the current layout ID when loading a new keyboard
         });
@@ -153,24 +156,42 @@ export const useKeyboardStore = create<KeyboardState>()(
           return;
         }
 
+        const selection = Array.from(get().selectedKeys);
         const updateMap = new Map(updates.map(({ id, changes }) => [id, changes]));
-        set((state) => ({
-          keyboard: {
-            ...state.keyboard,
-            keys: [
-              ...state.keyboard.keys.map((key) => {
-                const changes = updateMap.get(key.id);
-                return changes ? { ...key, ...changes } : key;
-              }),
-              ...additions,
-            ],
-          },
-          hasUnsavedChanges: true,
-          lastModifiedKeyId: additions[additions.length - 1]?.id
-            ?? updates[updates.length - 1]?.id
-            ?? state.lastModifiedKeyId,
-        }));
+        set((state) => {
+          const keys = [
+            ...state.keyboard.keys.map((key) => {
+              const changes = updateMap.get(key.id);
+              return changes ? { ...key, ...changes } : key;
+            }),
+            ...additions,
+          ];
+          const validIds = new Set(keys.map((key) => key.id));
+
+          return {
+            keyboard: {
+              ...state.keyboard,
+              keys,
+            },
+            selectedKeys: new Set(selection.filter((id) => validIds.has(id))),
+            hasUnsavedChanges: true,
+            lastModifiedKeyId: additions[additions.length - 1]?.id
+              ?? updates[updates.length - 1]?.id
+              ?? state.lastModifiedKeyId,
+          };
+        });
         get().saveToHistory();
+
+        // Atomic batches back the Rows action. Preserve its valid selection on
+        // both sides of this checkpoint without changing other undo semantics.
+        set((state) => {
+          const historySelections = [...state.historySelections];
+          if (state.historyIndex > 0) {
+            historySelections[state.historyIndex - 1] = selection;
+          }
+          historySelections[state.historyIndex] = selection;
+          return { historySelections };
+        });
       },
 
       addKey: (key) => {
@@ -317,41 +338,51 @@ export const useKeyboardStore = create<KeyboardState>()(
       },
 
       saveToHistory: () => {
-        const { keyboard, history, historyIndex } = get();
+        const { keyboard, history, historySelections, historyIndex } = get();
         const newHistory = history.slice(0, historyIndex + 1);
+        const newHistorySelections = historySelections.slice(0, historyIndex + 1);
         newHistory.push(JSON.parse(JSON.stringify(keyboard)));
+        newHistorySelections.push(null);
         
         if (newHistory.length > 50) {
           newHistory.shift();
+          newHistorySelections.shift();
         }
         
         set({
           history: newHistory,
+          historySelections: newHistorySelections,
           historyIndex: newHistory.length - 1,
         });
       },
 
       undo: () => {
-        const { history, historyIndex } = get();
+        const { history, historySelections, historyIndex } = get();
         if (historyIndex > 0) {
           const newIndex = historyIndex - 1;
+          const keyboard = JSON.parse(JSON.stringify(history[newIndex])) as Keyboard;
+          const validIds = new Set(keyboard.keys.map((key) => key.id));
+          const selection = historySelections[newIndex];
           set({
-            keyboard: JSON.parse(JSON.stringify(history[newIndex])),
+            keyboard,
             historyIndex: newIndex,
-            selectedKeys: new Set(),
+            selectedKeys: new Set(selection?.filter((id) => validIds.has(id)) ?? []),
             hasUnsavedChanges: true,
           });
         }
       },
 
       redo: () => {
-        const { history, historyIndex } = get();
+        const { history, historySelections, historyIndex } = get();
         if (historyIndex < history.length - 1) {
           const newIndex = historyIndex + 1;
+          const keyboard = JSON.parse(JSON.stringify(history[newIndex])) as Keyboard;
+          const validIds = new Set(keyboard.keys.map((key) => key.id));
+          const selection = historySelections[newIndex];
           set({
-            keyboard: JSON.parse(JSON.stringify(history[newIndex])),
+            keyboard,
             historyIndex: newIndex,
-            selectedKeys: new Set(),
+            selectedKeys: new Set(selection?.filter((id) => validIds.has(id)) ?? []),
             hasUnsavedChanges: true,
           });
         }

@@ -17,12 +17,13 @@ import AddKeyMenu from './AddKeyMenu';
 import ColorMenuBar, { ColorMenuGrid } from './ColorMenuBar';
 import MirrorModal from './MirrorModal';
 import { Key } from '../types';
+import type { KeyboardCanvasStage } from './KeyboardCanvasUltraFast';
 import { detectBottomRowTarget, planBottomRowSplitVariant, type BottomRowTargetDetection } from '../utils/bottomRowVariants';
 import { getSuggestedSplitOptions, type SplitSuggestionBucket } from '../utils/splitKeySuggestions';
 import { isRowLabelKey, planRowLabeling, planSizeLabelUpdates } from '../utils/autoLabeling';
 
 interface ToolbarProps {
-  getStage: () => any;
+  getStage: () => KeyboardCanvasStage | null;
 }
 
 const SPLIT_BUCKET_LABELS: Record<SplitSuggestionBucket, string> = {
@@ -62,7 +63,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const [showBottomRowMenu, setShowBottomRowMenu] = React.useState(false);
   const [pinnedBottomRowTarget, setPinnedBottomRowTarget] = React.useState<BottomRowTargetDetection | null>(null);
   const [rowLabelResult, setRowLabelResult] = React.useState<string | null>(null);
-  const toolbarContainerRef = React.useRef<HTMLDivElement>(null);
+  const toolbarContainerRef = React.useRef<React.ElementRef<'div'>>(null);
   // Store original labels when Vial mode is enabled
   const originalLabelsRef = React.useRef<Map<string, string[]>>(new Map());
   const selectedKeys = useKeyboardStore((state) => state.selectedKeys);
@@ -117,7 +118,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   const handleDuplicate = () => {
     const selectedKeysList = Array.from(selectedKeys)
       .map(id => keyboard.keys.find(k => k.id === id))
-      .filter(Boolean) as any[];
+      .filter((key): key is Key => key !== undefined);
     
     if (selectedKeysList.length === 0) return;
     
@@ -274,8 +275,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ getStage }) => {
   
   // Close color menu when clicking outside
   React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (toolbarContainerRef.current && !toolbarContainerRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event: globalThis.MouseEvent) => {
+      if (toolbarContainerRef.current && !toolbarContainerRef.current.contains(event.target as globalThis.Node)) {
         setActiveColorMenu(null);
         setShowBottomRowMenu(false);
       }
