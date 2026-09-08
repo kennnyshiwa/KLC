@@ -1,8 +1,34 @@
+/* global File */
 import { Key, Keyboard, KLEKeyData, KeyProfile } from '../types';
 import { generateKeyId } from './keyUtils';
 import { processLabelsForIcons } from './iconParser';
 
 const decodeKLELegendLineBreaks = (legend: string): string => legend.replace(/<br\s*\/?>/gi, '\n');
+
+const isRecord = (value: unknown): value is Record<string, unknown> => (
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+);
+
+interface KLCCompatibilityExtension {
+  version: 1;
+  keyCount?: unknown;
+  metadata?: unknown;
+  keys?: unknown;
+}
+
+const getKLCCompatibilityExtension = (value: unknown): KLCCompatibilityExtension | undefined => {
+  if (!isRecord(value) || value.version !== 1) return undefined;
+  return value as unknown as KLCCompatibilityExtension;
+};
+
+const isVialLabels = (value: unknown): value is NonNullable<Keyboard['meta']['vialLabels']> => (
+  Array.isArray(value) && value.every(label => (
+    isRecord(label)
+    && typeof label.name === 'string'
+    && Array.isArray(label.values)
+    && label.values.every(item => typeof item === 'string')
+  ))
+);
 
 interface OriginalKLEParseState {
   // Current position - absolute coordinates
@@ -81,7 +107,7 @@ export function parseOriginalKLEString(kleString: string): any {
   try {
     // First try standard JSON parse
     return JSON.parse(kleString);
-  } catch (e) {
+  } catch {
     // If that fails, try JavaScript object notation conversion
     try {
       const trimmed = kleString.trim();
@@ -92,7 +118,6 @@ export function parseOriginalKLEString(kleString: string): any {
       // Handle KLE format with metadata object followed by arrays
       if (/^\{[\s\S]*\},\s*\[/.test(trimmed)) {
         const wrappedString = '[' + trimmed + ']';
-        // eslint-disable-next-line no-eval
         const parsed = eval('(' + wrappedString + ')');
         
         if (Array.isArray(parsed) && parsed.length >= 2) {
@@ -106,8 +131,10 @@ export function parseOriginalKLEString(kleString: string): any {
         wrappedString = '[' + trimmed + ']';
       }
       
-      if (/^[\[\{][\s\S]*[\]\}]$/.test(wrappedString)) {
-        // eslint-disable-next-line no-eval
+      if (
+        (wrappedString.startsWith('[') && wrappedString.endsWith(']'))
+        || (wrappedString.startsWith('{') && wrappedString.endsWith('}'))
+      ) {
         const result = eval('(' + wrappedString + ')');
         return result;
       }
@@ -125,6 +152,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
     keys: []
   };
   let hasKrkRowPositions = false;
+  let compatibilityExtension: KLCCompatibilityExtension | undefined;
   
   let data: any[] = [];
   
@@ -134,17 +162,28 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
     if (json.length > 0 && !Array.isArray(json[0]) && typeof json[0] === 'object') {
       // Extract metadata
       const meta = json[0];
-      if (meta.name) keyboard.meta.name = meta.name;
-      if (meta.author) keyboard.meta.author = meta.author;
-      if (meta.notes) keyboard.meta.notes = meta.notes;
-      if (meta.background) keyboard.meta.background = meta.background;
-      if (meta.radii) keyboard.meta.radii = meta.radii;
-      if (meta.switchMount) keyboard.meta.switchMount = meta.switchMount;
-      if (meta.switchBrand) keyboard.meta.switchBrand = meta.switchBrand;
-      if (meta.switchType) keyboard.meta.switchType = meta.switchType;
-      if (meta.plate) keyboard.meta.plate = meta.plate;
-      if (meta.pcb) keyboard.meta.pcb = meta.pcb;
-      if (meta.css) keyboard.meta.css = meta.css;
+      if (meta.name !== undefined) keyboard.meta.name = meta.name;
+      if (meta.author !== undefined) keyboard.meta.author = meta.author;
+      if (meta.notes !== undefined) keyboard.meta.notes = meta.notes;
+      if (meta.background !== undefined) keyboard.meta.background = meta.background;
+      if (meta.radii !== undefined) keyboard.meta.radii = meta.radii;
+      if (meta.switchMount !== undefined) keyboard.meta.switchMount = meta.switchMount;
+      if (meta.switchBrand !== undefined) keyboard.meta.switchBrand = meta.switchBrand;
+      if (meta.switchType !== undefined) keyboard.meta.switchType = meta.switchType;
+      if (meta.plate !== undefined) keyboard.meta.plate = meta.plate;
+      if (meta.pcb !== undefined) keyboard.meta.pcb = meta.pcb;
+      if (meta.css !== undefined) keyboard.meta.css = meta.css;
+
+      compatibilityExtension = getKLCCompatibilityExtension(meta._klc);
+      if (compatibilityExtension && isRecord(compatibilityExtension.metadata)) {
+        const compatibilityMetadata = compatibilityExtension.metadata;
+        if (typeof compatibilityMetadata.css === 'string') keyboard.meta.css = compatibilityMetadata.css;
+        if (typeof compatibilityMetadata.plate === 'boolean') keyboard.meta.plate = compatibilityMetadata.plate;
+        if (typeof compatibilityMetadata.pcb === 'boolean') keyboard.meta.pcb = compatibilityMetadata.pcb;
+        if (isVialLabels(compatibilityMetadata.vialLabels)) {
+          keyboard.meta.vialLabels = compatibilityMetadata.vialLabels;
+        }
+      }
       
       // Rest of array is keyboard data
       data = json.slice(1);
@@ -372,7 +411,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
           }
           
           // If no explicit SCOOP/BAR label, use default
-          if (current.nub && !isHomingKey && options?.homingNubType !== 'none') {
+          if (current.nub && !isHomingKey && !frontLegends[1] && options?.homingNubType !== 'none') {
             frontLegends[1] = options?.homingNubType === 'scoop' ? 'Scoop' : 'Bar';
           }
         }
@@ -474,6 +513,26 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         current.textSize = [];
       }
     }
+  }
+
+  if (
+    compatibilityExtension
+    && Number.isInteger(compatibilityExtension.keyCount)
+    && compatibilityExtension.keyCount === keyboard.keys.length
+    && Array.isArray(compatibilityExtension.keys)
+    && compatibilityExtension.keys.length === keyboard.keys.length
+  ) {
+    compatibilityExtension.keys.forEach((extensionKey, index) => {
+      if (!isRecord(extensionKey)) return;
+
+      if (typeof extensionKey.rowPosition === 'string') {
+        keyboard.keys[index].rowPosition = extensionKey.rowPosition;
+        hasKrkRowPositions = true;
+      }
+      if (extensionKey.rowLabelShape === 'convex' || extensionKey.rowLabelShape === 'concave') {
+        keyboard.keys[index].rowLabelShape = extensionKey.rowLabelShape;
+      }
+    });
   }
   
   // Add the flag to the keyboard object if KRK data was found

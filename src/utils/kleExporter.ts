@@ -2,31 +2,36 @@ import { Keyboard, Key, KLEKeyData } from '../types';
 
 const encodeKLELegendLineBreaks = (legend: string): string => legend.replace(/\r?\n/g, '<br>');
 
+interface KLCCompatibilityMetadata {
+  css?: string;
+  vialLabels?: Keyboard['meta']['vialLabels'];
+  plate?: boolean;
+  pcb?: boolean;
+}
+
+interface KLCCompatibilityKey {
+  rowPosition?: string;
+  rowLabelShape?: Key['rowLabelShape'];
+}
+
 /**
  * Export a keyboard to original KLE JSON format
  */
 export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[] {
   const result: any[] = [];
   
-  // Add metadata if present
-  if (keyboard.meta && Object.keys(keyboard.meta).length > 0) {
-    const meta: any = {};
-    if (keyboard.meta.name) meta.name = keyboard.meta.name;
-    if (keyboard.meta.author) meta.author = keyboard.meta.author;
-    if (keyboard.meta.notes) meta.notes = keyboard.meta.notes;
-    if (keyboard.meta.background) meta.background = keyboard.meta.background;
-    if (keyboard.meta.radii) meta.radii = keyboard.meta.radii;
-    if (keyboard.meta.switchMount) meta.switchMount = keyboard.meta.switchMount;
-    if (keyboard.meta.switchBrand) meta.switchBrand = keyboard.meta.switchBrand;
-    if (keyboard.meta.switchType) meta.switchType = keyboard.meta.switchType;
-    if (keyboard.meta.plate !== undefined) meta.plate = keyboard.meta.plate;
-    if (keyboard.meta.pcb !== undefined) meta.pcb = keyboard.meta.pcb;
-    if (keyboard.meta.css) meta.css = keyboard.meta.css;
-    
-    if (Object.keys(meta).length > 0) {
-      result.push(meta);
-    }
-  }
+  const meta: any = {};
+  if (keyboard.meta.name !== undefined) meta.name = keyboard.meta.name;
+  if (keyboard.meta.author !== undefined) meta.author = keyboard.meta.author;
+  if (keyboard.meta.notes !== undefined) meta.notes = keyboard.meta.notes;
+  if (keyboard.meta.background !== undefined) meta.background = keyboard.meta.background;
+  if (keyboard.meta.radii !== undefined) meta.radii = keyboard.meta.radii;
+  if (keyboard.meta.switchMount !== undefined) meta.switchMount = keyboard.meta.switchMount;
+  if (keyboard.meta.switchBrand !== undefined) meta.switchBrand = keyboard.meta.switchBrand;
+  if (keyboard.meta.switchType !== undefined) meta.switchType = keyboard.meta.switchType;
+  if (keyboard.meta.plate !== undefined) meta.plate = keyboard.meta.plate;
+  if (keyboard.meta.pcb !== undefined) meta.pcb = keyboard.meta.pcb;
+  if (keyboard.meta.css !== undefined) meta.css = keyboard.meta.css;
   
   // Separate keys into non-rotated and rotated
   const nonRotatedKeys: Key[] = [];
@@ -87,6 +92,35 @@ export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[]
   rotatedKeys.forEach(key => {
     rows.push([key]);
   });
+
+  const exportedKeys = rows.flat();
+  const compatibilityMetadata: KLCCompatibilityMetadata = {};
+  if (keyboard.meta.css !== undefined) compatibilityMetadata.css = keyboard.meta.css;
+  if (keyboard.meta.vialLabels !== undefined) compatibilityMetadata.vialLabels = keyboard.meta.vialLabels;
+  if (keyboard.meta.plate !== undefined) compatibilityMetadata.plate = keyboard.meta.plate;
+  if (keyboard.meta.pcb !== undefined) compatibilityMetadata.pcb = keyboard.meta.pcb;
+
+  const compatibilityKeys = exportedKeys.map(key => {
+    const compatibilityKey: KLCCompatibilityKey = {};
+    if (key.rowPosition !== undefined) compatibilityKey.rowPosition = key.rowPosition;
+    if (key.rowLabelShape !== undefined) compatibilityKey.rowLabelShape = key.rowLabelShape;
+    return compatibilityKey;
+  });
+  const hasCompatibilityData = Object.keys(compatibilityMetadata).length > 0
+    || compatibilityKeys.some(key => Object.keys(key).length > 0);
+
+  if (hasCompatibilityData) {
+    meta._klc = {
+      version: 1,
+      keyCount: exportedKeys.length,
+      metadata: compatibilityMetadata,
+      keys: compatibilityKeys,
+    };
+  }
+
+  if (Object.keys(meta).length > 0) {
+    result.push(meta);
+  }
   
   // Default values to track changes
   const defaults = {
