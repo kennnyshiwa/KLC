@@ -219,6 +219,13 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
     }
   };
 
+  const handleDecalUpdate = (decal: boolean) => {
+    updateKeys(selectedKeysList.map(key => ({
+      id: key.id,
+      changes: { decal },
+    })));
+  };
+
   const handleLegendUpdate = (index: number, value: string) => {
     const updates = selectedKeysList.map(key => {
       const newLabels = [...key.labels];
@@ -1490,7 +1497,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                     <input
                       type="checkbox"
                       checked={firstKey.decal || false}
-                      onChange={(e) => handleKeyUpdate('decal', e.target.checked)}
+                      onChange={(e) => handleDecalUpdate(e.target.checked)}
                     />
                     Decal
                   </label>

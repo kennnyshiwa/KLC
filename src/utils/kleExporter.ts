@@ -1,5 +1,7 @@
 import { Keyboard, Key, KLEKeyData } from '../types';
 
+const encodeKLELegendLineBreaks = (legend: string): string => legend.replace(/\r?\n/g, '<br>');
+
 /**
  * Export a keyboard to original KLE JSON format
  */
@@ -327,15 +329,15 @@ function buildLabelString(key: Key): string {
   // Start with the regular labels (positions 0-3 and 7-11)
   for (let i = 0; i < 12; i++) {
     if (key.labels[i]) {
-      parts[i] = key.labels[i];
+      parts[i] = encodeKLELegendLineBreaks(key.labels[i]);
     }
   }
   
   // Add front legends if present (positions 4-6)
   if (key.frontLegends) {
-    if (key.frontLegends[0]) parts[4] = key.frontLegends[0]; // Left front
-    if (key.frontLegends[1]) parts[5] = key.frontLegends[1]; // Center front
-    if (key.frontLegends[2]) parts[6] = key.frontLegends[2]; // Right front
+    if (key.frontLegends[0]) parts[4] = encodeKLELegendLineBreaks(key.frontLegends[0]); // Left front
+    if (key.frontLegends[1]) parts[5] = encodeKLELegendLineBreaks(key.frontLegends[1]); // Center front
+    if (key.frontLegends[2]) parts[6] = encodeKLELegendLineBreaks(key.frontLegends[2]); // Right front
   }
   
   // Handle homing nubs - reconstruct the SCOOP/BAR text if needed

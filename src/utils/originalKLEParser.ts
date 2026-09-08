@@ -2,6 +2,8 @@ import { Key, Keyboard, KLEKeyData, KeyProfile } from '../types';
 import { generateKeyId } from './keyUtils';
 import { processLabelsForIcons } from './iconParser';
 
+const decodeKLELegendLineBreaks = (legend: string): string => legend.replace(/<br\s*\/?>/gi, '\n');
+
 interface OriginalKLEParseState {
   // Current position - absolute coordinates
   x: number;
@@ -285,11 +287,11 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         
       } else if (typeof item === 'string') {
         // Create key with current state
-        const labels = item.split('\n');
+        const labels = item.split('\n').map(decodeKLELegendLineBreaks);
         
         // In original KLE:
         // Position 4: Front left legend
-        // Position 5: Center legend (NOT front!)
+        // Position 5: Front center legend
         // Position 6: Front right legend
         const frontLegends: string[] = [];
         let centerLegend = '';
@@ -300,86 +302,17 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
         
         if (originalParts.length > 4) {
           let foundFrontLegend = false;
-          let foundCenterLegend = false;
-          
-          // For decal keys, handle positions differently:
-          // - Position 6 should stay as label[6] (middle-left)
-          // - Position 8 should stay as label[8] (top-center)  
-          // For regular keys, positions 4 and 6 are front legends
-          if (!current.decal) {
-            // Position 4: Front legend
-            // If there's already a legend at position 0, then position 4 is front-center
-            // Otherwise it's front-left
-            if (originalParts[4] && originalParts[4].trim()) {
-              // Check if there's a preceding legend (position 0)
-              const hasPrecedingLegend = originalParts[0] && originalParts[0].trim();
-              
-              if (hasPrecedingLegend) {
-                // If there's a legend before this, position 4 is front-center
-                frontLegends[1] = originalParts[4].trim();
-              } else {
-                // Otherwise it's front-left
-                frontLegends[0] = originalParts[4].trim();
-              }
-              
+
+          for (let position = 4; position <= 6; position++) {
+            if (originalParts[position]?.trim()) {
+              frontLegends[position - 4] = originalParts[position].trim();
+              originalParts[position] = '';
               foundFrontLegend = true;
-              originalParts[4] = '';
-            }
-            
-            // Position 6: Front right legend (rarely used)
-            if (originalParts[6] && originalParts[6].trim()) {
-              frontLegends[2] = originalParts[6].trim();
-              foundFrontLegend = true;
-              originalParts[6] = '';
             }
           }
           
-          // For decal keys, position 8 should remain as a regular label (top-center)
-          // For regular keys, position 8 or 9 can be center legend
-          if (!current.decal) {
-            // Position 8 or 9 as center legend
-            // Some KLE layouts use position 9 for center when position 8 is empty
-            if (originalParts.length > 8 && originalParts[8] && originalParts[8].trim()) {
-              // Position 8 is the standard center position
-              centerLegend = originalParts[8].trim();
-              foundCenterLegend = true;
-              originalParts[8] = '';
-            } else if (originalParts.length > 9 && originalParts[9] && originalParts[9].trim()) {
-              // Position 9 is used as center in some layouts when 8 is empty
-              centerLegend = originalParts[9].trim();
-              foundCenterLegend = true;
-              // Move position 9 content to position 8 for proper display
-              originalParts[8] = originalParts[9];
-              originalParts[9] = '';
-            }
-          }
-          
-          // Extended positions for WIDE keys like spacebars (positions 10, 11)
-          // Only treat 10-11 as additional front legends for wide keys
-          if (current.width >= 2) {
-            // For wide keys (like spacebars), positions 10-11 can be front legends
-            for (let i = 10; i < originalParts.length && i <= 11; i++) {
-              if (originalParts[i] && originalParts[i].trim()) {
-                const legendText = originalParts[i].trim();
-                
-                // Position 10 -> center front (index 1)
-                // Position 11 -> right front (index 2)
-                const frontLegendIndex = i - 9; // Maps 10->1, 11->2
-                
-                // Only set if not already set by positions 4-6
-                if (!frontLegends[frontLegendIndex]) {
-                  frontLegends[frontLegendIndex] = legendText;
-                }
-                
-                foundFrontLegend = true;
-                // Clear this part from the original
-                originalParts[i] = '';
-              }
-            }
-          }
-          
-          // If we found a front legend or center legend, reconstruct the labels
-          if (foundFrontLegend || foundCenterLegend) {
+          // Remove canonical front slots from the regular-label array.
+          if (foundFrontLegend) {
             // Reconstruct each label position
             for (let i = 0; i < processedLabels.length; i++) {
               if (i < originalParts.length) {

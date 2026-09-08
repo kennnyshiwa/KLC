@@ -1570,6 +1570,8 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           currentX = 0;
           currentY = 0;
         }
+
+        const alignmentAnchorX = currentX;
         
         // Measure total width if needed for center/right alignment
         if (finalPosition.align !== 'start') {
@@ -1587,7 +1589,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
             } else {
               const keyFont = key.font || '';
               ctx.font = keyFont ? fontManager.getRenderFont(keyFont, fontSize) : `${fontSize}px Arial`;
-              totalWidth += ctx.measureText(part.content).width;
+              totalWidth += Math.max(...part.content.split('\n').map(line => ctx.measureText(line).width));
             }
           });
           
@@ -1743,13 +1745,19 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
               }
             } else if (lines.length > 1) {
               // Multi-line text in other positions - render with line breaks
-              ctx.textAlign = finalPosition.align as CanvasTextAlign;
+              ctx.textAlign = finalPosition.align as 'start' | 'center' | 'end';
               const lineHeight = fontSize * 1.2;
-              let lineY = currentY;
+              const blockOffset = finalPosition.baseline === 'middle'
+                ? lineHeight * (lines.length - 1) / 2
+                : finalPosition.baseline === 'alphabetic'
+                  ? lineHeight * (lines.length - 1)
+                  : 0;
+              const lineX = finalPosition.align === 'start' ? currentX : alignmentAnchorX;
+              let lineY = currentY - blockOffset;
               
               lines.forEach((line, idx) => {
                 if (line) {
-                  ctx.fillText(line, currentX, lineY);
+                  ctx.fillText(line, lineX, lineY);
                 }
                 if (idx < lines.length - 1) {
                   lineY += lineHeight;
