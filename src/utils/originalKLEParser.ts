@@ -41,8 +41,13 @@ const getKLCCompatibilityExtension = (
   value: unknown,
   parsedKeyCount: number,
 ): KLCCompatibilityExtension | undefined => {
+  if (!isRecord(value)) return undefined;
+
+  const validExtensionFields = Object.keys(value).every(field => (
+    field === 'version' || field === 'keyCount' || field === 'metadata' || field === 'keys'
+  ));
   if (
-    !isRecord(value)
+    !validExtensionFields
     || value.version !== 1
     || !Number.isInteger(value.keyCount)
     || value.keyCount !== parsedKeyCount

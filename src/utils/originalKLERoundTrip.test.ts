@@ -134,6 +134,7 @@ describe('original KLE compatibility round trips', () => {
   });
 
   it.each([
+    { version: 1, keyCount: 1, metadata: { css: '' }, keys: [{ rowPosition: 'K9' }], surprise: true },
     { version: 2, keyCount: 1, metadata: { css: '' }, keys: [{ rowPosition: 'K9' }] },
     { version: 1, keyCount: 1.5, metadata: { css: '' }, keys: [{ rowPosition: 'K9' }] },
     { version: 1, keyCount: 2, metadata: { css: '' }, keys: [{ rowPosition: 'K9' }] },
