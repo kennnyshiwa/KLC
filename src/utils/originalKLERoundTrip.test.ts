@@ -134,35 +134,62 @@ describe('original KLE compatibility round trips', () => {
   });
 
   it.each([
-    { version: 2, keyCount: 1, keys: [{ rowPosition: 'K9' }] },
-    { version: 1, keyCount: 2, keys: [{ rowPosition: 'K9' }] },
-    { version: 1, keyCount: 1, keys: 'not-an-array' },
-  ])('ignores an incompatible extension without corrupting keys: %j', (_klc) => {
-    const restored = parseOriginalKLE([{ name: 'Safe', _klc }, ['A']]);
+    { version: 2, keyCount: 1, metadata: { css: '' }, keys: [{ rowPosition: 'K9' }] },
+    { version: 1, keyCount: 1.5, metadata: { css: '' }, keys: [{ rowPosition: 'K9' }] },
+    { version: 1, keyCount: 2, metadata: { css: '' }, keys: [{ rowPosition: 'K9' }] },
+    { version: 1, keyCount: 1, metadata: { css: '' }, keys: 'not-an-array' },
+    { version: 1, keyCount: 1, metadata: { css: '' }, keys: [] },
+    { version: 1, keyCount: 1, metadata: { css: '' }, keys: [null] },
+    { version: 1, keyCount: 1, metadata: { css: '' }, keys: [{ rowPosition: 9 }] },
+    { version: 1, keyCount: 1, metadata: { css: '' }, keys: [{ rowLabelShape: 'invalid' }] },
+    { version: 1, keyCount: 1, metadata: { css: '', plate: 'false' }, keys: [{}] },
+  ])('rejects the whole incompatible extension without corrupting import: %j', (_klc) => {
+    const restored = parseOriginalKLE([{
+      name: 'Safe',
+      css: 'ordinary',
+      plate: true,
+      pcb: true,
+      _klc: {
+        ..._klc,
+        metadata: Object.assign({
+          css: '',
+          plate: false,
+          pcb: false,
+          vialLabels: [{ name: '', values: [] }],
+        }, _klc.metadata),
+      },
+    }, ['A']]);
 
-    expect(restored.meta).toEqual({ name: 'Safe' });
+    expect(restored.meta).toEqual({ name: 'Safe', css: 'ordinary', plate: true, pcb: true });
     expect(restored.keys).toHaveLength(1);
     expect(restored.keys[0]).toMatchObject({ x: 0, y: 0, width: 1, height: 1, labels: ['A'] });
     expect(restored.keys[0].rowPosition).toBeUndefined();
     expect(restored.keys[0].rowLabelShape).toBeUndefined();
   });
 
-  it('applies valid fields from a partial extension and ignores malformed fields', () => {
+  it('atomically applies valid false, zero, and empty compatibility values', () => {
     const restored = parseOriginalKLE([{
+      radii: 0,
       _klc: {
         version: 1,
-        keyCount: 2,
-        metadata: { css: '', plate: 'false', vialLabels: [{ name: 'Layer', values: ['0'] }, null] },
-        keys: [
-          { rowPosition: 'K1', rowLabelShape: 'invalid' },
-          null,
-        ],
+        keyCount: 0,
+        metadata: {
+          css: '',
+          plate: false,
+          pcb: false,
+          vialLabels: [{ name: '', values: ['', '0'] }],
+        },
+        keys: [],
       },
-    }, ['A', 'B']]);
+    }]);
 
-    expect(restored.meta).toEqual({ css: '' });
-    expect(restored.keys[0].rowPosition).toBe('K1');
-    expect(restored.keys[0].rowLabelShape).toBeUndefined();
-    expect(restored.keys[1].rowPosition).toBeUndefined();
+    expect(restored.meta).toEqual({
+      radii: 0,
+      css: '',
+      plate: false,
+      pcb: false,
+      vialLabels: [{ name: '', values: ['', '0'] }],
+    });
+    expect(restored.keys).toEqual([]);
   });
 });

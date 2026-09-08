@@ -9,17 +9,24 @@ const isRecord = (value: unknown): value is Record<string, unknown> => (
   typeof value === 'object' && value !== null && !Array.isArray(value)
 );
 
-interface KLCCompatibilityExtension {
-  version: 1;
-  keyCount?: unknown;
-  metadata?: unknown;
-  keys?: unknown;
+interface KLCCompatibilityMetadata {
+  css?: string;
+  vialLabels?: NonNullable<Keyboard['meta']['vialLabels']>;
+  plate?: boolean;
+  pcb?: boolean;
 }
 
-const getKLCCompatibilityExtension = (value: unknown): KLCCompatibilityExtension | undefined => {
-  if (!isRecord(value) || value.version !== 1) return undefined;
-  return value as unknown as KLCCompatibilityExtension;
-};
+interface KLCCompatibilityKey {
+  rowPosition?: string;
+  rowLabelShape?: Key['rowLabelShape'];
+}
+
+interface KLCCompatibilityExtension {
+  version: 1;
+  keyCount: number;
+  metadata: KLCCompatibilityMetadata;
+  keys: KLCCompatibilityKey[];
+}
 
 const isVialLabels = (value: unknown): value is NonNullable<Keyboard['meta']['vialLabels']> => (
   Array.isArray(value) && value.every(label => (
@@ -29,6 +36,47 @@ const isVialLabels = (value: unknown): value is NonNullable<Keyboard['meta']['vi
     && label.values.every(item => typeof item === 'string')
   ))
 );
+
+const getKLCCompatibilityExtension = (
+  value: unknown,
+  parsedKeyCount: number,
+): KLCCompatibilityExtension | undefined => {
+  if (
+    !isRecord(value)
+    || value.version !== 1
+    || !Number.isInteger(value.keyCount)
+    || value.keyCount !== parsedKeyCount
+    || !isRecord(value.metadata)
+    || !Array.isArray(value.keys)
+    || value.keys.length !== parsedKeyCount
+  ) return undefined;
+
+  const metadata = value.metadata;
+  const validMetadataFields = Object.keys(metadata).every(field => (
+    field === 'css' || field === 'vialLabels' || field === 'plate' || field === 'pcb'
+  ));
+  if (
+    !validMetadataFields
+    || (metadata.css !== undefined && typeof metadata.css !== 'string')
+    || (metadata.vialLabels !== undefined && !isVialLabels(metadata.vialLabels))
+    || (metadata.plate !== undefined && typeof metadata.plate !== 'boolean')
+    || (metadata.pcb !== undefined && typeof metadata.pcb !== 'boolean')
+  ) return undefined;
+
+  const validKeys = value.keys.every(extensionKey => (
+    isRecord(extensionKey)
+    && Object.keys(extensionKey).every(field => field === 'rowPosition' || field === 'rowLabelShape')
+    && (extensionKey.rowPosition === undefined || typeof extensionKey.rowPosition === 'string')
+    && (
+      extensionKey.rowLabelShape === undefined
+      || extensionKey.rowLabelShape === 'convex'
+      || extensionKey.rowLabelShape === 'concave'
+    )
+  ));
+  if (!validKeys) return undefined;
+
+  return value as unknown as KLCCompatibilityExtension;
+};
 
 interface OriginalKLEParseState {
   // Current position - absolute coordinates
@@ -152,7 +200,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
     keys: []
   };
   let hasKrkRowPositions = false;
-  let compatibilityExtension: KLCCompatibilityExtension | undefined;
+  let compatibilityExtensionValue: unknown;
   
   let data: any[] = [];
   
@@ -174,16 +222,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
       if (meta.pcb !== undefined) keyboard.meta.pcb = meta.pcb;
       if (meta.css !== undefined) keyboard.meta.css = meta.css;
 
-      compatibilityExtension = getKLCCompatibilityExtension(meta._klc);
-      if (compatibilityExtension && isRecord(compatibilityExtension.metadata)) {
-        const compatibilityMetadata = compatibilityExtension.metadata;
-        if (typeof compatibilityMetadata.css === 'string') keyboard.meta.css = compatibilityMetadata.css;
-        if (typeof compatibilityMetadata.plate === 'boolean') keyboard.meta.plate = compatibilityMetadata.plate;
-        if (typeof compatibilityMetadata.pcb === 'boolean') keyboard.meta.pcb = compatibilityMetadata.pcb;
-        if (isVialLabels(compatibilityMetadata.vialLabels)) {
-          keyboard.meta.vialLabels = compatibilityMetadata.vialLabels;
-        }
-      }
+      compatibilityExtensionValue = meta._klc;
       
       // Rest of array is keyboard data
       data = json.slice(1);
@@ -515,17 +554,21 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
     }
   }
 
-  if (
-    compatibilityExtension
-    && Number.isInteger(compatibilityExtension.keyCount)
-    && compatibilityExtension.keyCount === keyboard.keys.length
-    && Array.isArray(compatibilityExtension.keys)
-    && compatibilityExtension.keys.length === keyboard.keys.length
-  ) {
-    compatibilityExtension.keys.forEach((extensionKey, index) => {
-      if (!isRecord(extensionKey)) return;
+  const compatibilityExtension = getKLCCompatibilityExtension(
+    compatibilityExtensionValue,
+    keyboard.keys.length,
+  );
+  if (compatibilityExtension) {
+    const compatibilityMetadata = compatibilityExtension.metadata;
+    if (compatibilityMetadata.css !== undefined) keyboard.meta.css = compatibilityMetadata.css;
+    if (compatibilityMetadata.plate !== undefined) keyboard.meta.plate = compatibilityMetadata.plate;
+    if (compatibilityMetadata.pcb !== undefined) keyboard.meta.pcb = compatibilityMetadata.pcb;
+    if (compatibilityMetadata.vialLabels !== undefined) {
+      keyboard.meta.vialLabels = compatibilityMetadata.vialLabels;
+    }
 
-      if (typeof extensionKey.rowPosition === 'string') {
+    compatibilityExtension.keys.forEach((extensionKey, index) => {
+      if (extensionKey.rowPosition !== undefined) {
         keyboard.keys[index].rowPosition = extensionKey.rowPosition;
         hasKrkRowPositions = true;
       }
