@@ -2996,6 +2996,37 @@ html.dark-mode body {
 
 /* Mobile and touch device optimizations */
 @media (max-width: 768px) {
+  .app-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .header-left {
+    min-width: 0;
+  }
+
+  .header-info {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .header-right {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .user-menu-guest,
+  .toolbar-group {
+    flex-wrap: wrap;
+  }
+
+  .menu-bar {
+    flex-wrap: wrap;
+    height: auto;
+  }
+
   .toolbar {
     flex-wrap: wrap;
   }

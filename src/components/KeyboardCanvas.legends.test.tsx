@@ -266,4 +266,18 @@ describe('decal legend data stability', () => {
     expect(restored.decal ?? false).toBe(decal);
     expect(restored.rotation_angle).toBe(30);
   });
+
+  it('preserves mixed per-slot text sizes through original KLE', () => {
+    const textSize = [3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3];
+    const key = makeKey({ labels: [...labels], textSize });
+    const exported = exportToKLE({ meta: { name: 'Mixed text sizes' }, keys: [key] });
+    const exportedProperties = exported.flat().find(item => (
+      typeof item === 'object' && !Array.isArray(item) && 'f' in item
+    )) as { f: number | number[] };
+    const [restored] = parseOriginalKLE(exported).keys;
+
+    expect(exportedProperties.f).toEqual(textSize);
+    expect(restored.labels).toEqual(labels);
+    expect(restored.textSize).toEqual(textSize);
+  });
 });

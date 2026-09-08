@@ -228,18 +228,15 @@ export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[]
         
         // Text size - only output if explicitly set and not default
         if (key.textSize && key.textSize.length > 0) {
-          const sizes = key.textSize.filter(s => s !== undefined && s !== 3); // 3 is the default, don't output it
-          if (sizes.length > 0) {
-            // Check if all sizes are the same
-            const allSame = sizes.every(s => s === sizes[0]);
-            if (allSame && sizes[0] !== current.textSize) {
-              // Single size for all legends
-              props.f = sizes[0];
-              current.textSize = sizes[0];
-            } else if (!allSame || key.textSize.some(s => s === 3)) {
-              // Multiple sizes or mix of default and custom - output full array
-              props.f = key.textSize;
-            }
+          const effectiveSizes = key.textSize.map(size => size ?? 3);
+          const slotsDiffer = effectiveSizes.some(size => size !== effectiveSizes[0]);
+
+          if (slotsDiffer) {
+            // KLE's scalar f applies to every slot, so mixed slot sizes require the full array.
+            props.f = key.textSize;
+          } else if (effectiveSizes[0] !== 3 && effectiveSizes[0] !== current.textSize) {
+            props.f = effectiveSizes[0];
+            current.textSize = effectiveSizes[0];
           }
         } else if (key.default?.size?.[0] && key.default.size[0] !== 3 && key.default.size[0] !== current.textSize) {
           props.f = key.default.size[0];
