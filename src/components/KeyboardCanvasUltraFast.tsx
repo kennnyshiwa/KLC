@@ -1452,19 +1452,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           return;
         }
         
-        // For decal keys, remap certain positions:
-        // Position 6 should render as middle-left (position 7)
-        // Position 8 should render as top-center (position 10)
-        let mappedIndex = index;
-        if (key.decal) {
-          if (index === 6) {
-            mappedIndex = 7; // middle-left
-          } else if (index === 8) {
-            mappedIndex = 10; // top-center
-          }
-        }
-        
-        const position = getLegendPosition(mappedIndex);
+        const position = getLegendPosition(index);
         const legendRotation = key.legendRotation?.[index] || 0;
         
         // Override position if key has align property
