@@ -101,3 +101,33 @@ describe('buildKeyboardSVG', () => {
     expect(svg).not.toContain('fill="#ff00ff"');
   });
 });
+
+
+describe('stepped LAE SVG surfaces', () => {
+  it('keeps only the lower 1.5u rectangle raised, unlike an ordinary LAE', () => {
+    const key = { id: 'lae', x: 0, y: 1, width: 1.5, height: 1, x2: 0.75, y2: -1, width2: 0.75, height2: 2, labels: [], color: '#eeeeee', stepped: true };
+    const svg = buildKeyboardSVG({ meta: {}, keys: [key] });
+    const document = new DOMParser().parseFromString(svg, 'image/svg+xml');
+    const raised = [...document.querySelectorAll('rect[fill="#eeeeee"]')];
+    expect(raised).toHaveLength(1);
+    expect(Number(raised[0].getAttribute('y'))).toBe(60);
+    expect(Number(raised[0].getAttribute('width'))).toBe(68);
+    expect(document.querySelector('rect[fill="rgba(0,0,0,0.1)"]')).toBeNull();
+    const ordinary = new DOMParser().parseFromString(buildKeyboardSVG({ meta: {}, keys: [{ ...key, stepped: false }] }), 'image/svg+xml');
+    expect(ordinary.querySelectorAll('rect[fill="#eeeeee"]')).toHaveLength(2);
+  });
+});
+
+
+describe('stepped ISO export', () => {
+  it('raises only the main vertical body and lowers the upper-left tab', () => {
+    const key = { id: 'iso', x: .25, y: 0, width: 1.25, height: 2, x2: -.25, y2: 0, width2: 1.5, height2: 1, stepped: true, labels: [], color: '#44aa88' };
+    const svg = buildKeyboardSVG({ meta: { name: 'Stepped ISO' }, keys: [key] });
+    const tops = [...svg.matchAll(/<rect[^>]*fill="#44aa88"[^>]*>/g)].map(match => match[0]);
+    expect(tops).toHaveLength(1);
+    expect(tops[0]).toContain('width="54.5"');
+    expect(tops[0]).toContain('height="92"');
+    const ordinary = buildKeyboardSVG({ meta: {}, keys: [{ ...key, stepped: false }] });
+    expect([...ordinary.matchAll(/<rect[^>]*fill="#44aa88"[^>]*>/g)]).toHaveLength(2);
+  });
+});

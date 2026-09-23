@@ -101,6 +101,18 @@ const LayoutPreview: React.FC<LayoutPreviewProps> = ({
         ctx.fillRect(x2, y2, w2, h2);
       }
 
+      // Stepped Enter: lowered extension and the full primary raised surface.
+      if (key.stepped && ((key.y2 ?? 0) < 0 || (key.x2 ?? 0) < 0)) {
+        const extensionX = x + (key.x2 ?? 0) * scale;
+        const extensionY = y + (key.y2 ?? 0) * scale;
+        ctx.fillStyle = key.color || '#f9f9f9';
+        ctx.fillRect(extensionX, extensionY, (key.width2 ?? key.width) * scale - 2, (key.height2 ?? key.height) * scale - 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(extensionX, extensionY, (key.width2 ?? key.width) * scale - 2, (key.height2 ?? key.height) * scale - 2);
+        ctx.fillStyle = key.color || '#f9f9f9';
+        ctx.fillRect(x, y, w, h);
+      }
+
       // Draw a simple border
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 1;

@@ -166,7 +166,19 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
       const hasSecondaryRect = key.x2 !== undefined || key.y2 !== undefined || 
                               key.width2 !== undefined || key.height2 !== undefined;
       
-      if (hasSecondaryRect) {
+      const loweredEnterExtension = key.stepped && ((key.y2 ?? 0) < 0 || (key.x2 ?? 0) < 0);
+      if (loweredEnterExtension) {
+        // Draw the lowered extension first, then the entire raised primary cap.
+        const x2 = (key.x2 ?? 0) * unitSize;
+        const y2 = (key.y2 ?? 0) * unitSize;
+        const width2 = (key.width2 ?? key.width) * unitSize - 1;
+        const height2 = (key.height2 ?? key.height) * unitSize - 1;
+        svg += `\n  <rect x="${keyX + x2}" y="${keyY + y2 + topOffset}" width="${width2}" height="${height2 - topOffset}" fill="${bottomColor}" rx="5" ry="5" />`;
+        svg += `\n  <rect x="${keyX + x2}" y="${keyY + y2}" width="${width2}" height="${height2 - topOffset}" fill="${sideColor}" rx="5" ry="5" />`;
+        svg += `\n  <rect x="${keyX}" y="${keyY + topOffset}" width="${keyWidth}" height="${keyHeight - topOffset}" fill="${bottomColor}" rx="5" ry="5" />`;
+        svg += `\n  <rect x="${keyX}" y="${keyY}" width="${keyWidth}" height="${keyHeight - topOffset}" fill="${sideColor}" rx="5" ry="5" />`;
+        svg += `\n  <rect x="${keyX + edgeHeight}" y="${keyY + edgeHeight}" width="${keyWidth - edgeHeight * 2}" height="${keyHeight - edgeHeight * 2 - topOffset}" fill="${baseColor}" rx="4" ry="4" />`;
+      } else if (hasSecondaryRect) {
       // Complex shape (ISO Enter, Big Ass Enter)
       const x2 = (key.x2 || 0) * unitSize;
       const y2 = (key.y2 || 0) * unitSize;
@@ -215,7 +227,7 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
     }
     
       // Stepped cap shading
-      if (key.stepped) {
+      if (key.stepped && !loweredEnterExtension) {
         svg += `\n  <rect x="${keyX + keyWidth * 0.6}" y="${keyY + edgeHeight}" ` +
                `width="${keyWidth * 0.4 - edgeHeight}" height="${keyHeight - edgeHeight * 2 - topOffset}" ` +
                `fill="rgba(0,0,0,0.1)" rx="2" ry="2" />`;
