@@ -45,9 +45,11 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
   'Special Keys': [
     { name: 'ISO Enter', width: 1.25, height: 2, x2: -0.25, y2: 0, width2: 1.5, height2: 1 },
     { name: 'MiniISO', width: 0.75, height: 2, x2: -0.25, y2: 0, width2: 1, height2: 1 },
+    { name: 'mISO', width: 1, height: 2, x2: -0.25, y2: 0, width2: 1.25, height2: 1 },
     { name: 'Big Ass Enter', width: 2.25, height: 1, x2: .75, y2: -1, width2: 1.5, height2: 2 },
     { name: 'Medium Ass Enter', width: 1.75, height: 1, x2: .75, y2: -1, width2: 1, height2: 2},
     { name: 'Little Ass Enter', width: 1.5, height: 1, x2: .75, y2: -1, width2: .75, height2: 2 },
+    { name: 'Stepped LAE', width: 1.5, height: 1, x2: .75, y2: -1, width2: .75, height2: 2, stepped: true },
     { name: 'Stepped Caps', width: 1.75, height: 1, stepped: true },
     { name: 'Center Stepped Caps', width: 1.75, height: 1, steppedCenter: true },
     { name: 'Stepped Shift', width: 2.25, height: 1, stepped: true },
@@ -71,6 +73,12 @@ const KEY_TEMPLATES: { [category: string]: KeyTemplate[] } = {
     { name: 'SP Label', width: 1, height: 1, isLabel: true, label: 'SP' },
   ],
 };
+
+// Placement uses the complete unrotated footprint, including ISO's left arm.
+const horizontalBounds = (key: KeyTemplate | Key) => ({
+  left: Math.min(0, key.x2 ?? 0),
+  right: Math.max(key.width, (key.x2 ?? 0) + (key.width2 ?? key.width)),
+});
 
 const AddKeyMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -99,7 +107,8 @@ const AddKeyMenu: React.FC = () => {
 
   const handleAddKey = (template: KeyTemplate) => {
     // Find a good position for the new key
-    let newX = 0;
+    const footprint = horizontalBounds(template);
+    let newX = Math.abs(footprint.left);
     let newY = 0;
     
     // For special keys with negative y2, ensure they have enough space at the top
@@ -172,12 +181,12 @@ const AddKeyMenu: React.FC = () => {
         // If no selected or last modified key, find the rightmost key
         if (!referenceKey) {
           referenceKey = keyboard.keys.reduce((prev, current) => 
-            (prev.x + prev.width > current.x + current.width) ? prev : current
+            (prev.x + horizontalBounds(prev).right > current.x + horizontalBounds(current).right) ? prev : current
           );
         }
         
         // Place new key to the right of the reference key
-        newX = referenceKey.x + referenceKey.width;
+        newX = referenceKey.x + horizontalBounds(referenceKey).right - footprint.left;
         newY = referenceKey.y;
         
         // Ensure special keys with negative y2 have enough room at the top
@@ -195,9 +204,9 @@ const AddKeyMenu: React.FC = () => {
     // Create the specified number of keys
     for (let i = 0; i < quantity; i++) {
       // Check if the new key would go off screen (assuming 20 units width)
-      if (keyboard.keys.length > 0 && newX + template.width > 20) {
+      if (keyboard.keys.length > 0 && newX + footprint.right > 20) {
         // Move to the next row
-        newX = 0;
+        newX = Math.abs(footprint.left);
         // Find the bottom-most key for the new row position
         const bottomKey = keyboard.keys.reduce((prev, current) => 
           (prev.y + prev.height > current.y + current.height) ? prev : current
@@ -233,7 +242,7 @@ const AddKeyMenu: React.FC = () => {
       addKey(newKey);
       
       // Update position for next key
-      newX += template.width;
+      newX += footprint.right - footprint.left;
     }
     
     // Note: saveToHistory() is already called inside addKey(), no need to call again

@@ -749,6 +749,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         // Reset shadow for inner elements
         ctx.shadowColor = 'transparent';
         
+        // A stepped Enter keeps its lower primary rectangle raised; the upper
+        // extension is a lower ledge, not half of a second raised surface.
+        const loweredUpperExtension = key.stepped && (key.y2 ?? 0) < 0;
+
         if (hasSecondaryRect) {
           // Draw complex shape (like ISO Enter or Big Ass Enter)
           // Calculate secondary rectangle offsets
@@ -789,15 +793,17 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           );
           ctx.fill();
           
-          ctx.beginPath();
-          ctx.roundRect(
-            renderX + x2 + edgeHeight, 
-            renderY + y2 + edgeHeight, 
-            width2 - edgeHeight * 2, 
-            height2 - edgeHeight * 2 - topOffset, 
-            4
-          );
-          ctx.fill();
+          if (!loweredUpperExtension) {
+            ctx.beginPath();
+            ctx.roundRect(
+              renderX + x2 + edgeHeight,
+              renderY + y2 + edgeHeight,
+              width2 - edgeHeight * 2,
+              height2 - edgeHeight * 2 - topOffset,
+              4
+            );
+            ctx.fill();
+          }
           
           // Add subtle highlight on top surfaces
           const highlightGradient = ctx.createLinearGradient(
@@ -820,15 +826,17 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           );
           ctx.fill();
           
-          ctx.beginPath();
-          ctx.roundRect(
-            renderX + x2 + edgeHeight, 
-            renderY + y2 + edgeHeight, 
-            width2 - edgeHeight * 2, 
-            height2 - edgeHeight * 2 - topOffset, 
-            4
-          );
-          ctx.fill();
+          if (!loweredUpperExtension) {
+            ctx.beginPath();
+            ctx.roundRect(
+              renderX + x2 + edgeHeight,
+              renderY + y2 + edgeHeight,
+              width2 - edgeHeight * 2,
+              height2 - edgeHeight * 2 - topOffset,
+              4
+            );
+            ctx.fill();
+          }
         } else {
           // Draw simple rectangular key with all 4 visible edges
           
@@ -879,7 +887,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         }
       
         // Draw stepped key indicator
-        if (key.stepped) {
+        if (key.stepped && !loweredUpperExtension) {
           ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Darker shade
 
           // Check if key has secondary dimensions (like stepped Caps Lock)
@@ -2045,30 +2053,25 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       const rect = keyRectsRef.current[i];
       const key = rect.key;
       
-      // Use rotation-aware hit testing if the key is rotated
-      if (key.rotation_angle) {
-        const isInside = isPointInRotatedRect(
-          adjustedX,
-          adjustedY,
-          rect.x,
-          rect.y,
-          rect.width,
-          rect.height,
-          key.rotation_angle,
-          key.rotation_x !== undefined ? key.rotation_x * unitSize : undefined,
-          key.rotation_y !== undefined ? key.rotation_y * unitSize : undefined
-        );
-        
-        if (isInside) {
-          return rect;
-        }
-      } else {
-        // Simple bounds check for non-rotated keys
-        if (adjustedX >= rect.x && adjustedX <= rect.x + rect.width &&
-            adjustedY >= rect.y && adjustedY <= rect.y + rect.height) {
-          return rect;
-        }
+      // Test the union, not its bounding box: the stepped ledge / ISO arm
+      // is selectable, but the empty notch must not be. Both rectangles use
+      // the same rotation pivot as the renderer.
+      const regions = [{ x: rect.x, y: rect.y, width: rect.width, height: rect.height }];
+      if (key.x2 !== undefined || key.y2 !== undefined || key.width2 !== undefined || key.height2 !== undefined) {
+        regions.push({
+          x: rect.x + (key.x2 ?? 0) * unitSize,
+          y: rect.y + (key.y2 ?? 0) * unitSize,
+          width: (key.width2 ?? key.width) * unitSize - (key.width * unitSize - rect.width),
+          height: (key.height2 ?? key.height) * unitSize - (key.height * unitSize - rect.height),
+        });
       }
+      const customPivot = key.rotation_x !== undefined && key.rotation_y !== undefined;
+      const pivotX = customPivot ? key.rotation_x! * unitSize : rect.x + rect.width / 2;
+      const pivotY = customPivot ? key.rotation_y! * unitSize : rect.y + rect.height / 2;
+      if (regions.some(region => isPointInRotatedRect(
+        adjustedX, adjustedY, region.x, region.y, region.width, region.height,
+        key.rotation_angle ?? 0, pivotX, pivotY,
+      ))) return rect;
     }
     return null;
   };

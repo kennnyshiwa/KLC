@@ -3,6 +3,12 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import AddKeyMenu from './AddKeyMenu';
+import type { Key, Keyboard } from '../types';
+import { exportToKLE } from '../utils/kleExporter';
+import { parseOriginalKLE } from '../utils/originalKLEParser';
+import { exportToVial } from '../utils/vialExporter';
+import { importFromVial } from '../utils/vialImporter';
+import { exportToKLE2, importFromKLE2 } from '../utils/kle2Serializer';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 
 expect.extend(matchers);
@@ -11,7 +17,8 @@ vi.mock('../store/keyboardStoreOptimized', () => ({
   useKeyboardStore: vi.fn()
 }));
 
-vi.mock('../utils/keyUtils', () => ({
+vi.mock('../utils/keyUtils', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../utils/keyUtils')>(),
   generateKeyId: vi.fn(() => 'test-key-id')
 }));
 
@@ -41,6 +48,42 @@ describe('AddKeyMenu', () => {
     });
   });
 
+
+  describe('special Enter caps', () => {
+    it.each([
+      ['mISO', { x: 0.25, y: 0, width: 1, height: 2, x2: -0.25, y2: 0, width2: 1.25, height2: 1 }],
+      ['Stepped LAE', { x: 0, y: 1, width: 1.5, height: 1, x2: 0.75, y2: -1, width2: 0.75, height2: 2, stepped: true }],
+      ['MiniISO', { x: 0.25, y: 0, width: 0.75, height: 2, x2: -0.25, y2: 0, width2: 1, height2: 1 }],
+      ['Medium Ass Enter', { x: 0, y: 1, width: 1.75, height: 1, x2: 0.75, y2: -1, width2: 1, height2: 2 }],
+    ] satisfies Array<[string, Partial<Key>]>)('inserts %s with the correct outline and preserves it in all JSON formats', async (name, geometry) => {
+      const user = userEvent.setup();
+      const { container } = render(<AddKeyMenu />);
+      await user.click(container.querySelector('button[title="Add Key"]')!);
+      const button = Array.from(container.querySelectorAll('.add-key-menu-item')).find(item => item.textContent === name)!;
+      await user.click(button);
+      const key = mockAddKey.mock.calls[0][0] as Key;
+      expect(key).toMatchObject(geometry);
+      key.labels = ['target'];
+      // Vial normalizes a lone key to row zero; an anchor verifies absolute placement.
+      const keyboard: Keyboard = { meta: { name: 'Special caps' }, keys: [{ id: 'anchor', x: 0, y: 0, width: 1, height: 1, labels: ['anchor'] }, key] };
+      for (const roundTrip of [parseOriginalKLE(exportToKLE(keyboard)), importFromVial(exportToVial(keyboard)), importFromKLE2(exportToKLE2(keyboard))]) {
+        const restored = roundTrip.keys.find(candidate => candidate.labels[0] === 'target')!;
+        expect({ ...restored, x2: restored.x2 ?? 0, y2: restored.y2 ?? 0 }).toMatchObject(geometry);
+      }
+    });
+
+    it('packs multiple mISO keys by the complete footprint without overlap or a negative left edge', async () => {
+      const user = userEvent.setup();
+      const { container } = render(<AddKeyMenu />);
+      await user.click(container.querySelector('button[title="Add Key"]')!);
+      await user.click(container.querySelector('.quantity-input')!);
+      await user.keyboard('{Control>}a{/Control}3');
+      await user.click(Array.from(container.querySelectorAll('.add-key-menu-item')).find(item => item.textContent?.startsWith('mISO'))!);
+      const keys = mockAddKey.mock.calls.map(([key]) => key as Key);
+      expect(keys.map(key => key.x + key.x2!)).toEqual([0, 1.25, 2.5]);
+      expect(keys.map(key => key.x + key.width)).toEqual([1.25, 2.5, 3.75]);
+    });
+  });
   describe('Row Labels', () => {
     it('should display all row labels including SP label', async () => {
       const user = userEvent.setup();

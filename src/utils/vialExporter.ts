@@ -211,6 +211,7 @@ export function exportToVial(keyboard: Keyboard): VialConfig {
       }
 
       // Secondary rectangle properties
+      if (key.stepped) props.l = true;
       if (key.x2 !== undefined && key.x2 !== 0) props.x2 = key.x2;
       if (key.y2 !== undefined && key.y2 !== 0) props.y2 = key.y2;
       if (key.width2 !== undefined && key.width2 !== 0) props.w2 = key.width2;
