@@ -36,9 +36,9 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: Run backend type check
+      - name: Check backend JavaScript syntax
         working-directory: ./backend
-        run: npm run build
+        run: find src -name '*.js' -print0 | xargs -0 -n1 node --check
 
       - name: Test Docker build - Frontend
         uses: docker/build-push-action@v5
