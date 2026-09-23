@@ -749,9 +749,9 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         // Reset shadow for inner elements
         ctx.shadowColor = 'transparent';
         
-        // A stepped Enter keeps its lower primary rectangle raised; the upper
-        // extension is a lower ledge, not half of a second raised surface.
-        const loweredUpperExtension = key.stepped && (key.y2 ?? 0) < 0;
+        // Stepped Enter caps keep their primary rectangle raised; the LAE upper
+        // stem or ISO left tab is a lower ledge, not another raised surface.
+        const loweredEnterExtension = key.stepped && ((key.y2 ?? 0) < 0 || (key.x2 ?? 0) < 0);
 
         if (hasSecondaryRect) {
           // Draw complex shape (like ISO Enter or Big Ass Enter)
@@ -793,7 +793,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           );
           ctx.fill();
           
-          if (!loweredUpperExtension) {
+          if (!loweredEnterExtension) {
             ctx.beginPath();
             ctx.roundRect(
               renderX + x2 + edgeHeight,
@@ -826,7 +826,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           );
           ctx.fill();
           
-          if (!loweredUpperExtension) {
+          if (!loweredEnterExtension) {
             ctx.beginPath();
             ctx.roundRect(
               renderX + x2 + edgeHeight,
@@ -887,7 +887,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         }
       
         // Draw stepped key indicator
-        if (key.stepped && !loweredUpperExtension) {
+        if (key.stepped && !loweredEnterExtension) {
           ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Darker shade
 
           // Check if key has secondary dimensions (like stepped Caps Lock)

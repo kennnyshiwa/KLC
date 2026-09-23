@@ -52,6 +52,7 @@ describe('AddKeyMenu', () => {
   describe('special Enter caps', () => {
     it.each([
       ['mISO', { x: 0.25, y: 0, width: 1, height: 2, x2: -0.25, y2: 0, width2: 1.25, height2: 1 }],
+      ['Stepped ISO', { x: 0.25, y: 0, width: 1.25, height: 2, x2: -0.25, y2: 0, width2: 1.5, height2: 1, stepped: true }],
       ['Stepped LAE', { x: 0, y: 1, width: 1.5, height: 1, x2: 0.75, y2: -1, width2: 0.75, height2: 2, stepped: true }],
       ['MiniISO', { x: 0.25, y: 0, width: 0.75, height: 2, x2: -0.25, y2: 0, width2: 1, height2: 1 }],
       ['Medium Ass Enter', { x: 0, y: 1, width: 1.75, height: 1, x2: 0.75, y2: -1, width2: 1, height2: 2 }],

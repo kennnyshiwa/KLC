@@ -7,6 +7,8 @@ import type { Key } from '../types';
 const lae: Key = { id: 'special', x: 2, y: 1, width: 1.5, height: 1, x2: 0.75, y2: -1, width2: 0.75, height2: 2, stepped: true, labels: [], color: '#eeeeee' };
 const miso: Key = { id: 'special', x: 2, y: 0, width: 1, height: 2, x2: -0.25, y2: 0, width2: 1.25, height2: 1, labels: [], color: '#eeeeee' };
 
+const steppedISO: Key = { ...miso, width: 1.25, width2: 1.5, stepped: true };
+
 function fixture(key: Key) {
   const tops: number[][] = [];
   const gradient = { addColorStop: vi.fn() };
@@ -37,7 +39,15 @@ describe('special cap rendering and picking', () => {
     expect(tops.some(([,, width]) => width > 54)).toBe(true);
   });
 
+  it('keeps only the 1.25u vertical ISO body raised, not the upper-left tab', () => {
+    const { tops } = fixture(steppedISO);
+    expect(tops.length).toBeGreaterThan(0);
+    expect(tops.every(([x]) => x >= steppedISO.x * 54)).toBe(true);
+    expect(tops.every(([,, width, height]) => width < 1.25 * 54 && height > 1.5 * 54)).toBe(true);
+  });
+
   it.each([
+    ['stepped ISO tab', steppedISO, [1.875, 0.5]],
     ['mISO arm', miso, [1.875, 0.5]],
     ['stepped LAE ledge', lae, [3.125, 0.5]],
   ] as const)('selects the visible %s outside the main rectangle', (_name, key, point) => {
@@ -48,6 +58,7 @@ describe('special cap rendering and picking', () => {
   });
 
   it.each([
+    ['stepped ISO', steppedISO, [1.875, 1.5]],
     ['mISO', miso, [1.875, 1.5]],
     ['stepped LAE', lae, [2.25, 0.5]],
   ] as const)('does not select the empty %s notch', (_name, key, point) => {

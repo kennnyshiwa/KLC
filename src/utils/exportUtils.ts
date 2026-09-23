@@ -166,9 +166,9 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
       const hasSecondaryRect = key.x2 !== undefined || key.y2 !== undefined || 
                               key.width2 !== undefined || key.height2 !== undefined;
       
-      const loweredUpperExtension = key.stepped && (key.y2 ?? 0) < 0;
-      if (loweredUpperExtension) {
-        // Draw the lowered extension first, then the entire raised lower cap.
+      const loweredEnterExtension = key.stepped && ((key.y2 ?? 0) < 0 || (key.x2 ?? 0) < 0);
+      if (loweredEnterExtension) {
+        // Draw the lowered extension first, then the entire raised primary cap.
         const x2 = (key.x2 ?? 0) * unitSize;
         const y2 = (key.y2 ?? 0) * unitSize;
         const width2 = (key.width2 ?? key.width) * unitSize - 1;
@@ -227,7 +227,7 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
     }
     
       // Stepped cap shading
-      if (key.stepped && !loweredUpperExtension) {
+      if (key.stepped && !loweredEnterExtension) {
         svg += `\n  <rect x="${keyX + keyWidth * 0.6}" y="${keyY + edgeHeight}" ` +
                `width="${keyWidth * 0.4 - edgeHeight}" height="${keyHeight - edgeHeight * 2 - topOffset}" ` +
                `fill="rgba(0,0,0,0.1)" rx="2" ry="2" />`;

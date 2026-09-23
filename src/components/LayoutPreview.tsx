@@ -101,8 +101,8 @@ const LayoutPreview: React.FC<LayoutPreviewProps> = ({
         ctx.fillRect(x2, y2, w2, h2);
       }
 
-      // Stepped Enter: lowered upper extension and a full-width raised base.
-      if (key.stepped && (key.y2 ?? 0) < 0) {
+      // Stepped Enter: lowered extension and the full primary raised surface.
+      if (key.stepped && ((key.y2 ?? 0) < 0 || (key.x2 ?? 0) < 0)) {
         const extensionX = x + (key.x2 ?? 0) * scale;
         const extensionY = y + (key.y2 ?? 0) * scale;
         ctx.fillStyle = key.color || '#f9f9f9';

@@ -117,3 +117,17 @@ describe('stepped LAE SVG surfaces', () => {
     expect(ordinary.querySelectorAll('rect[fill="#eeeeee"]')).toHaveLength(2);
   });
 });
+
+
+describe('stepped ISO export', () => {
+  it('raises only the main vertical body and lowers the upper-left tab', () => {
+    const key = { id: 'iso', x: .25, y: 0, width: 1.25, height: 2, x2: -.25, y2: 0, width2: 1.5, height2: 1, stepped: true, labels: [], color: '#44aa88' };
+    const svg = buildKeyboardSVG({ meta: { name: 'Stepped ISO' }, keys: [key] });
+    const tops = [...svg.matchAll(/<rect[^>]*fill="#44aa88"[^>]*>/g)].map(match => match[0]);
+    expect(tops).toHaveLength(1);
+    expect(tops[0]).toContain('width="54.5"');
+    expect(tops[0]).toContain('height="92"');
+    const ordinary = buildKeyboardSVG({ meta: {}, keys: [{ ...key, stepped: false }] });
+    expect([...ordinary.matchAll(/<rect[^>]*fill="#44aa88"[^>]*>/g)]).toHaveLength(2);
+  });
+});
