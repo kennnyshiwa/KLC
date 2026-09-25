@@ -1,3 +1,4 @@
+import { diagonalCanvasFill } from '../utils/diagonalColor';
 import React, { useEffect, useRef } from 'react';
 import { Keyboard } from '../types';
 
@@ -86,7 +87,7 @@ const LayoutPreview: React.FC<LayoutPreviewProps> = ({
       if (key.ghost || key.decal) return;
 
       // Draw main key rectangle
-      ctx.fillStyle = key.color || '#f9f9f9';
+      ctx.fillStyle = diagonalCanvasFill(ctx, key, x, y, scale, 2, key.color || '#f9f9f9');
       ctx.fillRect(x, y, w, h);
 
       // Draw secondary rectangle for special keys (like ISO Enter)
@@ -97,7 +98,7 @@ const LayoutPreview: React.FC<LayoutPreviewProps> = ({
         const w2 = (key.width2 || 0) * scale - 2;
         const h2 = (key.height2 || 0) * scale - 2;
         
-        ctx.fillStyle = key.color || '#f9f9f9';
+        ctx.fillStyle = diagonalCanvasFill(ctx, key, x, y, scale, 2, key.color || '#f9f9f9');
         ctx.fillRect(x2, y2, w2, h2);
       }
 
@@ -105,11 +106,11 @@ const LayoutPreview: React.FC<LayoutPreviewProps> = ({
       if (key.stepped && ((key.y2 ?? 0) < 0 || (key.x2 ?? 0) < 0)) {
         const extensionX = x + (key.x2 ?? 0) * scale;
         const extensionY = y + (key.y2 ?? 0) * scale;
-        ctx.fillStyle = key.color || '#f9f9f9';
+        ctx.fillStyle = diagonalCanvasFill(ctx, key, x, y, scale, 2, key.color || '#f9f9f9');
         ctx.fillRect(extensionX, extensionY, (key.width2 ?? key.width) * scale - 2, (key.height2 ?? key.height) * scale - 2);
         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.fillRect(extensionX, extensionY, (key.width2 ?? key.width) * scale - 2, (key.height2 ?? key.height) * scale - 2);
-        ctx.fillStyle = key.color || '#f9f9f9';
+        ctx.fillStyle = diagonalCanvasFill(ctx, key, x, y, scale, 2, key.color || '#f9f9f9');
         ctx.fillRect(x, y, w, h);
       }
 

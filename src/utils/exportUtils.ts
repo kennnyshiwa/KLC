@@ -1,3 +1,4 @@
+import { diagonalEndpoints, diagonalProperties, shadeColor } from './diagonalColor';
 import { saveAs } from 'file-saver';
 import { Keyboard } from '../types';
 import { getLegendPosition } from './keyUtils';
@@ -119,7 +120,7 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
   svg += `\n<rect width="${width}" height="${height}" fill="#ffffff" />`;
   
   // Add keys with adjusted positions relative to bounds
-  keyboard.keys.forEach(key => {
+  keyboard.keys.forEach((key, keyIndex) => {
     const keyX = key.x * unitSize - bounds.minX;
     const keyY = key.y * unitSize - bounds.minY;
     const keyWidth = key.width * unitSize - 1;
@@ -142,7 +143,7 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
     // Only render the key shape if it's not a decal
     if (!key.decal) {
       // Calculate colors for 3D effect
-      const baseColor = key.color || '#f9f9f9';
+      let baseColor = key.color || '#f9f9f9';
       const parseColor = (color: string) => {
         const rgb = parseInt(color.slice(1), 16);
         return {
@@ -157,8 +158,21 @@ export function buildKeyboardSVG(keyboard: Keyboard) {
       };
       
       const baseRgb = parseColor(baseColor);
-      const bottomColor = adjustBrightness(baseRgb, -80);
-      const sideColor = adjustBrightness(baseRgb, -40);
+      let bottomColor = adjustBrightness(baseRgb, -80);
+      let sideColor = adjustBrightness(baseRgb, -40);
+      const { diagonalColor } = diagonalProperties(key);
+      if (diagonalColor) {
+        const p = diagonalEndpoints(key, keyX, keyY, unitSize);
+        const splitFill = (primary: string, shade: number) => {
+          const id = `diagonal-${keyIndex}-${shade}`;
+          const secondary = shadeColor(diagonalColor, shade);
+          svg += `<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${p.x1}" y1="${p.y1}" x2="${p.x2}" y2="${p.y2}"><stop offset="0" stop-color="${escapeXml(primary)}"/><stop offset="0.5" stop-color="${escapeXml(primary)}"/><stop offset="0.5" stop-color="${secondary}"/><stop offset="1" stop-color="${secondary}"/></linearGradient></defs>`;
+          return `url(#${id})`;
+        };
+        bottomColor = splitFill(bottomColor, -80);
+        sideColor = splitFill(sideColor, -40);
+        baseColor = splitFill(baseColor, 0);
+      }
       const edgeHeight = 6;
       const topOffset = 3;
       

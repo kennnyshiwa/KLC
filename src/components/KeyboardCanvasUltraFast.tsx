@@ -1,3 +1,4 @@
+import { diagonalCanvasFill } from '../utils/diagonalColor';
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { Key } from '../types';
@@ -591,7 +592,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         // Regular ghost keys (not row labels) are rendered as flat, semi-transparent rectangles
         ctx.save();
         ctx.globalAlpha = 0.3;
-        ctx.fillStyle = key.color || '#cccccc';
+        ctx.fillStyle = diagonalCanvasFill(ctx, key, renderX, renderY, unitSize, keyInset * 2, key.color || '#cccccc');
         ctx.fillRect(renderX, renderY, keyWidth, keyHeight);
         
         // Draw border
@@ -739,8 +740,10 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           baseRgb = adjustBrightness(baseRgb, 20);
         }
         
-        const sideColor = toRgbString(adjustBrightness(baseRgb, -40));
-        const bottomColor = toRgbString(adjustBrightness(baseRgb, -80));
+        const hoverShade = !isExportingRef.current && hoveredKey === key.id ? 20 : 0;
+        const splitFill = (primary: string, shade: number) => diagonalCanvasFill(ctx, key, renderX, renderY, unitSize, keyInset * 2, primary, shade + hoverShade);
+        const sideColor = splitFill(toRgbString(adjustBrightness(baseRgb, -40)), -40);
+        const bottomColor = splitFill(toRgbString(adjustBrightness(baseRgb, -80)), -80);
       
         // Check if this is a special shaped key (ISO Enter, Big Ass Enter)
         const hasSecondaryRect = key.x2 !== undefined || key.y2 !== undefined || 
@@ -782,7 +785,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           
           
           // Draw the top surfaces
-          ctx.fillStyle = toRgbString(baseRgb);
+          ctx.fillStyle = splitFill(toRgbString(baseRgb), 0);
           ctx.beginPath();
           ctx.roundRect(
             renderX + edgeHeight, 
@@ -815,7 +818,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           highlightGradient.addColorStop(0, toRgbString(adjustBrightness(baseRgb, 15)));
           highlightGradient.addColorStop(1, toRgbString(baseRgb));
           
-          ctx.fillStyle = highlightGradient;
+          ctx.fillStyle = key.diagonalColor ? splitFill(toRgbString(baseRgb), 0) : highlightGradient;
           ctx.beginPath();
           ctx.roundRect(
             renderX + edgeHeight, 
@@ -853,7 +856,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           ctx.fill();
           
           // Draw the top surface
-          ctx.fillStyle = toRgbString(baseRgb);
+          ctx.fillStyle = splitFill(toRgbString(baseRgb), 0);
           ctx.beginPath();
           ctx.roundRect(
             renderX + edgeHeight, 
@@ -874,7 +877,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
           highlightGradient.addColorStop(0, toRgbString(adjustBrightness(baseRgb, 15)));
           highlightGradient.addColorStop(1, toRgbString(baseRgb));
           
-          ctx.fillStyle = highlightGradient;
+          ctx.fillStyle = key.diagonalColor ? splitFill(toRgbString(baseRgb), 0) : highlightGradient;
           ctx.beginPath();
           ctx.roundRect(
             renderX + edgeHeight, 

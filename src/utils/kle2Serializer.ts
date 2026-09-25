@@ -1,3 +1,4 @@
+import { diagonalProperties } from './diagonalColor';
 // KLE 2.0 serializer - exports keyboards in a clean, complete format
 import { Key, Keyboard, KeyboardMetadata } from '../types';
 
@@ -42,6 +43,8 @@ export interface KLE2Key {
   rotation_y?: number;
   rotation_angle?: number;
   color?: string;
+  diagonalColor?: string;
+  diagonalDirection?: Key["diagonalDirection"];
   profile?: Key['profile'];
   labels?: string[];
   textColor?: string[];
@@ -122,6 +125,7 @@ export function exportToKLE2(keyboard: Keyboard): KLE2Format {
       ...(key.rotation_y !== undefined && { rotation_y: key.rotation_y }),
       ...(key.rotation_angle !== undefined && { rotation_angle: key.rotation_angle }),
       ...(key.color !== undefined && { color: key.color }),
+      ...diagonalProperties(key),
       ...(key.profile !== undefined && { profile: key.profile }),
       labels: [...key.labels],
       ...(key.textColor !== undefined && { textColor: [...key.textColor] }),
@@ -181,6 +185,7 @@ export function importFromKLE2(data: KLE2Format): Keyboard {
       ...(keyData.rotation_y !== undefined && { rotation_y: keyData.rotation_y }),
       ...(keyData.rotation_angle !== undefined && { rotation_angle: keyData.rotation_angle }),
       ...(keyData.color !== undefined && { color: keyData.color }),
+      ...diagonalProperties(keyData),
       ...(keyData.profile !== undefined && { profile: keyData.profile }),
       ...(keyData.textColor !== undefined && { textColor: [...keyData.textColor] }),
       ...(keyData.textSize !== undefined && { textSize: [...keyData.textSize] }),

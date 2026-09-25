@@ -1,3 +1,5 @@
+import { diagonalProperties } from './diagonalColor';
+import { getKLCCompatibilityExtension } from './originalKLEParser';
 import { Key, Keyboard, KLEKeyData, KeyProfile } from '../types';
 import { generateKeyId } from './keyUtils';
 import { processLabelsForIcons } from './iconParser';
@@ -405,6 +407,10 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard & { has
     }
   }
 
+  const rawMetadata = Array.isArray(json) ? json.find(item => item && typeof item === 'object' && !Array.isArray(item)) : json;
+  const extension = getKLCCompatibilityExtension(rawMetadata?._klc, keyboard.keys.length);
+  extension?.keys.forEach((paint, index) => Object.assign(keyboard.keys[index], diagonalProperties(paint)));
+
   // Add the flag to the keyboard object if KRK data was found
   if (hasKrkRowPositions) {
     (keyboard as any).hasKrkData = true;
@@ -416,6 +422,7 @@ export function parseKLE(json: any, options?: ParseKLEOptions): Keyboard & { has
 
 export function serializeToKLE(keyboard: Keyboard, krkMode: boolean = false): any[] {
   const output: any[] = [];
+  const colors: Array<ReturnType<typeof diagonalProperties>> = [];
   
   // Add metadata if present
   if (Object.keys(keyboard.meta).length > 0) {
@@ -447,6 +454,7 @@ export function serializeToKLE(keyboard: Keyboard, krkMode: boolean = false): an
     let lastRowPosition: string | undefined = undefined;
     
     for (const key of sortedKeys) {
+      colors.push(diagonalProperties(key));
       const props: any = {};
       
       // Position
@@ -512,6 +520,11 @@ export function serializeToKLE(keyboard: Keyboard, krkMode: boolean = false): an
     output.push(row);
   }
   
+  if (colors.some(paint => Object.keys(paint).length > 0)) {
+    const meta = { ...keyboard.meta, _klc: { version: 1, keyCount: colors.length, metadata: {}, keys: colors } };
+    if (output.length > 0 && !Array.isArray(output[0])) output[0] = meta;
+    else output.unshift(meta);
+  }
   return output;
 }
 

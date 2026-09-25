@@ -1364,6 +1364,44 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ isCollapsed = false, 
                   value={firstKey.color || '#f9f9f9'}
                   onChange={(color) => handleKeyUpdate('color', color)}
                 />
+                {selectedKeysList.every(key => !key.decal && key.profile !== 'LED' && key.profile !== 'ENCODER') && (
+                  <>
+                    <div className="property-row checkbox-row">
+                      <label>
+                        <input
+                          type="checkbox"
+                          ref={input => { if (input) input.indeterminate = selectedKeysList.some(key => !!key.diagonalColor) && !selectedKeysList.every(key => !!key.diagonalColor); }}
+                          checked={selectedKeysList.every(key => !!key.diagonalColor)}
+                          aria-checked={selectedKeysList.some(key => !!key.diagonalColor) && !selectedKeysList.every(key => !!key.diagonalColor) ? 'mixed' : selectedKeysList.every(key => !!key.diagonalColor)}
+                          onChange={(event) => {
+                            updateKeys(selectedKeysList.map(key => ({
+                              id: key.id,
+                              changes: { diagonalColor: event.target.checked ? (key.diagonalColor || '#808080') : undefined },
+                            })));
+                          }}
+                        />
+                        Diagonal color
+                      </label>
+                    </div>
+                    {selectedKeysList.some(key => !!key.diagonalColor) && (
+                      <fieldset style={{ border: 0, padding: 0, minWidth: 0 }}>
+                        <legend>Second color</legend>
+                        <ColorPicker
+                          value={firstKey.diagonalColor || '#808080'}
+                          onChange={color => updateKeys(selectedKeysList.map(key => ({ id: key.id, changes: { diagonalColor: color } })))}
+                        />
+                        <div className="property-row">
+                          <label htmlFor="diagonal-direction">Split direction</label>
+                          <select id="diagonal-direction" value={firstKey.diagonalDirection || '/'}
+                            onChange={event => updateKeys(selectedKeysList.map(key => ({ id: key.id, changes: { diagonalDirection: event.target.value as Key['diagonalDirection'] } })))}>
+                            <option value="/">/ — rising</option>
+                            <option value={'\\'}>\ — falling</option>
+                          </select>
+                        </div>
+                      </fieldset>
+                    )}
+                  </>
+                )}
                 <div className="property-row">
                   <label>{editorSettings.krkMode ? 'Row Position' : 'Profile'}</label>
                   {editorSettings.krkMode ? (

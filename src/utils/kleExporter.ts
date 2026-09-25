@@ -1,3 +1,4 @@
+import { diagonalProperties } from './diagonalColor';
 import { Keyboard, Key, KLEKeyData } from '../types';
 
 const encodeKLELegendLineBreaks = (legend: string): string => legend.replace(/\r?\n/g, '<br>');
@@ -10,6 +11,8 @@ interface KLCCompatibilityMetadata {
 }
 
 interface KLCCompatibilityKey {
+  diagonalColor?: string;
+  diagonalDirection?: Key["diagonalDirection"];
   rowPosition?: string;
   rowLabelShape?: Key['rowLabelShape'];
 }
@@ -101,7 +104,7 @@ export function exportToKLE(keyboard: Keyboard, krkMode: boolean = false): any[]
   if (keyboard.meta.pcb !== undefined) compatibilityMetadata.pcb = keyboard.meta.pcb;
 
   const compatibilityKeys = exportedKeys.map(key => {
-    const compatibilityKey: KLCCompatibilityKey = {};
+    const compatibilityKey: KLCCompatibilityKey = { ...diagonalProperties(key) };
     if (key.rowPosition !== undefined) compatibilityKey.rowPosition = key.rowPosition;
     if (key.rowLabelShape !== undefined) compatibilityKey.rowLabelShape = key.rowLabelShape;
     return compatibilityKey;

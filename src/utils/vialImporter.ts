@@ -1,7 +1,9 @@
+import { diagonalProperties } from './diagonalColor';
 import { Keyboard, Key, VialLayoutOption } from '../types';
 import { generateKeyId } from './keyUtils';
 
 interface VialConfig {
+  _klc?: { version: 1; keyCount: number; colors: Array<Pick<Key, "diagonalColor" | "diagonalDirection">> };
   name: string;
   vendorId: string;
   productId: string;
@@ -168,6 +170,11 @@ export function importFromVial(vialData: VialConfig): Keyboard {
     // Move to next row
     currentY += 1;
   });
+
+  const extension = vialData._klc;
+  if (extension?.version === 1 && extension.keyCount === keys.length && Array.isArray(extension.colors) && extension.colors.length === keys.length) {
+    keys.forEach((key, index) => Object.assign(key, diagonalProperties(extension.colors[index])));
+  }
 
   // Convert Vial layout labels to VialLayoutOption format
   const vialLabels: VialLayoutOption[] = [];
