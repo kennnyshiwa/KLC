@@ -27,6 +27,8 @@ export interface Key {
   textSize?: number[];
   default?: KeyTextMeta;
   color?: string;
+  diagonalColor?: string; // Optional second half; absent means solid color
+  diagonalDirection?: "/" | "\\";
   profile?: KeyProfile;
   nub?: boolean;
   ghost?: boolean;

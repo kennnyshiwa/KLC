@@ -1,3 +1,4 @@
+import { diagonalProperties } from './diagonalColor';
 /* global File */
 import { Key, Keyboard, KLEKeyData, KeyProfile } from '../types';
 import { generateKeyId } from './keyUtils';
@@ -17,6 +18,8 @@ interface KLCCompatibilityMetadata {
 }
 
 interface KLCCompatibilityKey {
+  diagonalColor?: string;
+  diagonalDirection?: Key["diagonalDirection"];
   rowPosition?: string;
   rowLabelShape?: Key['rowLabelShape'];
 }
@@ -37,7 +40,7 @@ const isVialLabels = (value: unknown): value is NonNullable<Keyboard['meta']['vi
   ))
 );
 
-const getKLCCompatibilityExtension = (
+export const getKLCCompatibilityExtension = (
   value: unknown,
   parsedKeyCount: number,
 ): KLCCompatibilityExtension | undefined => {
@@ -70,7 +73,9 @@ const getKLCCompatibilityExtension = (
 
   const validKeys = value.keys.every(extensionKey => (
     isRecord(extensionKey)
-    && Object.keys(extensionKey).every(field => field === 'rowPosition' || field === 'rowLabelShape')
+    && Object.keys(extensionKey).every(field => field === 'rowPosition' || field === 'rowLabelShape' || field === 'diagonalColor' || field === 'diagonalDirection')
+    && (extensionKey.diagonalColor === undefined || (typeof extensionKey.diagonalColor === 'string' && /^#[0-9a-f]{6}$/i.test(extensionKey.diagonalColor)))
+    && (extensionKey.diagonalDirection === undefined || extensionKey.diagonalDirection === '/' || extensionKey.diagonalDirection === '\\')
     && (extensionKey.rowPosition === undefined || typeof extensionKey.rowPosition === 'string')
     && (
       extensionKey.rowLabelShape === undefined
@@ -573,6 +578,7 @@ export function parseOriginalKLE(json: any, options?: OriginalKLEParseOptions): 
     }
 
     compatibilityExtension.keys.forEach((extensionKey, index) => {
+      Object.assign(keyboard.keys[index], diagonalProperties(extensionKey));
       if (extensionKey.rowPosition !== undefined) {
         keyboard.keys[index].rowPosition = extensionKey.rowPosition;
         hasKrkRowPositions = true;

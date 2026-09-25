@@ -1,6 +1,8 @@
+import { diagonalProperties } from './diagonalColor';
 import { Keyboard, Key, KLEKeyData, KLELayout } from '../types';
 
 interface VialConfig {
+  _klc?: { version: 1; keyCount: number; colors: Array<Pick<Key, "diagonalColor" | "diagonalDirection">> };
   name: string;
   vendorId: string;
   productId: string;
@@ -239,6 +241,9 @@ export function exportToVial(keyboard: Keyboard): VialConfig {
   });
 
   return {
+    ...(sortedKeys.some(key => key.diagonalColor || key.diagonalDirection) && {
+      _klc: { version: 1 as const, keyCount: sortedKeys.length, colors: sortedKeys.map(diagonalProperties) },
+    }),
     name: keyboard.meta?.name || 'Untitled Keyboard',
     vendorId: '0x0000',
     productId: '0x0000',
