@@ -2,7 +2,7 @@ import { diagonalCanvasFill } from '../utils/diagonalColor';
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useKeyboardStore } from '../store/keyboardStoreOptimized';
 import { Key } from '../types';
-import { getLegendPosition, getStabilizerPositions } from '../utils/keyUtils';
+import { getLegendPosition, getKeyMountMarkers, getMountLayoutPosition } from '../utils/keyUtils';
 import { parseIconLegend } from '../utils/iconParser';
 import { fontManager } from '../utils/fontManager';
 import { isPointInRotatedRect, calculateNewPositionForRotationCenter } from '../utils/rotationUtils';
@@ -1809,24 +1809,17 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         ctx.restore();
       }
       
-      // Draw stabilizer positions if enabled (while rotation is still active)
-      // Skip decal keys as they're just labels, not physical keys
-      const isMiniISO = key.width === 0.75 && key.height === 2 && key.x2 !== undefined && Math.abs(key.x2 + 0.25) < 0.01;
-      const needsStabilizers = (key.width >= 2 || key.height >= 2) && !key.decal && !isMiniISO;
-      const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height && !isMiniISO) ||
-                         (key.y2 !== undefined && key.y2 < 0);
-      const isBAE = key.x2 !== undefined && key.x2 > 0 && key.height2 !== undefined; // Big Ass Enter extends to the right
-
-      if (editorSettings.showStabilizerPositions && needsStabilizers) {
-        const stabPositions = getStabilizerPositions(key.width, key.height, isISOEnter, isBAE, isMiniISO);
+      // Mount geometry is shared with hover/tooltip; coordinates are in key units.
+      if (editorSettings.showStabilizerPositions) {
+        const stabPositions = getKeyMountMarkers(key);
         
         ctx.save();
         ctx.strokeStyle = isDarkMode ? 'rgba(128, 128, 128, 0.7)' : 'rgba(0, 0, 0, 0.4)';
         ctx.lineWidth = isDarkMode ? 1.5 : 1;
         
         stabPositions.forEach(pos => {
-          const stabX = renderX + pos.x * keyWidth;
-          const stabY = renderY + pos.y * keyHeight;
+          const stabX = (key.x + pos.x) * unitSize + (renderX - keyX);
+          const stabY = (key.y + pos.y) * unitSize + (renderY - keyY);
           
           // Draw outer circle
           ctx.beginPath();
@@ -1937,39 +1930,12 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
     if (!isExportingRef.current && hoveredStabRef.current && stateRef.current.editorSettings.showStabilizerPositions) {
       const { keyId, stabIndex, x, y, keyWidth } = hoveredStabRef.current;
       const key = keyboard.keys.find(k => k.id === keyId);
-      if (key) {
-        // Determine stabilizer type based on key orientation
-        const isVertical = key.height >= 2 && key.width < 2;
-        const isMiniISO = key.width === 0.75 && key.height === 2 && key.x2 !== undefined && Math.abs(key.x2 + 0.25) < 0.01;
-        const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height && !isMiniISO) ||
-                           (key.y2 !== undefined && key.y2 < 0);
-        const isBAE = key.x2 !== undefined && key.x2 > 0 && key.height2 !== undefined;
-
-        let stabType = '';
-        if (isBAE) {
-          // Big Ass Enter has 4 stabilizers
-          if (stabIndex === 0) stabType = 'Center';
-          else if (stabIndex === 1) stabType = 'Left';
-          else if (stabIndex === 2) stabType = 'Right';
-          else if (stabIndex === 3) stabType = 'Upper';
-        } else if (stabIndex === 0) {
-          stabType = 'Center';
-        } else if (stabIndex === 1) {
-          stabType = (isVertical || isISOEnter) ? 'Top' : 'Left';
-        } else if (stabIndex === 2) {
-          stabType = (isVertical || isISOEnter) ? 'Bottom' : 'Right';
-        }
-
-        // Calculate coordinates in units (relative to key position)
-        const stabPositions = getStabilizerPositions(keyWidth, key.height, isISOEnter, isBAE, isMiniISO);
-        const relativeX = stabPositions[stabIndex].x * keyWidth;
-        const relativeY = stabPositions[stabIndex].y * key.height;
-        
-        // Create tooltip text
+      const mount = key ? getKeyMountMarkers(key)[stabIndex] : undefined;
+      if (key && mount) {
         const tooltipLines = [
-          `${keyWidth}u ${stabType} Stem`,
-          `X: ${relativeX.toFixed(3)}u`,
-          `Y: ${relativeY.toFixed(3)}u`
+          `${keyWidth}u ${mount.label}`,
+          `X: ${mount.x.toFixed(3)}u`,
+          `Y: ${mount.y.toFixed(3)}u`
         ];
         
         // Measure tooltip dimensions
@@ -2297,33 +2263,21 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
       // Check for stabilizer hover if stabilizers are shown
       if (stateRef.current.editorSettings.showStabilizerPositions) {
         let foundStab = false;
+        const previousStab = hoveredStabRef.current;
         const { unitSize } = stateRef.current.editorSettings;
         
         // Check each key for stabilizer positions
         for (const keyRect of keyRectsRef.current) {
           const key = stateRef.current.keyboard.keys.find(k => k.id === keyRect.id);
-          if (!key || (key.width < 2 && key.height < 2)) continue;
-
-          const isMiniISO = key.width === 0.75 && key.height === 2 && key.x2 !== undefined && Math.abs(key.x2 + 0.25) < 0.01;
-          if (isMiniISO) continue;
-          const isISOEnter = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height && !isMiniISO) ||
-                             (key.y2 !== undefined && key.y2 < 0);
-          const isBAE = key.x2 !== undefined && key.x2 > 0 && key.height2 !== undefined;
-          const stabPositions = getStabilizerPositions(key.width, key.height, isISOEnter, isBAE, isMiniISO);
-          const keyInset = 1;
-          const renderX = Math.round(key.x * unitSize + keyInset);
-          const renderY = Math.round(key.y * unitSize + keyInset);
-          const keyWidth = Math.round(key.width * unitSize - keyInset * 2);
-          const keyHeight = Math.round(key.height * unitSize - keyInset * 2);
-          
-          // Check each stabilizer position
+          if (!key) continue;
+          const stabPositions = getKeyMountMarkers(key);
           for (let i = 0; i < stabPositions.length; i++) {
-            const pos = stabPositions[i];
-            const stabX = renderX + pos.x * keyWidth;
-            const stabY = renderY + pos.y * keyHeight;
+            const position = getMountLayoutPosition(key, stabPositions[i]);
+            const stabX = position.x * unitSize;
+            const stabY = position.y * unitSize;
             
             // Check if mouse is over this stabilizer (within 12 pixel radius)
-            const dist = Math.sqrt(Math.pow(x - stabX, 2) + Math.pow(y - stabY, 2));
+            const dist = Math.sqrt(Math.pow(x - CANVAS_PADDING_LEFT - stabX, 2) + Math.pow(y - CANVAS_PADDING_TOP - stabY, 2));
             if (dist <= 12) {
               hoveredStabRef.current = {
                 keyId: key.id,
@@ -2344,7 +2298,7 @@ const KeyboardCanvas = forwardRef<KeyboardCanvasRef, KeyboardCanvasProps>(({ wid
         if (!foundStab && hoveredStabRef.current) {
           hoveredStabRef.current = null;
           requestRender();
-        } else if (foundStab && !hoveredStabRef.current) {
+        } else if (foundStab && (previousStab?.keyId !== hoveredStabRef.current?.keyId || previousStab?.stabIndex !== hoveredStabRef.current?.stabIndex)) {
           requestRender();
         }
       }

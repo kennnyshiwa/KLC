@@ -224,3 +224,78 @@ export function getStabilizerPositions(keyWidth: number, keyHeight: number = 1, 
   // No stabilizers for keys smaller than 2u in any dimension
   return [];
 }
+
+export interface KeyMountMarker {
+  /** Coordinates in key units, relative to the primary rectangle's origin. */
+  x: number;
+  y: number;
+  label: string;
+  kind: 'switch' | 'stabilizer';
+}
+
+/** Match the silhouette, not which of KLE's two rectangles was serialized first. */
+export function getBAEMountMarkers(key: Key): KeyMountMarker[] | null {
+  const rects = [
+    { x: 0, y: 0, w: key.width, h: key.height },
+    { x: key.x2 ?? 0, y: key.y2 ?? 0, w: key.width2 ?? key.width, h: key.height2 ?? key.height },
+  ];
+  const top = Math.min(...rects.map(r => r.y));
+  const bottom = Math.max(...rects.map(r => r.y + r.h));
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.0001;
+  if (!near(bottom - top, 2)) return null;
+  // Only a two-row outline; don't silently infer mounting from an arbitrary custom shape.
+  if (rects.some(r => ![top, top + 1, bottom].some(y => near(r.y, y)) ||
+    ![top, top + 1, bottom].some(y => near(r.y + r.h, y)))) return null;
+  const row = (y: number) => {
+    const active = rects.filter(r => r.y < y && r.y + r.h > y).sort((a, b) => a.x - b.x);
+    if (!active.length || active.some((r, i) => i > 0 && r.x > active[i - 1].x + active[i - 1].w)) return null;
+    return { left: active[0].x, right: Math.max(...active.map(r => r.x + r.w)) };
+  };
+  const upper = row(top + 0.5);
+  const lower = row(top + 1.5);
+  if (!upper || !lower || !near(upper.right - upper.left, 1.5) ||
+    !near(lower.right - lower.left, 2.25) || !near(upper.right, lower.right)) return null;
+  const center = (lower.left + lower.right) / 2;
+  // Reference: DCS BAE, 1.5u upper / 2.25u lower. Blue dots are alternative
+  // switch stems; only the two red lower dots are stabilizers (1.25u spacing).
+  return [
+    { x: center, y: top + 1.5, label: 'Lower switch', kind: 'switch' },
+    { x: center - 0.625, y: top + 1.5, label: 'Left stabilizer', kind: 'stabilizer' },
+    { x: center + 0.625, y: top + 1.5, label: 'Right stabilizer', kind: 'stabilizer' },
+    { x: (upper.left + upper.right) / 2, y: top + 0.5, label: 'Upper alternate switch', kind: 'switch' },
+  ];
+}
+
+/** Shared by drawing and hover so imported shapes and marker descriptions agree. */
+export function getKeyMountMarkers(key: Key): KeyMountMarker[] {
+  if (key.decal) return [];
+  const bae = getBAEMountMarkers(key);
+  if (bae) return bae;
+  const mini = key.width === 0.75 && key.height === 2 && key.x2 !== undefined && Math.abs(key.x2 + 0.25) < 0.01;
+  if ((key.width < 2 && key.height < 2) || mini) return [];
+  const iso = (key.x2 !== undefined && key.x2 < 0 && key.height2 !== undefined && key.height2 < key.height) ||
+    (key.y2 !== undefined && key.y2 < 0);
+  const legacyBAE = key.x2 !== undefined && key.x2 > 0 && key.height2 !== undefined;
+  const vertical = key.height >= 2 && key.width < 2;
+  return getStabilizerPositions(key.width, key.height, iso, legacyBAE, mini).map((p, i) => ({
+    x: p.x * key.width, y: p.y * key.height,
+    label: i === 0 ? 'Center switch' : i === 3 ? 'Upper stem' :
+      i === 1 ? (vertical || iso ? 'Top stabilizer' : 'Left stabilizer') :
+      (vertical || iso ? 'Bottom stabilizer' : 'Right stabilizer'),
+    kind: i === 0 ? 'switch' : 'stabilizer',
+  }));
+}
+
+/** Convert a local mount position to layout coordinates, including key rotation. */
+export function getMountLayoutPosition(key: Key, mount: KeyMountMarker): { x: number; y: number } {
+  const x = key.x + mount.x;
+  const y = key.y + mount.y;
+  const angle = (key.rotation_angle ?? 0) * Math.PI / 180;
+  const customOrigin = key.rotation_x !== undefined && key.rotation_y !== undefined;
+  const rx = customOrigin ? key.rotation_x! : key.x + key.width / 2;
+  const ry = customOrigin ? key.rotation_y! : key.y + key.height / 2;
+  return {
+    x: rx + (x - rx) * Math.cos(angle) - (y - ry) * Math.sin(angle),
+    y: ry + (x - rx) * Math.sin(angle) + (y - ry) * Math.cos(angle),
+  };
+}
