@@ -6,24 +6,25 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "node --watch src/index.js",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "test": "node --test"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
-    "axios": "^1.6.2",
+    "axios": "^1.21.0",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
+    "express": "^4.22.3",
     "express-session": "^1.17.3",
     "pg": "^8.16.3",
     "prisma": "^6.12.0"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
+  "engines": {
+    "node": "^22.12.0 || >=24.0.0"
   }
 }

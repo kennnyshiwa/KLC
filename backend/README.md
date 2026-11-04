@@ -82,3 +82,9 @@ npx prisma migrate dev --name your_migration_name
 # Apply migrations in production
 npx prisma migrate deploy
 ```
+
+## Runtime and regression checks
+
+Use Node.js 22.12+ (Node 22 LTS recommended). `npm run dev` uses Node's built-in watch mode.
+
+Run `npm test` for local HTTP dependency regressions covering Express proxy handling, JSON parsing, session/auth boundaries, CORS, and Axios form requests and limits. These tests use loopback servers and an in-memory session store; PostgreSQL persistence and real OAuth flows still require integration validation.

@@ -27,7 +27,7 @@ jobs:
         run: npm run typecheck
 
       - name: Run frontend tests
-        run: npm test
+        run: npm test -- --run
 
       - name: Build frontend
         run: npm run build
@@ -39,6 +39,10 @@ jobs:
       - name: Check backend JavaScript syntax
         working-directory: ./backend
         run: find src -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Run backend dependency regressions
+        working-directory: ./backend
+        run: npm test
 
       - name: Test Docker build - Frontend
         uses: docker/build-push-action@v5

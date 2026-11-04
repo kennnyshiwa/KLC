@@ -89,7 +89,7 @@ Visit [KLC Website URL] to start designing immediately - no installation require
 ### Running Locally
 
 #### Prerequisites
-- Node.js 18+ 
+- Node.js 22.12+ (Node 22 LTS recommended)
 - npm or yarn
 - PostgreSQL (for backend features)
 
