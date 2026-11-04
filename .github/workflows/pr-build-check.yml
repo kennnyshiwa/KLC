@@ -1,6 +1,8 @@
 name: PR Build Check
 
 on:
+  push:
+    branches: [main, "security/**"]
   pull_request:
     branches:
       - main
